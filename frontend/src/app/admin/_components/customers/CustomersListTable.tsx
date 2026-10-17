@@ -1,5 +1,4 @@
 import type { PetsAppUserResponse } from "../../../_lib/petsapp-api";
-import { recortarCartera } from "../../_data/adminAccountsDemoData";
 import estilos from "./customers-list.module.css";
 
 type Props = {
@@ -30,7 +29,6 @@ export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
               <tr>
                 <th>Usuario</th>
                 <th>Correo</th>
-                <th>Cartera</th>
                 <th>Rol</th>
                 <th>País</th>
                 <th>Estado</th>
@@ -45,9 +43,6 @@ export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
                     <div className={estilos.celdaSecundaria}>{u.id}</div>
                   </td>
                   <td className={estilos.celdaSecundaria}>{u.email}</td>
-                  <td className={estilos.mono}>
-                    {u.walletAddress ? recortarCartera(u.walletAddress) : "—"}
-                  </td>
                   <td>{u.role}</td>
                   <td className={estilos.celdaSecundaria}>{u.country}</td>
                   <td>

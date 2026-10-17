@@ -6,7 +6,8 @@ import type { ReactNode } from "react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+
+import BrandMark from "@/components/ui/BrandMark";
 
 import { clearSession, getPetsAppSession } from "../demoAuth";
 import { iconMaskStyle } from "./_utils/iconMaskStyle";
@@ -21,10 +22,7 @@ type AdminNavItem = {
 
 const adminNavItems: AdminNavItem[] = [
   { href: "/admin", label: "Panel", iconSrc: "/iconos/icon-dashboard.svg", isDashboard: true },
-  // { href: "/admin/analytics", label: "Analítica", iconSrc: "/iconos/icon-analytics.svg" },
-  { href: "/admin/transactions", label: "Transacciones", iconSrc: "/iconos/icon-transacciones.svg" },
-  { href: "/admin/customers", label: "Clientes", iconSrc: "/iconos/icon-usuarios.svg" },
-  { href: "/admin/settings", label: "Configuración", iconSrc: "/iconos/icon-settings.svg" },
+  { href: "/admin/customers", label: "Usuarios", iconSrc: "/iconos/icon-usuarios.svg" },
 ];
 
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -81,14 +79,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
       <aside className={estilos.barra} data-purpose="admin-sidebar">
         <div className={estilos.sidebarHeader}>
           <div className={estilos.brandHeader}>
-            <Image
-              className={estilos.logoSolana}
-              src="/imagenes/logo1-solana.png"
-              alt="Solana"
-              width={40}
-              height={40}
-              priority
-            />
+            <BrandMark className={estilos.brandLogo} size={40} />
             <div className={estilos.brandText}>
               <h2 className={estilos.titulo}>PetsApp</h2>
               <div className={estilos.subtitulo}>Panel de administración</div>

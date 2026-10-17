@@ -1,0 +1,49 @@
+/* Admin section header: title, subtitle and optional actions. */
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--texto-primario, #171717);
+}
+
+.subtitulo {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--texto-secundario, rgba(0, 0, 0, 0.6));
+}
+
+.acciones {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.botonExportar {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.botonExportar:hover {
+  background: #f9fafb;
+}
+
+.botonExportar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

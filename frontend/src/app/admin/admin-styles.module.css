@@ -44,7 +44,7 @@
   text-align: center;
 }
 
-.logoSolana {
+.brandLogo {
   width: 40px;
   height: auto;
   object-fit: contain;
@@ -84,32 +84,6 @@
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
   mask-position: center;
-}
-
-.badgeRegion {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--badge-region-bg, #252545);
-  border-radius: 999px;
-  margin-bottom: 18px;
-}
-
-.puntoRegion {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--solana-green, #14f195);
-  box-shadow: 0 0 0 2px rgba(20, 241, 149, 0.15);
-}
-
-.textoBadge {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--solana-green, #14f195);
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
 }
 
 .navigation {

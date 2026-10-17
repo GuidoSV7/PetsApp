@@ -9,7 +9,7 @@ import {
   type PetsAppUserResponse,
 } from "../../_lib/petsapp-api";
 import { clearSession, getSessionToken } from "../../demoAuth";
-import DashboardHeader from "../_components/dashboard/DashboardHeader";
+import AdminPageHeader from "../_components/shared/AdminPageHeader";
 import CustomersListTable from "../_components/customers/CustomersListTable";
 import CustomersKpiCards from "../_components/customers/CustomersKpiCards";
 import AdminUserDetailModal from "../_components/customers/AdminUserDetailModal";
@@ -17,7 +17,7 @@ import estilosLista from "../_components/customers/customers-list.module.css";
 
 const LIMITE_POR_PAGINA = 10;
 
-// Solo comercios (merchant): GET /admin/users?role=merchant — sin cuentas admin.
+// Non-admin accounts only: GET /admin/users?role=merchant (the API role for regular users).
 export default function CustomersPage() {
   const router = useRouter();
   const [consulta, setConsulta] = useState("");
@@ -67,8 +67,7 @@ export default function CustomersPage() {
       (u) =>
         u.fullName.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q) ||
-        u.id.toLowerCase().includes(q) ||
-        (u.walletAddress?.toLowerCase().includes(q) ?? false),
+        u.id.toLowerCase().includes(q),
     );
   }, [consulta, usuarios]);
 
@@ -76,10 +75,10 @@ export default function CustomersPage() {
 
   const exportarCsv = () => {
     const lineas = [
-      "id,fullName,email,role,country,walletAddress,isActive",
+      "id,fullName,email,role,country,isActive",
       ...usuariosFiltrados.map(
         (u) =>
-          `${u.id},"${u.fullName.replace(/"/g, '""')}",${u.email},${u.role},${u.country},${u.walletAddress ?? ""},${u.isActive !== false}`,
+          `${u.id},"${u.fullName.replace(/"/g, '""')}",${u.email},${u.role},${u.country},${u.isActive !== false}`,
       ),
     ];
     const blob = new Blob([lineas.join("\n")], { type: "text/csv;charset=utf-8;" });
@@ -93,10 +92,10 @@ export default function CustomersPage() {
 
   return (
     <>
-      <DashboardHeader
+      <AdminPageHeader
         alExportar={exportarCsv}
-        titulo="Clientes"
-        subtitulo="Comercios (rol merchant). Las cuentas administrador no aparecen en este listado."
+        titulo="Usuarios"
+        subtitulo="Cuentas de usuarios. Las cuentas administrador no aparecen en este listado."
       />
       {error ? (
         <p style={{ marginBottom: 16, color: "#b91c1c", fontWeight: 700 }}>{error}</p>
@@ -106,10 +105,10 @@ export default function CustomersPage() {
         <input
           type="search"
           className={estilosLista.campoBusqueda}
-          placeholder="Buscar por nombre, correo, ID o cartera…"
+          placeholder="Buscar por nombre, correo o ID…"
           value={consulta}
           onChange={(e) => setConsulta(e.target.value)}
-          aria-label="Buscar clientes"
+          aria-label="Buscar usuarios"
         />
         <div className={estilosLista.barraPaginacion}>
           <button

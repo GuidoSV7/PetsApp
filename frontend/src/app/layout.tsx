@@ -19,11 +19,11 @@ const fuenteMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: `${siteName} — Pago protegido hasta confirmar la entrega`,
+    default: `${siteName} — Tu app para el cuidado de mascotas`,
     template: `%s | ${siteName}`,
   },
   description:
-    "Vendé y comprá sin miedo a que te fallen. Pago protegido hasta confirmar la entrega. Cobrá en dólares (USDC) en Latinoamérica.",
+    "PetsApp: cuidá, encontrá y acompañá a tus mascotas desde un solo lugar.",
   alternates: {
     canonical: "/",
   },

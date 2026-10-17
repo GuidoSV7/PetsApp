@@ -1,9 +1,10 @@
 "use client";
 
+import BrandMark from "@/components/ui/BrandMark";
 import estilosHome from "../../home.module.css";
 
-// Barra superior del home PetsApp: marca e inicio de sesión.
-export default function SafePurchaseHeader({
+// Public home top bar: brand and sign-in trigger.
+export default function HomeHeader({
   onSignIn,
 }: Readonly<{
   onSignIn: () => void;
@@ -12,13 +13,7 @@ export default function SafePurchaseHeader({
     <header className={estilosHome.header}>
       <div className={estilosHome.headerInner}>
         <div className={estilosHome.marca} aria-label="PetsApp">
-          <div className={estilosHome.logoSolana}>
-            <img
-              className={estilosHome.logoImagen}
-              src="/imagenes/logo1-solana.png"
-              alt="Solana"
-            />
-          </div>
+          <BrandMark size={36} />
           <div className={estilosHome.tituloMarca}>PetsApp</div>
         </div>
 
@@ -35,4 +30,3 @@ export default function SafePurchaseHeader({
     </header>
   );
 }
-

@@ -35,7 +35,7 @@ function labelActivo(activo: boolean | undefined) {
 }
 
 function labelRol(rol: PetsAppApiRole) {
-  return rol === "admin" ? "Administrador" : "Comercio";
+  return rol === "admin" ? "Administrador" : "Usuario";
 }
 
 function labelVerificado(verificado: boolean | undefined) {
@@ -63,7 +63,6 @@ export default function AdminUserDetailView({
   const [rolEdit, setRolEdit] = useState<PetsAppApiRole>("merchant");
   const [correoEdit, setCorreoEdit] = useState("");
   const [paisEdit, setPaisEdit] = useState("");
-  const [carteraEdit, setCarteraEdit] = useState("");
   const [activoEdit, setActivoEdit] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [alternando, setAlternando] = useState(false);
@@ -74,7 +73,6 @@ export default function AdminUserDetailView({
     setRolEdit(u.role);
     setCorreoEdit(u.email ?? "");
     setPaisEdit(u.country ?? "");
-    setCarteraEdit(u.walletAddress ?? "");
     setActivoEdit(u.isActive !== false);
   }, []);
 
@@ -105,10 +103,6 @@ export default function AdminUserDetailView({
     void recargar();
   }, [recargar]);
 
-  const copiarCartera = useCallback(() => {
-    if (usuario?.walletAddress) void navigator.clipboard.writeText(usuario.walletAddress);
-  }, [usuario?.walletAddress]);
-
   const guardarCambios = useCallback(async () => {
     const token = getSessionToken();
     if (!token || !idUsuario) return;
@@ -119,7 +113,6 @@ export default function AdminUserDetailView({
         isActive: activoEdit,
         email: correoEdit,
         country: paisEdit,
-        walletAddress: carteraEdit,
       });
       aplicarUsuario(actualizado);
       showNotification("Cambios guardados.");
@@ -137,7 +130,6 @@ export default function AdminUserDetailView({
   }, [
     activoEdit,
     aplicarUsuario,
-    carteraEdit,
     correoEdit,
     idUsuario,
     paisEdit,
@@ -298,32 +290,11 @@ export default function AdminUserDetailView({
                 value={rolEdit}
                 onChange={(e) => setRolEdit(e.target.value as PetsAppApiRole)}
               >
-                <option value="merchant">merchant</option>
-                <option value="admin">admin</option>
+                <option value="merchant">Usuario</option>
+                <option value="admin">Administrador</option>
               </select>
             </div>
           ) : null}
-          <div className={estilos.campoAncho}>
-            <p className={estilos.labelCampo}>Cartera Solana</p>
-            {mostrarConfiguracion ? (
-              <input
-                id="cartera-usuario"
-                className={estilos.inputTexto}
-                value={carteraEdit}
-                onChange={(e) => setCarteraEdit(e.target.value)}
-                placeholder="Wallet (opcional)"
-              />
-            ) : usuario.walletAddress ? (
-              <div className={estilos.filaCartera}>
-                <span className={estilos.carteraCompleta}>{usuario.walletAddress}</span>
-                <button type="button" className={estilos.botonCopiar} onClick={copiarCartera}>
-                  Copiar
-                </button>
-              </div>
-            ) : (
-              <p className={estilos.valorCampo}>Sin vincular</p>
-            )}
-          </div>
         </div>
 
         {mostrarConfiguracion ? (

@@ -1,4 +1,4 @@
-/* Ficha de cliente: datos de cuenta + cartera + tabla de transacciones. */
+/* User detail card: identity, role and account status. */
 
 .barraVolver {
   margin-bottom: 18px;
@@ -54,10 +54,6 @@
   gap: 16px;
 }
 
-.campoAncho {
-  grid-column: 1 / -1;
-}
-
 @media (min-width: 720px) {
   .gridDatos {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -78,41 +74,6 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: #0f172a;
-}
-
-.filaCartera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.carteraCompleta {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 0.78rem;
-  word-break: break-all;
-  color: #4f46e5;
-  font-weight: 600;
-}
-
-.botonCopiar {
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.botonCopiar:hover {
-  background: #f9fafb;
-}
-
-.filaVolumen {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
 }
 
 .pillEstado {

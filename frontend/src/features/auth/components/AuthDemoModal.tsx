@@ -16,24 +16,7 @@ import {
 } from "@/features/auth/api/auth.service";
 import { savePetsAppSession } from "@/stores/auth-session";
 import type { AuthModalMode } from "@/features/auth/types/auth.types";
-import { PetsAppApiError, asPetsAppApiError } from "@/lib/errors";
-
-/** Mensajes cortos para 401 típicos del login (wallet). */
-function enrichAuthErrorMessage(err: PetsAppApiError, modo: AuthModalMode): string {
-  const m = err.message;
-  if (err.codigoEstado === 0) return m;
-  if (modo !== "sign-in") return m;
-
-  if (err.codigoEstado === 401) {
-    if (/obligatoria para iniciar sesión/i.test(m)) {
-      return "Conectá Phantom con la wallet del registro.";
-    }
-    if (/coincide con la registrada|no coincide/i.test(m)) {
-      return "La wallet no coincide con la del registro.";
-    }
-  }
-  return m;
-}
+import { asPetsAppApiError } from "@/lib/errors";
 
 type PaisRegistro = {
   codigo: string;
@@ -54,7 +37,7 @@ const paisesRegistro: PaisRegistro[] = [
   { codigo: "ve", label: "Venezuela" },
 ];
 
-// Modal de login y registro contra el API PetsApp (admin o merchant).
+// Login and registration modal against the PetsApp API (admin or regular user).
 export default function AuthDemoModal({
   abierta,
   initialMode,
@@ -194,8 +177,7 @@ export default function AuthDemoModal({
       cerrarModalInterno();
       redirigirSegunRol(respuesta.user.role);
     } catch (error) {
-      const err = asPetsAppApiError(error);
-      setMensajeAuth(enrichAuthErrorMessage(err, modalMode));
+      setMensajeAuth(asPetsAppApiError(error).message);
     } finally {
       setCargando(false);
     }
@@ -203,7 +185,7 @@ export default function AuthDemoModal({
 
   if (!abierta) return null;
 
-  /** Mismo ancho en ambos modos: login también incluye bloque Phantom. */
+  /** Same width in both modes. */
   const claseTamano = estilosModal.tamanoRegistro;
 
   return (
@@ -225,7 +207,7 @@ export default function AuthDemoModal({
             <div className={estilosModal.cabeceraCompacta}>
               <div>
                 <h2 id="titulo-modal" className={estilosModal.tituloModal}>
-                  {modalMode === "sign-in" ? "Entrá a PetsApp Ahora!!" : "Alta de comercio"}
+                  {modalMode === "sign-in" ? "Entrá a PetsApp" : "Crear cuenta"}
                 </h2>
                 <p className={estilosModal.hintLinea}>
                   {modalMode === "sign-in"
@@ -366,14 +348,14 @@ export default function AuthDemoModal({
                   <label
                     className={`${estilosModal.label} ${estilosModal.campoLargo}`}
                   >
-                    Nombre o razón social
+                    Nombre completo
                     <input
                       className={estilosModal.input}
                       type="text"
                       name="nombreCompleto"
                       required
-                      placeholder="Ej. Mi negocio SRL"
-                      autoComplete="organization"
+                      placeholder="Ej. Ana Pérez"
+                      autoComplete="name"
                       value={nombreCompleto}
                       onChange={(e) => setNombreCompleto(e.target.value)}
                     />

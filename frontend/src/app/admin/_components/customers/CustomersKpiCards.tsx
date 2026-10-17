@@ -6,7 +6,7 @@ type Props = {
   usuariosPagina: PetsAppUserResponse[];
 };
 
-// KPIs alineados con listado solo-merchant (sin admins).
+// KPIs aligned with the non-admin user listing.
 export default function CustomersKpiCards({ totalRegistros, usuariosPagina }: Props) {
   const activos = usuariosPagina.filter((u) => u.isActive !== false).length;
   const inactivos = usuariosPagina.length - activos;
@@ -14,9 +14,9 @@ export default function CustomersKpiCards({ totalRegistros, usuariosPagina }: Pr
   return (
     <section className={estilos.gridTarjetas} data-purpose="admin-clientes-kpis">
       <article className={estilos.tarjeta}>
-        <p className={estilos.nombreTarjeta}>Comercios totales</p>
+        <p className={estilos.nombreTarjeta}>Usuarios totales</p>
         <h3 className={estilos.valorTarjeta}>{totalRegistros}</h3>
-        <p className={estilos.pieTarjeta}>Cuentas merchant (sin administradores)</p>
+        <p className={estilos.pieTarjeta}>Cuentas de usuario (sin administradores)</p>
       </article>
       <article className={estilos.tarjeta}>
         <p className={estilos.nombreTarjeta}>Activos en esta página</p>

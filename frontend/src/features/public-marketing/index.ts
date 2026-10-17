@@ -1,1 +1,1 @@
-export { default as SafePurchasePage } from "@/app/_components/home/SafePurchasePage";
+export { default as HomePage } from "@/app/_components/home/HomePage";

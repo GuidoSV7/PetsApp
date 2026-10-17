@@ -1,37 +1,32 @@
 "use client";
 
-import DashboardHeader from "./_components/dashboard/DashboardHeader";
-import RevenueBarChart from "./_components/dashboard/RevenueBarChart";
-import TransactionVolumeChart from "./_components/dashboard/TransactionVolumeChart";
-import DashboardProfitabilitySection from "./_components/dashboard/DashboardProfitabilitySection";
-import DashboardKpiCards from "./_components/dashboard/DashboardKpiCards";
-import estilosLayout from "./_components/layout-dashboard.module.css";
+import Link from "next/link";
 
-// Pagina principal del admin: KPIs y gráficos conectados al API (series + métricas escrow).
+import AdminPageHeader from "./_components/shared/AdminPageHeader";
+import estilos from "./_components/customers/customers-kpi-cards.module.css";
+
+// Admin landing: placeholder dashboard pointing to the sections that exist today.
 export default function PaginaAdmin() {
-  const exportarDatos = () => {
-    const lineas = [
-      "mes,ingresos_sol,transacciones,socios_activos,disputas",
-      "Noviembre 2023,412850,1245,48,2",
-    ];
-    const blob = new Blob([lineas.join("\n")], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement("a");
-    enlace.href = url;
-    enlace.download = "compra-segura-dashboard.csv";
-    enlace.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <>
-      <DashboardHeader alExportar={exportarDatos} />
-      <DashboardKpiCards />
-      <div className={estilosLayout.filaGraficos}>
-        <RevenueBarChart />
-        <TransactionVolumeChart />
-      </div>
-      <DashboardProfitabilitySection />
+      <AdminPageHeader
+        titulo="Panel de administración"
+        subtitulo="Resumen general de PetsApp"
+      />
+      <section className={estilos.gridTarjetas} data-purpose="admin-dashboard-cards">
+        <article className={estilos.tarjeta}>
+          <p className={estilos.nombreTarjeta}>Usuarios</p>
+          <h3 className={estilos.valorTarjeta}>Gestión de cuentas</h3>
+          <p className={estilos.pieTarjeta}>
+            <Link href="/admin/customers">Ver listado de usuarios →</Link>
+          </p>
+        </article>
+        <article className={estilos.tarjeta}>
+          <p className={estilos.nombreTarjeta}>Mascotas</p>
+          <h3 className={estilos.valorTarjeta}>Próximamente</h3>
+          <p className={estilos.pieTarjeta}>Métricas de mascotas registradas</p>
+        </article>
+      </section>
     </>
   );
 }
