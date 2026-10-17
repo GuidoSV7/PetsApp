@@ -1,0 +1,120 @@
+/* Tabla de transacciones reutilizada en detalle de cliente y registro global. */
+
+.tarjetaTabla {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--texto) 8%, transparent);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.cabeceraSeccion {
+  padding: 18px 22px;
+  border-bottom: 1px solid #f3f4f6;
+  background: color-mix(in srgb, #f9fafb 80%, #fff);
+}
+
+.tituloSeccion {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--texto-primario, #1a1a2e);
+}
+
+.subtituloSeccion {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--texto) 48%, transparent);
+}
+
+.envoltorioTabla {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.tabla thead {
+  background: #f9fafb;
+  color: color-mix(in srgb, var(--texto) 48%, transparent);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tabla th,
+.tabla td {
+  padding: 16px 22px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.idTx {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #6c63ff;
+}
+
+.monto {
+  font-weight: 800;
+  color: var(--texto-primario);
+}
+
+.celdaMuted {
+  color: color-mix(in srgb, var(--texto) 48%, transparent);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.enlaceCliente {
+  color: #6c63ff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.enlaceCliente:hover {
+  text-decoration: underline;
+}
+
+.pillEstado {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.estadoCompletado {
+  background: #d4edda;
+  color: #1a7a3c;
+}
+
+.estadoBloqueado {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.estadoPendiente {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.estadoDisputa {
+  background: #fde8e8;
+  color: #e05555;
+}
+
+.vacio {
+  padding: 28px 22px;
+  text-align: center;
+  color: color-mix(in srgb, var(--texto) 50%, transparent);
+  font-weight: 600;
+}

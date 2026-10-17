@@ -1,0 +1,366 @@
+/* Layout y densidad del modal de auth: menos scroll, mejor jerarquía en móvil y escritorio. */
+
+.tamanoIngresar {
+  max-width: min(92vw, 440px);
+}
+
+.tamanoRegistro {
+  max-width: min(92vw, 528px);
+}
+
+.modalInterior {
+  max-height: min(90vh, 640px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.modalScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-gutter: stable;
+}
+
+.cabeceraCompacta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tituloModal {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: rgba(236, 245, 255, 0.96);
+}
+
+.hintLinea {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(236, 245, 255, 0.58);
+  max-width: 36ch;
+}
+
+.segmentoGrupo {
+  display: flex;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(236, 245, 255, 0.06);
+  border: 1px solid rgba(236, 245, 255, 0.1);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.segmentoBoton {
+  flex: 1;
+  border: none;
+  border-radius: 11px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  color: rgba(236, 245, 255, 0.55);
+  background: transparent;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.segmentoBoton:hover:not(:disabled) {
+  color: rgba(236, 245, 255, 0.88);
+  background: rgba(236, 245, 255, 0.05);
+}
+
+.segmentoBoton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.segmentoBotonActivo {
+  color: var(--fondo, #040f12);
+  background: var(--primario, #00f2ff);
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--primario) 35%, transparent);
+}
+
+.segmentoBotonActivo:hover:not(:disabled) {
+  color: var(--fondo, #040f12);
+  filter: brightness(1.03);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gridRegistro {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+.campoLargo {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 440px) {
+  .gridRegistro {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(236, 245, 255, 0.78);
+  letter-spacing: 0.02em;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 11px;
+  min-height: 40px;
+  border-radius: 11px;
+  border: 1px solid rgba(236, 245, 255, 0.14);
+  background: rgba(236, 245, 255, 0.04);
+  color: rgba(236, 245, 255, 0.94);
+  outline: none;
+  font-size: 14px;
+}
+
+.input:focus {
+  border-color: var(--primario, #00f2ff);
+  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.16);
+}
+
+.input::placeholder {
+  color: rgba(236, 245, 255, 0.32);
+}
+
+.dropdownControl {
+  position: relative;
+  width: 100%;
+}
+
+.dropdownBoton {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 11px;
+  border: 1px solid rgba(236, 245, 255, 0.14);
+  background: rgba(236, 245, 255, 0.04);
+  color: rgba(236, 245, 255, 0.92);
+  cursor: pointer;
+  padding: 8px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dropdownBoton:focus {
+  outline: none;
+  border-color: var(--primario, #00f2ff);
+  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.16);
+}
+
+.dropdownTexto {
+  font-weight: 700;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownFlecha {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid rgba(236, 245, 255, 0.85);
+  flex-shrink: 0;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: rgba(8, 22, 28, 0.94);
+  border: 1px solid rgba(236, 245, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  padding: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  backdrop-filter: blur(14px);
+}
+
+.dropdownItem {
+  width: 100%;
+  display: block;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(236, 245, 255, 0.9);
+  font-weight: 700;
+  font-size: 13px;
+  text-align: left;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: rgba(0, 242, 255, 0.08);
+}
+
+.dropdownItem[data-activo="true"] {
+  background: rgba(0, 242, 255, 0.12);
+}
+
+.cintaWallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--primario) 22%, transparent);
+  background: linear-gradient(
+    145deg,
+    rgba(0, 242, 255, 0.07) 0%,
+    rgba(171, 159, 242, 0.05) 100%
+  );
+  flex-wrap: wrap;
+}
+
+@media (max-width: 380px) {
+  .cintaWallet {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.cintaWalletAccion {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+@media (max-width: 380px) {
+  .cintaWalletAccion {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .cintaWalletAccion button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.cintaWalletTextos {
+  flex: 1;
+  min-width: 0;
+}
+
+.cintaWalletKicker {
+  margin: 0 0 2px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(236, 245, 255, 0.5);
+}
+
+.cintaWalletDetalle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: rgba(236, 245, 255, 0.78);
+}
+
+.pillOk {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--estado-exito, #aef400);
+}
+
+.pillOk::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.botonEnviar {
+  margin-top: 4px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: none;
+  background: var(--primario, #00f2ff);
+  color: var(--fondo, #040f12);
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  width: 100%;
+  transition: filter 0.15s ease;
+}
+
+.botonEnviar:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.botonEnviar:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.enlacePie {
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(0, 242, 255, 0.85);
+  cursor: pointer;
+}
+
+.enlacePie:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.enlacePie:disabled {
+  opacity: 0.5;
+}
+
+.mensajeAuth {
+  margin: 0 0 10px;
+  padding: 8px 11px;
+  border-radius: 11px;
+  border: 1px solid rgba(245, 0, 220, 0.25);
+  background: rgba(245, 0, 220, 0.08);
+  color: rgba(236, 245, 255, 0.95);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 1.4;
+}

@@ -1,0 +1,67 @@
+/* Grafico de area: volumen de transacciones. */
+
+.tarjetaGrafico {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--texto) 8%, transparent);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cabeceraGrafico {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+@media (min-width: 640px) {
+  .cabeceraGrafico {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.selectorCompacto {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: color-mix(in srgb, var(--texto) 55%, transparent);
+  cursor: pointer;
+}
+
+.contenedorArea {
+  flex: 1;
+  position: relative;
+  min-height: 200px;
+}
+
+.svgArea {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  display: block;
+}
+
+.ejeFechas {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--texto) 45%, transparent);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

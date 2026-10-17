@@ -1,0 +1,113 @@
+:root {
+  /* Fondo general (capa mas externa) */
+  --fondo: #040f12;
+
+  /* Texto principal para zonas claras (contenido) */
+  --texto: #131317;
+  --texto-primario: var(--texto);
+  --texto-secundario: color-mix(in srgb, var(--texto) 70%, transparent);
+
+  /* Panel del lado izquierdo (opciones) */
+  --panel-izquierdo-fondo: #1a1a2e;
+  --panel-izquierdo-acento: #6b63ff;
+  --panel-izquierdo-texto: #f0f2f5;
+  --panel-izquierdo-texto-secundario: color-mix(
+    in srgb,
+    var(--panel-izquierdo-texto) 70%,
+    transparent
+  );
+
+  /* Contenido principal (derecha) */
+  --superficie: #f0f2f5; /* fondo del area */
+  --tarjeta: #ffffff; /* tarjetas o bloques dentro del area */
+
+  --borde: color-mix(in srgb, var(--texto) 18%, transparent);
+  --borde-panel: color-mix(
+    in srgb,
+    var(--panel-izquierdo-texto) 22%,
+    transparent
+  );
+
+  /* Accento principal (botones y enlaces) */
+  --primario: #00f2ff;
+  --secundario: #00ebf7;
+
+  /* Colores para estados */
+  --estado-exito: #aef400;
+  --estado-informacion: #00ebf7;
+  --estado-error: #f500dc;
+  --estado-advertencia: #ffcc33;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Mantener la misma identidad de color en modo oscuro */
+    --fondo: #040f12;
+    --texto: #131317;
+  }
+}
+
+/* Overrides del tema por ruta (se aplican vía RouteThemeProvider) */
+[data-area="admin"] {
+  --primario: #00f2ff;
+  --secundario: #00ebf7;
+}
+
+[data-area="cliente"] {
+  --primario: #00f2ff;
+  --secundario: #00ebf7;
+}
+
+html {
+  height: 100%;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--texto-primario);
+  background: var(--fondo);
+  font-family: var(--fuente-geist-sans, Arial), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(
+      --fuente-geist-mono,
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      "Liberation Mono",
+      "Courier New",
+      monospace
+    );
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}

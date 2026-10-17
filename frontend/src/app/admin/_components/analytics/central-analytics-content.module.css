@@ -1,0 +1,307 @@
+/* Bloque central de la pagina Analitica: grafico de volumen, embudo, mapa y tabla. */
+
+.tarjeta {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.filaSuperior {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+@media (min-width: 1024px) {
+  .filaSuperior {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .graficoAncho {
+    grid-column: span 2 / span 2;
+  }
+}
+
+.cabeceraGrafico {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tituloBloque {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--texto-primario, #1f2937);
+}
+
+.leyendaGrafico {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--texto) 55%, transparent);
+}
+
+.leyendaPunto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.puntoSolana {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #9945ff;
+}
+
+.puntoUsdc {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #60a5fa;
+}
+
+.contenedorCanvas {
+  position: relative;
+  height: 256px;
+  width: 100%;
+}
+
+.contenedorCanvas canvas {
+  max-height: 100%;
+}
+
+.tituloEmbudo {
+  margin: 0 0 22px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--texto-primario, #1f2937);
+}
+
+.listaEmbudo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filaEmbudo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.labelsEmbudo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-primario, #374151);
+}
+
+.pistaEmbudo {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  border-radius: 8px;
+  background: #f3e8ff;
+  overflow: hidden;
+}
+
+.rellenoEmbudo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 8px 0 0 8px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.textoSobreBarra {
+  position: relative;
+  z-index: 1;
+  padding-left: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.filaInferior {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+@media (min-width: 1024px) {
+  .filaInferior {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tituloSeccion {
+  margin: 0 0 22px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--texto-primario, #1f2937);
+}
+
+.filaGeo {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+@media (min-width: 640px) {
+  .filaGeo {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 22px;
+  }
+}
+
+.columnaMapa {
+  flex: 1;
+  min-width: 0;
+}
+
+.envoltorioMapa {
+  position: relative;
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 192px;
+}
+
+.mapaSvg {
+  width: 128px;
+  height: auto;
+  fill: #f3e8ff;
+  stroke: #c4b5fd;
+}
+
+.labelMapa {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 800;
+  color: #7c3aed;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.columnaLista {
+  flex: 1;
+  min-width: 0;
+}
+
+.listaRegiones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.itemRegion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
+}
+
+.itemRegion:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nombreRegion {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--texto) 58%, transparent);
+}
+
+.porcionRegion {
+  font-weight: 800;
+  color: var(--texto-primario, #111827);
+}
+
+.tablaWrapper {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+.tabla thead tr {
+  color: color-mix(in srgb, var(--texto) 45%, transparent);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla th {
+  padding-bottom: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tabla tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tabla td {
+  padding: 14px 8px 14px 0;
+  vertical-align: middle;
+}
+
+.idTransaccion {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: #7c3aed;
+}
+
+.montoDestacado {
+  font-weight: 800;
+  color: var(--texto-primario, #111827);
+}
+
+.pastillaEstado {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.pastillaCompletado {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.pastillaBloqueado {
+  background: #dbeafe;
+  color: #1d4ed8;
+}

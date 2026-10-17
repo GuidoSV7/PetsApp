@@ -1,0 +1,105 @@
+/* Cuadricula de KPIs del dashboard (4 tarjetas). */
+
+.gridTarjetas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .gridTarjetas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .gridTarjetas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.tarjeta {
+  background: var(--tarjeta, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--texto) 10%, transparent);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+}
+
+.cabeceraTarjeta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.iconoTarjeta {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconoFondoIndigo {
+  background: #e0e7ff;
+  --color-icono-mascara: #4f46e5;
+}
+
+.iconoFondoAzul {
+  background: #dbeafe;
+  --color-icono-mascara: #1d4ed8;
+}
+
+.iconoFondoVioleta {
+  background: #f3e8ff;
+  --color-icono-mascara: #6d28d9;
+}
+
+.iconoFondoRojo {
+  background: #fee2e2;
+  --color-icono-mascara: #b91c1c;
+}
+
+.nombreTarjeta {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--texto) 54%, transparent);
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.valorTarjeta {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--texto-primario, #171717);
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badgeExito {
+  background: #e6f9f0;
+  color: #00c97a;
+}
+
+.badgeInfo {
+  background: #f3f4f6;
+  color: color-mix(in srgb, var(--texto) 50%, transparent);
+}
+
+.badgeError {
+  background: #fde8e8;
+  color: #e05555;
+}

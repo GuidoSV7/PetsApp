@@ -1,0 +1,64 @@
+/* Modal admin: detalle de usuario (GET/ PATCH / toggle-active) */
+
+.modalFondo {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.modalCaja {
+  width: min(980px, 100%);
+  max-height: min(90vh, 760px);
+  overflow: auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.25);
+  padding: 18px 18px 20px;
+  color-scheme: light;
+  color: #0f172a;
+}
+
+.modalBarra {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.modalTitulo {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.botonCerrar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
+.botonCerrar:hover {
+  background: #f9fafb;
+}
+
+.contenido {
+  /* El detalle ya trae su propia tarjeta, así que solo separamos un poco */
+  padding: 0 0 6px;
+}
+

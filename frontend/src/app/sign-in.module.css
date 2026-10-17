@@ -1,0 +1,273 @@
+.contenedor {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 420px;
+  background: var(--tarjeta, #ffffff);
+  border: 1px solid var(--borde, rgba(0, 0, 0, 0.12));
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  color: rgba(236, 245, 255, 0.95);
+}
+
+.subtitulo {
+  margin: 8px 0 20px;
+  color: rgba(236, 245, 255, 0.68);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: rgba(236, 245, 255, 0.9);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(236, 245, 255, 0.16);
+  background: rgba(236, 245, 255, 0.03);
+  color: rgba(236, 245, 255, 0.92);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--primario, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.18);
+}
+
+.boton {
+  margin-top: 6px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--primario, #3b82f6);
+  color: var(--fondo, #ffffff);
+  cursor: pointer;
+  font-weight: 600;
+  width: 100%;
+}
+
+.boton:hover {
+  filter: brightness(0.95);
+}
+
+.enlaces {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.enlace {
+  color: rgba(0, 242, 255, 0.92);
+  text-decoration: none;
+  font-weight: 800;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  padding: 6px 0;
+  text-align: center;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+}
+
+/* Contenedor para dibujar la flecha del select sin depender del render del navegador */
+.selectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.selectWrapper::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid rgba(236, 245, 255, 0.92);
+  pointer-events: none;
+}
+
+.select {
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(236, 245, 255, 0.16);
+  background: rgba(236, 245, 255, 0.03);
+  color: rgba(236, 245, 255, 0.92);
+  outline: none;
+  height: 42px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  color-scheme: dark;
+}
+
+.select:focus {
+  border-color: var(--primario, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.18);
+}
+
+.botonGoogle {
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--primario, #3b82f6) 60%,
+    transparent
+  );
+  background: rgba(236, 245, 255, 0.02);
+  color: var(--primario, #3b82f6);
+  cursor: pointer;
+  font-weight: 600;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.botonGoogle:hover {
+  background: color-mix(
+    in srgb,
+    var(--primario, #3b82f6) 12%,
+    transparent
+  );
+}
+
+.iconoGoogle {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+}
+
+.mensajeAuth {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 0, 220, 0.22);
+  background: rgba(245, 0, 220, 0.08);
+  color: rgba(236, 245, 255, 0.95);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.dropdownControl {
+  position: relative;
+  width: 100%;
+}
+
+.dropdownBoton {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(236, 245, 255, 0.16);
+  background: rgba(236, 245, 255, 0.03);
+  color: rgba(236, 245, 255, 0.92);
+  cursor: pointer;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dropdownBoton:focus {
+  outline: none;
+  border-color: var(--primario, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.18);
+}
+
+.dropdownTexto {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownFlecha {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid rgba(236, 245, 255, 0.92);
+  flex-shrink: 0;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: rgba(6, 20, 26, 0.85);
+  border: 1px solid rgba(236, 245, 255, 0.16);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  padding: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  backdrop-filter: blur(16px);
+}
+
+.dropdownItem {
+  width: 100%;
+  display: block;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: rgba(236, 245, 255, 0.9);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: left;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: rgba(0, 242, 255, 0.08);
+}
+
+.dropdownItem[data-activo="true"] {
+  background: rgba(0, 242, 255, 0.14);
+  color: rgba(236, 245, 255, 0.98);
+}
+

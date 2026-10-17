@@ -1,0 +1,211 @@
+.contenedor {
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  background: var(--fondo, #0a0a0a00);
+  overflow: hidden;
+}
+
+.barra {
+  width: 260px;
+  padding: 18px 14px;
+  border-right: 1px solid var(--borde-panel, rgba(240, 242, 245, 0.18));
+  background: var(--panel-izquierdo-fondo, #1a1a2e);
+  color: var(--panel-izquierdo-texto, #f0f2f5);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0;
+  /* Mantiene el logout y el usuario visibles al scrollear el contenido principal. */
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.sidebarHeader {
+  flex-shrink: 0;
+}
+
+.sidebarNavScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.brandHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.logoSolana {
+  width: 40px;
+  height: auto;
+  object-fit: contain;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 16px;
+  color: var(--panel-izquierdo-texto, #f0f2f5);
+  letter-spacing: 0.2px;
+}
+
+.subtitulo {
+  font-size: 12px;
+  color: var(--panel-izquierdo-texto-secundario, rgba(240, 242, 245, 0.7));
+}
+
+/* Icono teñido con el color del enlace (currentColor) mediante mascara */
+.navIconMask {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-image: var(--url-mascara);
+  mask-image: var(--url-mascara);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.badgeRegion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--badge-region-bg, #252545);
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+
+.puntoRegion {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--solana-green, #14f195);
+  box-shadow: 0 0 0 2px rgba(20, 241, 149, 0.15);
+}
+
+.textoBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--solana-green, #14f195);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.enlace {
+  padding: 10px 10px;
+  border-radius: 10px;
+  color: rgba(160, 160, 176, 0.95);
+  text-decoration: none;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.enlace:hover {
+  border-color: var(--borde-panel, rgba(240, 242, 245, 0.18));
+  color: rgba(240, 242, 245, 0.92);
+}
+
+.primaryLink {
+  border-color: color-mix(
+    in srgb,
+    var(--panel-izquierdo-acento, #6b63ff) 55%,
+    transparent
+  );
+  background: color-mix(
+    in srgb,
+    var(--panel-izquierdo-acento, #6b63ff) 18%,
+    transparent
+  );
+  color: var(--primario, #00f2ff);
+}
+
+.navLinkLabel {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.botonLogout {
+  flex-shrink: 0;
+  width: 100%;
+  border: 0;
+  background: var(--logout-bg, #2a2a3e);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 12px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.botonLogout:hover {
+  background: var(--logout-bg-hover, #32324a);
+}
+
+.textoLogout {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.contenido {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 22px;
+  background: var(--superficie, #f0f2f5);
+  overflow-y: auto;
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.cabecera h1 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--texto-primario, #171717);
+}
+
+.cabecera p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--texto-secundario, rgba(0, 0, 0, 0.6));
+}
+

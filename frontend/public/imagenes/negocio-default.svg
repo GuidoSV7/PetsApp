@@ -1,0 +1,33 @@
+<!--
+  Imagen por defecto (estilo "tech") para comercios/negocios cuando el usuario no sube un logo.
+  Se usa tanto en el panel como en la grilla/listados.
+-->
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo de negocio">
+  <defs>
+    <linearGradient id="g" x1="16" y1="10" x2="86" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0284c7" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#7dd3fc" stop-opacity="0.42"/>
+    </linearGradient>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0b1220" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect x="8" y="8" width="80" height="80" rx="18" fill="url(#g)" stroke="#7dd3fc" stroke-opacity="0.35" filter="url(#s)"/>
+
+  <!-- tech/circuit -->
+  <path d="M26 56H40" stroke="#0f172a" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M44 32L52 40" stroke="#0f172a" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M56 40H66" stroke="#0f172a" stroke-opacity="0.35" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- storefront -->
+  <path d="M32 42V68.5C32 70.433 33.567 72 35.5 72H60.5C62.433 72 64 70.433 64 68.5V42" stroke="#0f172a" stroke-opacity="0.78" stroke-width="3" stroke-linecap="round"/>
+  <path d="M27.5 42L48 27L68.5 42" stroke="#0f172a" stroke-opacity="0.78" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M42 61V53.5H54V61" stroke="#0f172a" stroke-opacity="0.78" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- small "qr" dots -->
+  <circle cx="34.8" cy="50.4" r="2" fill="#0284c7" fill-opacity="0.65"/>
+  <circle cx="40.2" cy="46.6" r="1.5" fill="#7dd3fc" fill-opacity="0.75"/>
+  <circle cx="58.2" cy="50.4" r="2" fill="#0284c7" fill-opacity="0.65"/>
+</svg>
+
