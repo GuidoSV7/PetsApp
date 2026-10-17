@@ -1,0 +1,33 @@
+# Local / tooling
+node_modules/
+dist/
+build/
+.next/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+# AI runtime (local)
+.atl/
+.engram/
+.codegraph/
+.opencode/
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Cursor / agents locales (existen en disco, NO versionar)
+.cursor/
+backend/.cursor/
+frontend/.cursor/
+contract/.cursor/
+AGENTS.md
+backend/AGENTS.md
+frontend/AGENTS.md
+contract/AGENTS.md
+docs/
