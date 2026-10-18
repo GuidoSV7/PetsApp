@@ -2,58 +2,43 @@ import api from "@/lib/axios";
 import type {
   LoginRegisterResponse,
   PetsAppUserResponse,
+  RegisterPayload,
+  UserProfileResponse,
 } from "@/features/auth/types/auth.types";
 
-export async function signInPetsAppUser(
-  correo: string,
-  contrasena: string,
-  walletAddress?: string,
-) {
-  const cuerpo: { email: string; password: string; walletAddress?: string } = {
-    email: correo.trim(),
-    password: contrasena,
-  };
-  const w = walletAddress?.trim();
-  if (w) cuerpo.walletAddress = w;
-  const { data } = await api.post<LoginRegisterResponse>("/auth/login", cuerpo);
-  return data;
-}
-
-export async function registerPetsAppUser(cuerpo: {
-  email: string;
-  password: string;
-  fullName: string;
-  country: string;
-  walletAddress?: string;
-}) {
-  const payload: {
-    email: string;
-    password: string;
-    fullName: string;
-    country: string;
-    walletAddress?: string;
-  } = {
-    email: cuerpo.email.trim(),
-    password: cuerpo.password,
-    fullName: cuerpo.fullName.trim(),
-    country: cuerpo.country.trim(),
-  };
-  const w = cuerpo.walletAddress?.trim();
-  if (w) payload.walletAddress = w;
-  const { data } = await api.post<LoginRegisterResponse>("/auth/register", payload);
-  return data;
-}
-
-export async function obtenerPerfilAuth(token: string) {
-  const { data } = await api.get<PetsAppUserResponse>("/auth/profile", {
-    headers: { Authorization: `Bearer ${token}` },
+/** `POST /auth/login`: body `{ email, password }`, answer `{ user, token }` plus the session cookie. */
+export async function signInPetsAppUser(email: string, password: string) {
+  const { data } = await api.post<LoginRegisterResponse>("/auth/login", {
+    email: email.trim(),
+    password,
   });
   return data;
 }
 
-export async function obtenerUsuarioYo(token: string) {
-  const { data } = await api.get<PetsAppUserResponse>("/users/me", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+/** `POST /auth/register`: creates a member and signs it in (same answer as login). */
+export async function registerPetsAppUser(payload: RegisterPayload) {
+  const body: RegisterPayload = {
+    email: payload.email.trim(),
+    password: payload.password,
+    name: payload.name.trim(),
+  };
+  const country = payload.country?.trim().toUpperCase();
+  if (country) body.country = country;
+  const { data } = await api.post<LoginRegisterResponse>("/auth/register", body);
+  return data;
+}
+
+/** `POST /auth/logout`: clears the HttpOnly session cookie. */
+export async function signOutPetsAppUser() {
+  await api.post("/auth/logout");
+}
+
+export async function fetchAuthProfile() {
+  const { data } = await api.get<PetsAppUserResponse>("/auth/profile");
+  return data;
+}
+
+export async function fetchCurrentUser() {
+  const { data } = await api.get<UserProfileResponse>("/users/me");
   return data;
 }

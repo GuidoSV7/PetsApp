@@ -14,28 +14,35 @@ import {
   signInPetsAppUser,
   registerPetsAppUser,
 } from "@/features/auth/api/auth.service";
-import { savePetsAppSession } from "@/stores/auth-session";
-import type { AuthModalMode } from "@/features/auth/types/auth.types";
+import { landingPathForRole, savePetsAppSession } from "@/stores/auth-session";
+import type {
+  AuthModalMode,
+  LoginRegisterResponse,
+} from "@/features/auth/types/auth.types";
 import { asPetsAppApiError } from "@/lib/errors";
 
-type PaisRegistro = {
-  codigo: string;
+type CountryOption = {
+  /** ISO 3166-1 alpha-2, what the API stores in `country`. */
+  code: string;
   label: string;
 };
 
-// Países con nombre tal como suele esperarse en el backend (string legible).
-const paisesRegistro: PaisRegistro[] = [
-  { codigo: "ar", label: "Argentina" },
-  { codigo: "bo", label: "Bolivia" },
-  { codigo: "cl", label: "Chile" },
-  { codigo: "co", label: "Colombia" },
-  { codigo: "ec", label: "Ecuador" },
-  { codigo: "gt", label: "Guatemala" },
-  { codigo: "mx", label: "Mexico" },
-  { codigo: "pe", label: "Peru" },
-  { codigo: "uy", label: "Uruguay" },
-  { codigo: "ve", label: "Venezuela" },
+const countryOptions: CountryOption[] = [
+  { code: "AR", label: "Argentina" },
+  { code: "BO", label: "Bolivia" },
+  { code: "CL", label: "Chile" },
+  { code: "CO", label: "Colombia" },
+  { code: "EC", label: "Ecuador" },
+  { code: "GT", label: "Guatemala" },
+  { code: "MX", label: "Mexico" },
+  { code: "PE", label: "Peru" },
+  { code: "UY", label: "Uruguay" },
+  { code: "VE", label: "Venezuela" },
 ];
+
+const DEFAULT_COUNTRY = "BO";
+/** Mirrors the API rule shared by register and change-password. */
+const MIN_PASSWORD_LENGTH = 8;
 
 // Login and registration modal against the PetsApp API (admin or regular user).
 export default function AuthDemoModal({
@@ -53,7 +60,7 @@ export default function AuthDemoModal({
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [nombreCompleto, setNombreCompleto] = useState("");
-  const [codigoPais, setCodigoPais] = useState("bo");
+  const [codigoPais, setCodigoPais] = useState(DEFAULT_COUNTRY);
   const [paisDropdownAbierto, setPaisDropdownAbierto] = useState(false);
   const wrapperPaisRef = useRef<HTMLDivElement | null>(null);
 
@@ -61,7 +68,7 @@ export default function AuthDemoModal({
   const [mensajeAuth, setMensajeAuth] = useState<string | null>(null);
 
   const paisSeleccionado = useMemo(() => {
-    return paisesRegistro.find((p) => p.codigo === codigoPais) ?? paisesRegistro[0]!;
+    return countryOptions.find((p) => p.code === codigoPais) ?? countryOptions[0]!;
   }, [codigoPais]);
 
   useEffect(() => {
@@ -75,7 +82,7 @@ export default function AuthDemoModal({
     setCorreo("");
     setContrasena("");
     setNombreCompleto("");
-    setCodigoPais("bo");
+    setCodigoPais(DEFAULT_COUNTRY);
     setMensajeAuth(null);
     setPaisDropdownAbierto(false);
   }, [abierta]);
@@ -116,8 +123,21 @@ export default function AuthDemoModal({
     return () => window.removeEventListener("mousedown", manejarClickFuera);
   }, [paisDropdownAbierto]);
 
-  const redirigirSegunRol = (rol: "admin" | "merchant") => {
-    router.push(rol === "admin" ? "/admin" : "/");
+  /** Persists the session exactly as the API answered it and routes by role. */
+  const completarSesion = (respuesta: LoginRegisterResponse) => {
+    savePetsAppSession({
+      token: respuesta.token,
+      user: {
+        id: respuesta.user.id,
+        name: respuesta.user.name,
+        email: respuesta.user.email,
+        role: respuesta.user.role,
+        roles: respuesta.user.roles,
+        country: respuesta.user.country,
+      },
+    });
+    cerrarModalInterno();
+    router.push(landingPathForRole(respuesta.user.role));
   };
 
   const enviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
@@ -129,22 +149,7 @@ export default function AuthDemoModal({
 
     try {
       if (modalMode === "sign-in") {
-        const respuesta = await signInPetsAppUser(correo, contrasena);
-        savePetsAppSession({
-          token: respuesta.token,
-          user: {
-            id: respuesta.user.id,
-            fullName: respuesta.user.fullName,
-            email: respuesta.user.email,
-            role: respuesta.user.role,
-            country: respuesta.user.country,
-            walletAddress: respuesta.user.walletAddress,
-            isVerified: respuesta.user.isVerified,
-            isActive: respuesta.user.isActive,
-          },
-        });
-        cerrarModalInterno();
-        redirigirSegunRol(respuesta.user.role);
+        completarSesion(await signInPetsAppUser(correo, contrasena));
         return;
       }
 
@@ -153,29 +158,20 @@ export default function AuthDemoModal({
         setCargando(false);
         return;
       }
+      if (contrasena.length < MIN_PASSWORD_LENGTH) {
+        setMensajeAuth(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
+        setCargando(false);
+        return;
+      }
 
-      const respuesta = await registerPetsAppUser({
-        email: correo,
-        password: contrasena,
-        fullName: nombreCompleto.trim(),
-        country: paisSeleccionado.label,
-      });
-
-      savePetsAppSession({
-        token: respuesta.token,
-        user: {
-          id: respuesta.user.id,
-          fullName: respuesta.user.fullName,
-          email: respuesta.user.email,
-          role: respuesta.user.role,
-          country: respuesta.user.country,
-          walletAddress: respuesta.user.walletAddress,
-          isVerified: respuesta.user.isVerified,
-          isActive: respuesta.user.isActive,
-        },
-      });
-      cerrarModalInterno();
-      redirigirSegunRol(respuesta.user.role);
+      completarSesion(
+        await registerPetsAppUser({
+          email: correo,
+          password: contrasena,
+          name: nombreCompleto,
+          country: paisSeleccionado.code,
+        }),
+      );
     } catch (error) {
       setMensajeAuth(asPetsAppApiError(error).message);
     } finally {
@@ -292,6 +288,7 @@ export default function AuthDemoModal({
                       required
                       placeholder="••••••••"
                       autoComplete="new-password"
+                      minLength={MIN_PASSWORD_LENGTH}
                       value={contrasena}
                       onChange={(e) => setContrasena(e.target.value)}
                     />
@@ -325,15 +322,15 @@ export default function AuthDemoModal({
                           role="listbox"
                           aria-label="Seleccionar país"
                         >
-                          {paisesRegistro.map((pais) => (
+                          {countryOptions.map((pais) => (
                             <button
-                              key={pais.codigo}
+                              key={pais.code}
                               type="button"
                               className={estilosModal.dropdownItem}
-                              data-activo={pais.codigo === codigoPais}
-                              aria-selected={pais.codigo === codigoPais}
+                              data-activo={pais.code === codigoPais}
+                              aria-selected={pais.code === codigoPais}
                               onClick={() => {
-                                setCodigoPais(pais.codigo);
+                                setCodigoPais(pais.code);
                                 setPaisDropdownAbierto(false);
                               }}
                             >

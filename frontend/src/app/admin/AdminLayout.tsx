@@ -1,5 +1,5 @@
-// Layout para todo el area `/admin` (barra lateral + contenido).
-// Solo entra sesión con rol API `admin`; iconos en `public/iconos`.
+// Layout for the whole `/admin` area (sidebar + content).
+// Only `admin` and `super_admin` sessions get in; icons live in `public/iconos`.
 "use client";
 
 import type { ReactNode } from "react";
@@ -9,7 +9,8 @@ import Link from "next/link";
 
 import BrandMark from "@/components/ui/BrandMark";
 
-import { clearSession, getPetsAppSession } from "../demoAuth";
+import { signOutPetsAppUser } from "@/features/auth/api/auth.service";
+import { clearSession, getPetsAppSession, isAdminRole } from "@/stores/auth-session";
 import { iconMaskStyle } from "./_utils/iconMaskStyle";
 import estilos from "./admin-styles.module.css";
 
@@ -36,8 +37,8 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
       router.replace("/");
       return;
     }
-    if (datos.user.role !== "admin") {
-      router.replace("/");
+    if (!isAdminRole(datos.user.role)) {
+      router.replace("/account");
       return;
     }
     setSesionLista(true);
@@ -49,6 +50,8 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
   }, [sessionReady]);
 
   const signOutAndLeave = () => {
+    // Best effort: the cookie clear must not block leaving the admin area.
+    void signOutPetsAppUser().catch(() => undefined);
     clearSession();
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     router.push("/");

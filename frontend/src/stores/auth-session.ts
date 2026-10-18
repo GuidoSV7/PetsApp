@@ -1,14 +1,21 @@
-export type SessionRole = "admin" | "merchant";
+import type { PetsAppApiRole } from "@/features/auth/types/auth.types";
+
+export type SessionRole = PetsAppApiRole;
+
+const SESSION_ROLES: readonly SessionRole[] = ["admin", "super_admin", "member"];
+
+/** Roles allowed into the `/admin` area (super admin outranks admin). */
+const ADMIN_ROLES: readonly SessionRole[] = ["admin", "super_admin"];
 
 export type SessionUser = {
   id: string;
-  fullName: string;
+  name: string;
   email: string;
   role: SessionRole;
-  country: string;
-  walletAddress: string | null;
-  isVerified?: boolean;
-  isActive?: boolean;
+  roles: SessionRole[];
+  country: string | null;
+  /** Not issued by the API today; kept optional for a future wallet link. */
+  walletAddress?: string | null;
 };
 
 export type PetsAppSessionData = {
@@ -21,6 +28,19 @@ const LEGACY_SESSION_KEY = "petsapp_sesion_v1";
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+export function isSessionRole(value: unknown): value is SessionRole {
+  return typeof value === "string" && (SESSION_ROLES as readonly string[]).includes(value);
+}
+
+export function isAdminRole(role: SessionRole | undefined | null): boolean {
+  return role !== undefined && role !== null && ADMIN_ROLES.includes(role);
+}
+
+/** Where a user lands right after signing in. */
+export function landingPathForRole(role: SessionRole): string {
+  return isAdminRole(role) ? "/admin" : "/account";
 }
 
 export function savePetsAppSession(data: PetsAppSessionData) {
@@ -41,11 +61,7 @@ export function getPetsAppSession(): PetsAppSessionData | null {
       window.localStorage.getItem(LEGACY_SESSION_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as PetsAppSessionData;
-    if (
-      !data?.token ||
-      !data?.user?.email ||
-      (data.user.role !== "admin" && data.user.role !== "merchant")
-    ) {
+    if (!data?.token || !data?.user?.email || !isSessionRole(data.user.role)) {
       return null;
     }
     return data;
