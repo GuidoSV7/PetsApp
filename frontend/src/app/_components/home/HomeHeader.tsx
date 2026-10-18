@@ -4,10 +4,12 @@ import estilosHome from "../../home.module.css";
 
 type Props = {
   coins?: number;
+  userName?: string;
+  onLogout?: () => void;
 };
 
-/** Public home top bar: brand + coin pill. */
-export default function HomeHeader({ coins }: Props) {
+/** Home top bar: brand + coins + optional session controls. */
+export default function HomeHeader({ coins, userName, onLogout }: Props) {
   return (
     <header className={estilosHome.header}>
       <div className={estilosHome.headerInner}>
@@ -15,7 +17,19 @@ export default function HomeHeader({ coins }: Props) {
           <BrandMark size={28} />
           <div className={estilosHome.tituloMarca}>PetsApp</div>
         </div>
-        {typeof coins === "number" ? <CoinBalance balance={coins} /> : null}
+        <div className={estilosHome.headerAcciones}>
+          {typeof coins === "number" ? <CoinBalance balance={coins} /> : null}
+          {userName && onLogout ? (
+            <button
+              type="button"
+              className={estilosHome.botonSalir}
+              onClick={onLogout}
+              aria-label={`Cerrar sesión de ${userName}`}
+            >
+              Salir
+            </button>
+          ) : null}
+        </div>
       </div>
     </header>
   );

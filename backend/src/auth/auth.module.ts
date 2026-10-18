@@ -4,6 +4,10 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import {
+  GOOGLE_TOKEN_VERIFIER,
+  GoogleAuthLibraryVerifier,
+} from './google-token.verifier.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { resolveJwtSecret } from './jwt-secret.js';
 import { UsersModule } from '../users/users.module.js';
@@ -25,7 +29,15 @@ import { UsersModule } from '../users/users.module.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    GoogleAuthLibraryVerifier,
+    {
+      provide: GOOGLE_TOKEN_VERIFIER,
+      useExisting: GoogleAuthLibraryVerifier,
+    },
+  ],
   exports: [AuthService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

@@ -61,6 +61,72 @@
 .botonHeader:hover {
   filter: brightness(1.06);
 }
+.botonSalir {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #1c2b22 12%, transparent);
+  background: #fff;
+  color: #1c2b22;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.botonSalir:hover {
+  background: #f3faf5;
+}
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: min(100%, 400px);
+  margin: auto;
+  padding: 28px 20px;
+  text-align: center;
+}
+.gateBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.gateTitle {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #143022;
+}
+.gateHint {
+  margin: 0;
+  max-width: 28ch;
+  color: #3a5246;
+  font-weight: 650;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.gateError {
+  margin: 0;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.gateEmail {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1f8f4e;
+  font-weight: 750;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.gateEmail:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
 .main {
   flex: 1;
   min-height: 0;

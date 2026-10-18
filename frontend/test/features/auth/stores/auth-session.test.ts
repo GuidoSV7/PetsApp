@@ -128,12 +128,13 @@ describe("auth-session store", () => {
     expect(getPetsAppSession()).toBeNull();
   });
 
-  it("routes admin roles to /admin and members to /account", () => {
+  it("routes admin roles to /admin and members to home play", () => {
     expect(landingPathForRole("admin")).toBe("/admin");
     expect(landingPathForRole("super_admin")).toBe("/admin");
-    expect(landingPathForRole("member")).toBe("/account");
+    expect(landingPathForRole("member")).toBe("/");
     expect(isAdminRole("admin")).toBe(true);
     expect(isAdminRole("super_admin")).toBe(true);
     expect(isAdminRole("member")).toBe(false);
   });
 });
+

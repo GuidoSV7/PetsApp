@@ -13,6 +13,7 @@ import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService, type SessionResult } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
+import { GoogleLoginDto } from './dto/google-login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { VerifyPasswordDto } from './dto/verify-password.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
@@ -68,6 +69,21 @@ export class AuthController {
     return this.respondWithSession(
       res,
       await this.authService.register(registerDto),
+    );
+  }
+
+  /** Google Identity Services ID token → same session shape as login. */
+  @Post('google')
+  @Public()
+  @UseGuards(AuthOriginGuard)
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  async googleLogin(
+    @Body() body: GoogleLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.respondWithSession(
+      res,
+      await this.authService.loginWithGoogle(body.idToken),
     );
   }
 

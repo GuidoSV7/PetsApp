@@ -17,7 +17,6 @@ import {
   type PetCoatColors,
 } from "@/features/pet-home/extract-coat-colors";
 import { moodCaption } from "@/features/pet-home/pet-customize";
-import { PET_INTERACT_HINT } from "@/features/pet-home/pet-interaction";
 import {
   PET_LAYOUT_MODE,
   petLayoutCssVars,
@@ -209,8 +208,6 @@ export function PetHomeStage({ onCoinsChange }: Props) {
               }
             />
           </div>
-
-          <p className={styles.interactHint}>{PET_INTERACT_HINT}</p>
         </div>
       </div>
 
@@ -292,9 +289,25 @@ function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" }) {
   if (kind === "feed") {
     return (
       <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+        {/* Bowl */}
         <path
           fill="currentColor"
-          d="M6 10c0-2 1.5-4 3-4s3 2 3 4v1H6v-1zm9-3h2v5h-2V7zm-8 7h12l-1 6H8l-1-6z"
+          d="M4.5 11.5h15a1 1 0 0 1 .95 1.3l-1.4 4.4A3 3 0 0 1 16.2 19.5H7.8a3 3 0 0 1-2.85-2.3l-1.4-4.4A1 1 0 0 1 4.5 11.5z"
+        />
+        {/* Food mound */}
+        <path
+          fill="currentColor"
+          opacity="0.85"
+          d="M8.2 11.2c.6-1.7 1.8-2.7 3.8-2.7s3.2 1 3.8 2.7H8.2z"
+        />
+        {/* Steam */}
+        <path
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          d="M10 5.2c.2.8-.3 1.3-.3 2M12.2 4.5c.2.9-.3 1.4-.3 2.2M14.3 5.2c.2.8-.3 1.3-.3 2"
+          opacity="0.9"
         />
       </svg>
     );
@@ -302,8 +315,20 @@ function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" }) {
   if (kind === "play") {
     return (
       <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
-        <circle cx="12" cy="12" r="8" fill="currentColor" opacity="0.95" />
-        <circle cx="12" cy="12" r="2.2" fill="#fff" />
+        <circle cx="12" cy="12" r="8.2" fill="currentColor" />
+        <path
+          fill="#fff"
+          opacity="0.95"
+          d="M12 3.8a8.2 8.2 0 0 1 5.9 2.5c-1.3 1-3.4 1.7-5.9 1.7S7.4 7.3 6.1 6.3A8.2 8.2 0 0 1 12 3.8zm0 16.4a8.2 8.2 0 0 1-5.9-2.5c1.3-1 3.4-1.7 5.9-1.7s4.6.7 5.9 1.7a8.2 8.2 0 0 1-5.9 2.5z"
+        />
+        <circle cx="12" cy="12" r="2.1" fill="#fff" />
+        <path
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.5"
+          d="M4.5 10.2c2.2.9 4.7 1.4 7.5 1.4s5.3-.5 7.5-1.4M4.5 13.8c2.2-.9 4.7-1.4 7.5-1.4s5.3.5 7.5 1.4"
+          opacity="0.9"
+        />
       </svg>
     );
   }
@@ -312,16 +337,31 @@ function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" }) {
       <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
         <path
           fill="currentColor"
-          d="M14 4a7 7 0 1 0 6 10.5A8 8 0 0 1 14 4z"
+          d="M13.2 4.2a7.4 7.4 0 1 0 6.4 10.8 6.2 6.2 0 0 1-6.4-10.8z"
+        />
+        <path
+          fill="currentColor"
+          d="M15.6 5.2h2.6l-2.5 2.6h2.6v1.1h-4.1V7.6l2.5-2.4h-2.4V4zM18.4 9.6h2l-1.9 2h2v.9h-3.2v-1.1l1.9-1.8h-1.8v-.9z"
+          opacity="0.95"
         />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+      {/* Tub */}
       <path
         fill="currentColor"
-        d="M7 10h10a3 3 0 0 1 3 3v1H4v-1a3 3 0 0 1 3-3zm1 6h8v2H8v-2z"
+        d="M5 11.5h14a1 1 0 0 1 1 1V14a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-1.5a1 1 0 0 1 1-1z"
+      />
+      {/* Bubbles */}
+      <circle cx="8.2" cy="8.2" r="1.35" fill="currentColor" opacity="0.95" />
+      <circle cx="11.2" cy="6.4" r="1.7" fill="currentColor" />
+      <circle cx="14.8" cy="8" r="1.15" fill="currentColor" opacity="0.9" />
+      {/* Tap */}
+      <path
+        fill="currentColor"
+        d="M16.5 5.2h1.4v3.2c0 .7-.6 1.3-1.3 1.3h-.8V8.4h.7c.2 0 .4-.2.4-.4V5.2z"
       />
     </svg>
   );

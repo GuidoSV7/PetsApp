@@ -9,6 +9,7 @@ import { UserRole } from '../users/enums/user-role.enum.js';
 import { userData } from '../users/testing/user-repository.fixtures.js';
 import { AuthService, INVALID_CREDENTIALS } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
+import { GOOGLE_TOKEN_VERIFIER } from './google-token.verifier.js';
 
 const NOW = new Date('2025-06-01T12:00:00.000Z');
 
@@ -42,6 +43,10 @@ describe('AuthService login (in-memory repositories)', () => {
         AuthService,
         { provide: USER_REPOSITORY, useValue: users },
         { provide: JwtService, useValue: jwt },
+        {
+          provide: GOOGLE_TOKEN_VERIFIER,
+          useValue: { verify: vi.fn() },
+        },
       ],
     }).compile();
     service = module.get(AuthService);
@@ -131,6 +136,7 @@ describe('AuthController route surface', () => {
   it('exposes exactly the session routes', () => {
     expect(routes()).toEqual([
       'change-password',
+      'google',
       'login',
       'logout',
       'profile',

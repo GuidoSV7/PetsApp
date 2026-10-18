@@ -10,6 +10,7 @@ vi.mock("@/lib/axios", () => ({
 import api from "@/lib/axios";
 import {
   signInPetsAppUser,
+  signInWithGoogle,
   registerPetsAppUser,
 } from "@/features/auth/api/auth.service";
 
@@ -38,6 +39,34 @@ describe("signInPetsAppUser", () => {
     expect(api.post).toHaveBeenCalledWith("/auth/login", {
       email: "a@test.app",
       password: "secret",
+    });
+  });
+});
+
+describe("signInWithGoogle", () => {
+  beforeEach(() => {
+    vi.mocked(api.post).mockReset();
+  });
+
+  it("posts the Google id token to /auth/google", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      data: {
+        token: "t",
+        user: {
+          id: "1",
+          name: "Michi",
+          email: "m@gmail.com",
+          role: "member",
+          roles: ["member"],
+          country: null,
+        },
+      },
+    });
+
+    await signInWithGoogle("google-id-token");
+
+    expect(api.post).toHaveBeenCalledWith("/auth/google", {
+      idToken: "google-id-token",
     });
   });
 });

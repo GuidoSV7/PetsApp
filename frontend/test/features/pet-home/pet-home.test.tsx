@@ -10,7 +10,6 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { PET_INTERACT_HINT } from "@/features/pet-home/pet-interaction";
 import { NEED_LABELS } from "@/features/pet-home/pet-stats";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
@@ -159,8 +158,8 @@ describe("PetHomeStage (API-backed)", () => {
     expect(screen.queryByText("PetsApp")).toBeNull();
     expect(screen.getByText("Nv. 1")).toBeTruthy();
     expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
-    expect(screen.getByText(PET_INTERACT_HINT)).toBeTruthy();
     expect(screen.getByText(/Feliz y saludable/i)).toBeTruthy();
+    expect(screen.queryByText(/Arrastrá/i)).toBeNull();
     expect(screen.getByText(`${API_INITIAL_NEEDS.hunger}%`)).toBeTruthy();
 
     for (const label of Object.values(NEED_LABELS)) {

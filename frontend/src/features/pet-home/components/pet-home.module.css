@@ -65,40 +65,9 @@
   border-radius: 24px;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 70% 40% at 18% 78%, #7cb88a 0%, transparent 55%),
-    radial-gradient(ellipse 55% 35% at 82% 72%, #6aa87c 0%, transparent 50%),
     radial-gradient(ellipse 90% 45% at 50% 100%, #a8d4b4 0%, transparent 60%),
     linear-gradient(180deg, #e2f3ea 0%, #c5e4d2 38%, #9fc9ae 100%);
   box-shadow: 0 10px 28px rgba(20, 48, 34, 0.1);
-}
-
-.stageCard::before {
-  content: "";
-  position: absolute;
-  left: 10%;
-  bottom: 8%;
-  width: 22%;
-  height: 28%;
-  border-radius: 12px 12px 6px 6px;
-  background: linear-gradient(180deg, #8fd4a0 0%, #5fad75 100%);
-  opacity: 0.55;
-  filter: blur(0.2px);
-  pointer-events: none;
-}
-
-.stageCard::after {
-  content: "";
-  position: absolute;
-  right: 12%;
-  bottom: 10%;
-  width: 14%;
-  height: 34%;
-  border-radius: 40% 40% 8px 8px;
-  background:
-    radial-gradient(circle at 50% 18%, #4a8f5c 0 28%, transparent 30%),
-    linear-gradient(180deg, #6fb882 0%, #4e9a66 100%);
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .stageMeta {
@@ -382,8 +351,8 @@
 }
 
 .careSvg {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   display: block;
 }
 

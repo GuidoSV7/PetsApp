@@ -8,6 +8,7 @@ import { USER_REPOSITORY } from '../users/ports/user-repository.port.js';
 import { InMemoryUserRepository } from '../users/testing/in-memory-user.repository.js';
 import { userData } from '../users/testing/user-repository.fixtures.js';
 import { AuthService } from './auth.service.js';
+import { GOOGLE_TOKEN_VERIFIER } from './google-token.verifier.js';
 
 describe('AuthService profile and passwords (in-memory repositories)', () => {
   let service: AuthService;
@@ -36,6 +37,10 @@ describe('AuthService profile and passwords (in-memory repositories)', () => {
         AuthService,
         { provide: USER_REPOSITORY, useValue: users },
         { provide: JwtService, useValue: {} },
+        {
+          provide: GOOGLE_TOKEN_VERIFIER,
+          useValue: { verify: () => Promise.reject(new Error('unused')) },
+        },
       ],
     }).compile();
     service = module.get(AuthService);

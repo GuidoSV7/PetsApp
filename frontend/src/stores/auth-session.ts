@@ -40,7 +40,7 @@ export function isAdminRole(role: SessionRole | undefined | null): boolean {
 
 /** Where a user lands right after signing in. */
 export function landingPathForRole(role: SessionRole): string {
-  return isAdminRole(role) ? "/admin" : "/account";
+  return isAdminRole(role) ? "/admin" : "/";
 }
 
 export function savePetsAppSession(data: PetsAppSessionData) {

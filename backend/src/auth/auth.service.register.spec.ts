@@ -8,6 +8,7 @@ import { InMemoryUserRepository } from '../users/testing/in-memory-user.reposito
 import { UserRole } from '../users/enums/user-role.enum.js';
 import { userData } from '../users/testing/user-repository.fixtures.js';
 import { AuthService, EMAIL_TAKEN } from './auth.service.js';
+import { GOOGLE_TOKEN_VERIFIER } from './google-token.verifier.js';
 
 describe('AuthService register (in-memory repositories)', () => {
   let service: AuthService;
@@ -33,6 +34,10 @@ describe('AuthService register (in-memory repositories)', () => {
         AuthService,
         { provide: USER_REPOSITORY, useValue: users },
         { provide: JwtService, useValue: jwt },
+        {
+          provide: GOOGLE_TOKEN_VERIFIER,
+          useValue: { verify: vi.fn() },
+        },
       ],
     }).compile();
     service = module.get(AuthService);

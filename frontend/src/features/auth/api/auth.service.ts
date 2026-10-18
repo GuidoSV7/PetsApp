@@ -15,6 +15,14 @@ export async function signInPetsAppUser(email: string, password: string) {
   return data;
 }
 
+/** `POST /auth/google`: GIS ID token → same session answer as login. */
+export async function signInWithGoogle(idToken: string) {
+  const { data } = await api.post<LoginRegisterResponse>("/auth/google", {
+    idToken,
+  });
+  return data;
+}
+
 /** `POST /auth/register`: creates a member and signs it in (same answer as login). */
 export async function registerPetsAppUser(payload: RegisterPayload) {
   const body: RegisterPayload = {

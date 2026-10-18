@@ -5,9 +5,11 @@ import {
   ConflictException,
   Inject,
   Logger,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import { randomBytes } from 'node:crypto';
 import { canSignIn } from './role-rank.js';
 import {
   USER_REPOSITORY,
@@ -21,9 +23,15 @@ import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { MIN_PASSWORD_LENGTH } from './dto/change-password.dto.js';
 import type { JwtPayload } from './strategies/jwt.strategy.js';
+import {
+  GOOGLE_TOKEN_VERIFIER,
+  type GoogleTokenVerifier,
+} from './google-token.verifier.js';
 
 export const INVALID_CREDENTIALS = 'Invalid credentials';
 export const EMAIL_TAKEN = 'Email already registered';
+export const GOOGLE_UNVERIFIED = 'Google email is not verified';
+export const GOOGLE_INVALID = 'Invalid Google credential';
 const BCRYPT_ROUNDS = 10;
 /** Postgres unique_violation: another request registered the email first. */
 const UNIQUE_VIOLATION = '23505';
@@ -56,6 +64,8 @@ export class AuthService {
   constructor(
     @Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
+    @Inject(GOOGLE_TOKEN_VERIFIER)
+    private readonly googleTokens: GoogleTokenVerifier,
   ) {}
 
   async login(loginDto: LoginDto): Promise<SessionResult> {
@@ -128,6 +138,87 @@ export class AuthService {
       reason,
     });
     throw new ConflictException(EMAIL_TAKEN);
+  }
+
+  /**
+   * GIS ID token → session. Finds by email or creates a verified member with
+   * a random unusable password (Google is the credential).
+   */
+  async loginWithGoogle(idToken: string): Promise<SessionResult> {
+    let profile;
+    try {
+      profile = await this.googleTokens.verify(idToken);
+    } catch (error) {
+      const message = (error as Error).message ?? '';
+      if (/GOOGLE_CLIENT_ID is not configured/i.test(message)) {
+        throw new ServiceUnavailableException(
+          'Google sign-in is not configured',
+        );
+      }
+      logWarn(this.logger, 'auth_google_rejected', 'auth google rejected', {
+        reason: 'invalid_token',
+      });
+      throw new UnauthorizedException(GOOGLE_INVALID);
+    }
+
+    if (!profile.emailVerified) {
+      logWarn(this.logger, 'auth_google_rejected', 'auth google rejected', {
+        reason: 'email_unverified',
+      });
+      throw new UnauthorizedException(GOOGLE_UNVERIFIED);
+    }
+
+    const email = normalizeEmail(profile.email);
+    let user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      const password = await bcrypt.hash(
+        randomBytes(32).toString('hex'),
+        BCRYPT_ROUNDS,
+      );
+      try {
+        user = await this.userRepository.create({
+          email,
+          password,
+          name: profile.name.slice(0, 120) || email.split('@')[0]!,
+          role: UserRole.MEMBER,
+          country: null,
+          isVerified: true,
+          profileImage: profile.picture?.slice(0, 500) ?? null,
+        });
+      } catch (error) {
+        if (pgErrorCode(error) === UNIQUE_VIOLATION) {
+          user = await this.userRepository.findByEmail(email);
+        } else {
+          throw error;
+        }
+      }
+      if (!user) {
+        throw new UnauthorizedException(GOOGLE_INVALID);
+      }
+      logInfo(this.logger, 'auth_google_registered', 'auth google registered', {
+        userId: user.id,
+      });
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException(INVALID_CREDENTIALS);
+    }
+    if (user.isBlocked) {
+      throw new UnauthorizedException(INVALID_CREDENTIALS);
+    }
+    if (!canSignIn(user.roles?.length ? user.roles : user.role)) {
+      throw new UnauthorizedException(INVALID_CREDENTIALS);
+    }
+
+    if (!user.isVerified) {
+      await this.userRepository.update(user.id, { isVerified: true });
+      user = (await this.userRepository.findById(user.id)) ?? user;
+    }
+
+    logInfo(this.logger, 'auth_google_login', 'auth google login', {
+      userId: user.id,
+    });
+    return this.issueSession(user);
   }
 
   /** Signs the JWT for a user that passed every sign-in check. */
