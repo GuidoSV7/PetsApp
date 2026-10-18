@@ -1,4 +1,4 @@
-/** Display types and labels for pet need meters (values come from the pet API). */
+/** Pet need values from the API; labels kept for care copy / tests. */
 
 export type PetNeeds = {
   hunger: number;
@@ -22,4 +22,12 @@ export const EMPTY_PET_NEEDS: PetNeeds = {
   fun: 0,
   energy: 0,
   hygiene: 0,
+};
+
+/** Neutral “all good” needs for admin / preview when no live state is passed. */
+export const PREVIEW_PET_NEEDS: PetNeeds = {
+  hunger: 100,
+  fun: 100,
+  energy: 100,
+  hygiene: 100,
 };

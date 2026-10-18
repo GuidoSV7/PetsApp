@@ -11,7 +11,6 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { NEED_LABELS } from "@/features/pet-home/pet-stats";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import {
   PET_NAME,
@@ -21,7 +20,6 @@ import {
 import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
 import {
   API_FEED_COST,
-  API_INITIAL_NEEDS,
   API_STARTING_COINS,
   API_RENAME_COST,
   createApiPetState,
@@ -170,11 +168,17 @@ describe("PetHomeStage (API-backed)", () => {
     expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
     expect(screen.getByText(/Feliz y saludable/i)).toBeTruthy();
     expect(screen.queryByText(/Arrastrá/i)).toBeNull();
-    expect(screen.getByText(`${API_INITIAL_NEEDS.hunger}%`)).toBeTruthy();
+    expect(screen.queryByText("Hambre")).toBeNull();
+    expect(screen.queryByText("Diversión")).toBeNull();
+    expect(screen.queryByText("Energía")).toBeNull();
+    expect(screen.queryByText("Higiene")).toBeNull();
+    expect(screen.queryByText(/%$/)).toBeNull();
 
-    for (const label of Object.values(NEED_LABELS)) {
-      expect(screen.getByText(label)).toBeTruthy();
-    }
+    const stage = screen.getByLabelText(`Escenario de ${PET_NAME}`);
+    expect(stage.getAttribute("data-hunger-low")).toBe("false");
+    expect(stage.getAttribute("data-fun-low")).toBe("false");
+    expect(stage.getAttribute("data-energy-low")).toBe("false");
+    expect(stage.getAttribute("data-hygiene-low")).toBe("false");
 
     expect(
       (screen.getByRole("button", { name: /Alimentar/i }) as HTMLButtonElement)
@@ -189,11 +193,6 @@ describe("PetHomeStage (API-backed)", () => {
       expect(screen.getByText(PET_STATUS.fed)).toBeTruthy();
     });
     expect(latestCoins).toBe(API_STARTING_COINS - API_FEED_COST);
-    expect(
-      screen.getByText(
-        `${Math.min(100, API_INITIAL_NEEDS.hunger + 18)}%`,
-      ),
-    ).toBeTruthy();
   });
 
   it("blocks feeding when broke and keeps balance", async () => {
@@ -246,20 +245,13 @@ describe("PetHomeStage (API-backed)", () => {
       expect(screen.getByText(PET_STATUS.petted)).toBeTruthy();
     });
     expect(latestCoins).toBe(API_STARTING_COINS);
-    expect(
-      screen.getByText(`${Math.min(100, API_INITIAL_NEEDS.fun + 16)}%`),
-    ).toBeTruthy();
   });
 
   it("raises energy when sleeping", async () => {
     await ready();
     fireEvent.click(screen.getByRole("button", { name: /Dormir/i }));
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          `${Math.min(100, API_INITIAL_NEEDS.energy + 20)}%`,
-        ),
-      ).toBeTruthy();
+      expect(screen.getByText(PET_STATUS.slept)).toBeTruthy();
     });
   });
 
@@ -267,12 +259,29 @@ describe("PetHomeStage (API-backed)", () => {
     await ready();
     fireEvent.click(screen.getByRole("button", { name: /Bañar/i }));
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          `${Math.min(100, API_INITIAL_NEEDS.hygiene + 18)}%`,
-        ),
-      ).toBeTruthy();
+      expect(screen.getByText(PET_STATUS.bathed)).toBeTruthy();
     });
+  });
+
+  it("flags low needs on the stage for cat visuals", async () => {
+    serverState = createApiPetState();
+    serverState = {
+      ...serverState,
+      needs: { hunger: 10, fun: 10, energy: 10, hygiene: 10 },
+    };
+    render(
+      <PetHomeStage
+        onCoinsChange={(coins) => {
+          latestCoins = coins;
+        }}
+      />,
+    );
+    await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
+    const stage = screen.getByLabelText(`Escenario de ${PET_NAME}`);
+    expect(stage.getAttribute("data-hunger-low")).toBe("true");
+    expect(stage.getAttribute("data-fun-low")).toBe("true");
+    expect(stage.getAttribute("data-energy-low")).toBe("true");
+    expect(stage.getAttribute("data-hygiene-low")).toBe("true");
   });
 
   it("purrs and raises fun when the cat is tapped", async () => {
@@ -287,7 +296,7 @@ describe("PetHomeStage (API-backed)", () => {
 
   it("opens camera from Personalizar, applies coat via API", async () => {
     await ready();
-
+    fireEvent.click(screen.getByRole("button", { name: /^Personalizar$/i }));
     fireEvent.click(
       screen.getByRole("button", { name: /Colores de mi gato/i }),
     );
@@ -303,6 +312,7 @@ describe("PetHomeStage (API-backed)", () => {
 
   it("applies a coat preset via API", async () => {
     await ready();
+    fireEvent.click(screen.getByRole("button", { name: /^Personalizar$/i }));
     fireEvent.click(screen.getByRole("button", { name: /Pelaje Naranja/i }));
     await waitFor(() => {
       expect(screen.getByText(PET_STATUS.coated)).toBeTruthy();
@@ -310,6 +320,14 @@ describe("PetHomeStage (API-backed)", () => {
     expect(
       screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary"),
     ).toBe("#e8a05a");
+  });
+
+  it("keeps personalize presets collapsed under the top toggle", async () => {
+    await ready();
+    expect(screen.queryByText(/Colores, accesorios/i)).toBeNull();
+    expect(screen.queryByRole("button", { name: /Pelaje Naranja/i })).toBeNull();
+    const toggle = screen.getByRole("button", { name: /^Personalizar$/i });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
   });
 
   it("renames for free once, then charges five coins", async () => {

@@ -6,6 +6,14 @@ import { ContactShadows, OrbitControls } from "@react-three/drei";
 import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import {
+  describeNeedVisuals,
+  needVisualCues,
+} from "@/features/pet-home/need-visuals";
+import {
+  PREVIEW_PET_NEEDS,
+  type PetNeeds,
+} from "@/features/pet-home/pet-stats";
 import { PET_NAME } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
 
@@ -17,6 +25,7 @@ type Props = {
   onPetInteract?: () => void;
   /** Admin / preview override; home loads persisted tunables when omitted. */
   design?: CatDesignTunables;
+  needs?: PetNeeds;
 };
 
 /** WebGL stage for the procedural feline Michi (client-only). */
@@ -26,14 +35,22 @@ export function Cat3DViewer({
   reactPulse = 0,
   onPetInteract,
   design,
+  needs = PREVIEW_PET_NEEDS,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
+  const needHint = describeNeedVisuals(needVisualCues(needs));
+  const ariaLabel = [
+    `${PET_NAME}. Arrastrá para girar, tocá para ronronear.`,
+    needHint,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
       className={styles.canvasHost}
       role="img"
-      aria-label={`${PET_NAME}. Arrastrá para girar, tocá para ronronear.`}
+      aria-label={ariaLabel}
     >
       <Canvas
         camera={{ position: [0, 0.42, 3.05], fov: 28 }}
@@ -59,6 +76,7 @@ export function Cat3DViewer({
           reactPulse={reactPulse}
           onPetInteract={onPetInteract}
           design={design}
+          needs={needs}
         />
         <ContactShadows
           position={[0, -0.62, 0]}

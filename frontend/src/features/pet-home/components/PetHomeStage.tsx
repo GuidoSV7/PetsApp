@@ -11,7 +11,6 @@ import {
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
-import { NeedMeter } from "@/features/pet-home/components/NeedMeter";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
 import {
@@ -23,10 +22,10 @@ import {
   PET_LAYOUT_MODE,
   petLayoutCssVars,
 } from "@/features/pet-home/pet-layout";
+import { needVisualCues } from "@/features/pet-home/need-visuals";
 import { createPurrPlayer } from "@/features/pet-home/pet-purr";
 import {
   EMPTY_PET_NEEDS,
-  NEED_LABELS,
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
 import {
@@ -76,7 +75,6 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [statusKey, setStatusKey] = useState<PetStatusKey>("idle");
   const [pulse, setPulse] = useState(0);
   const [reactPulse, setReactPulse] = useState(0);
-  const [yawBias, setYawBias] = useState(0);
   const [coat, setCoat] = useState<PetCoatColors>(DEFAULT_GREY_COAT);
   const [needs, setNeeds] = useState<PetNeeds>(EMPTY_PET_NEEDS);
   const [mood, setMood] = useState("Feliz");
@@ -90,6 +88,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const onCoinsChangeRef = useRef(onCoinsChange);
   onCoinsChangeRef.current = onCoinsChange;
   const locked = busy || !ready;
+  const needCues = needVisualCues(needs);
 
   useEffect(() => {
     const player = purrRef.current;
@@ -192,27 +191,40 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       aria-label={`Escenario de ${petName}`}
       data-layout={PET_LAYOUT_MODE}
       data-ready={ready ? "true" : "false"}
+      data-hunger-low={needCues.hungerLow ? "true" : "false"}
+      data-fun-low={needCues.funLow ? "true" : "false"}
+      data-energy-low={needCues.energyLow ? "true" : "false"}
+      data-hygiene-low={needCues.hygieneLow ? "true" : "false"}
       style={petLayoutCssVars() as CSSProperties}
     >
       <div className={styles.stageCard}>
         <div className={styles.stageMeta}>
-          <div className={styles.stageIdentity}>
-            <PetNameEditor
-              name={petName}
-              renameCount={renameCount}
-              disabled={locked}
-              onSave={(next) => void onRename(next)}
-            />
-          </div>
-          <p className={styles.moodLine}>
-            <span className={styles.moodDot} aria-hidden="true" />
-            <span className={styles.moodValue}>{moodCaption(mood)}</span>
-          </p>
-          {loadError ? (
-            <p className={styles.loadError} role="alert">
-              {loadError}
+          <div className={styles.stageMetaMain}>
+            <div className={styles.stageIdentity}>
+              <PetNameEditor
+                name={petName}
+                renameCount={renameCount}
+                disabled={locked}
+                onSave={(next) => void onRename(next)}
+              />
+            </div>
+            <p className={styles.moodLine}>
+              <span className={styles.moodDot} aria-hidden="true" />
+              <span className={styles.moodValue}>{moodCaption(mood)}</span>
             </p>
-          ) : null}
+            {loadError ? (
+              <p className={styles.loadError} role="alert">
+                {loadError}
+              </p>
+            ) : null}
+          </div>
+          <PersonalizeStrip
+            petName={petName}
+            activeCoat={coat}
+            disabled={locked}
+            onSelectCoat={(next) => void onCoat(next)}
+            onOpenCamera={() => setCameraOpen(true)}
+          />
         </div>
 
         <div className={styles.petViewport}>
@@ -225,53 +237,17 @@ export function PetHomeStage({ onCoinsChange }: Props) {
             {petStatusText(statusKey, petName)}
           </p>
 
-          <button
-            type="button"
-            className={`${styles.orbitBtn} ${styles.orbitLeft}`}
-            aria-label="Girar a la izquierda"
-            onClick={() => setYawBias((y) => y - 0.45)}
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            className={`${styles.orbitBtn} ${styles.orbitRight}`}
-            aria-label="Girar a la derecha"
-            onClick={() => setYawBias((y) => y + 0.45)}
-          >
-            ›
-          </button>
-
           <div className={styles.petFrame}>
             <Cat3DViewer
               colors={coat}
-              yawBias={yawBias}
               reactPulse={reactPulse}
+              needs={needs}
               onPetInteract={() =>
                 void runAction("pet", { purr: true, bounce: true })
               }
             />
           </div>
         </div>
-      </div>
-
-      <div className={styles.needsGrid}>
-        <NeedMeter
-          label={NEED_LABELS.hunger}
-          value={needs.hunger}
-          tone="hunger"
-        />
-        <NeedMeter label={NEED_LABELS.fun} value={needs.fun} tone="fun" />
-        <NeedMeter
-          label={NEED_LABELS.energy}
-          value={needs.energy}
-          tone="energy"
-        />
-        <NeedMeter
-          label={NEED_LABELS.hygiene}
-          value={needs.hygiene}
-          tone="hygiene"
-        />
       </div>
 
       <div className={styles.actions}>
@@ -312,14 +288,6 @@ export function PetHomeStage({ onCoinsChange }: Props) {
           Bañar
         </button>
       </div>
-
-      <PersonalizeStrip
-        petName={petName}
-        activeCoat={coat}
-        disabled={locked}
-        onSelectCoat={(next) => void onCoat(next)}
-        onOpenCamera={() => setCameraOpen(true)}
-      />
 
       <CameraCoatCapture
         open={cameraOpen}

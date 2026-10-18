@@ -63,7 +63,8 @@
   display: flex;
   flex-direction: column;
   border-radius: 24px;
-  overflow: hidden;
+  /* visible so the Personalizar popover can extend over the cat */
+  overflow: visible;
   background:
     radial-gradient(ellipse 90% 45% at 50% 100%, #a8d4b4 0%, transparent 60%),
     linear-gradient(180deg, #e2f3ea 0%, #c5e4d2 38%, #9fc9ae 100%);
@@ -73,8 +74,17 @@
 .stageMeta {
   position: relative;
   z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
   padding: 12px 14px 0;
   flex-shrink: 0;
+}
+
+.stageMetaMain {
+  flex: 1;
+  min-width: 0;
 }
 
 .stageIdentity {
@@ -264,32 +274,6 @@
   border-radius: 2px;
 }
 
-.orbitBtn {
-  position: absolute;
-  top: 50%;
-  z-index: 3;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
-  color: #1c2b22;
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(20, 48, 34, 0.12);
-}
-
-.orbitLeft {
-  left: 8px;
-}
-
-.orbitRight {
-  right: 8px;
-}
-
 .petFrame {
   position: relative;
   flex: 1 1 auto;
@@ -477,72 +461,66 @@
   background: linear-gradient(160deg, #7ec8ff, #4dabf7);
 }
 
-.personalize {
+.personalizeWrap {
+  position: relative;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px 12px;
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.06);
+  z-index: 4;
 }
 
-.personalizeHeader {
-  display: flex;
+.personalizeToggle {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 0;
-  border: none;
-  background: transparent;
-  text-align: left;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, #2fbf6b 35%, #c5cec8);
+  background: #f7fbf8;
+  color: #143022;
+  font-weight: 800;
+  font-size: 0.78rem;
   cursor: pointer;
-  color: inherit;
 }
 
-.personalizeIcon {
+.personalizeToggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.personalizeToggleIcon {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
   background: #e7f8ee;
   color: #1f8f4e;
-  flex-shrink: 0;
 }
 
-.personalizeText {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.personalizeTitle {
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: #143022;
-}
-
-.personalizeSub {
-  font-size: 0.72rem;
-  font-weight: 600;
+.personalizeToggleChevron {
+  font-size: 0.7rem;
   color: #5a7a66;
+  line-height: 1;
 }
 
-.personalizeChevron {
-  font-size: 1.4rem;
-  color: #8aa894;
-  line-height: 1;
+.personalizePanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  width: min(280px, calc(100vw - 48px));
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, #143022 10%, transparent);
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(20, 48, 34, 0.14);
 }
 
 .presetRow {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 1px;
   scrollbar-width: none;
 }
 
@@ -552,9 +530,9 @@
 
 .presetTile {
   flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   border: 2px solid transparent;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(20, 48, 34, 0.06);
@@ -562,7 +540,7 @@
 
 .presetTileActive {
   border-color: #2fbf6b;
-  box-shadow: 0 0 0 3px rgba(47, 191, 107, 0.2);
+  box-shadow: 0 0 0 2px rgba(47, 191, 107, 0.22);
 }
 
 .presetCamera {
@@ -570,7 +548,7 @@
   place-items: center;
   background: #eef6f1;
   color: #1f8f4e;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 800;
 }
 

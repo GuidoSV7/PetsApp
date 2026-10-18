@@ -18,6 +18,15 @@ import {
   type CatPart,
 } from "@/features/pet-home/cat-anatomy";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import {
+  applyNeedDirtToCoat,
+  applyNeedVisualsToAnatomy,
+  needVisualCues,
+} from "@/features/pet-home/need-visuals";
+import {
+  PREVIEW_PET_NEEDS,
+  type PetNeeds,
+} from "@/features/pet-home/pet-stats";
 
 type Props = {
   colors: PetCoatColors;
@@ -30,6 +39,8 @@ type Props = {
   onPetInteract?: () => void;
   /** When set (admin preview), overrides persisted home design. */
   design?: CatDesignTunables;
+  /** Care needs drive slim / droop / sleepy / dirty cues. */
+  needs?: PetNeeds;
 };
 
 type RolePalette = Record<
@@ -83,6 +94,7 @@ export function Cat3DModel({
   reactPulse = 0,
   onPetInteract,
   design,
+  needs = PREVIEW_PET_NEEDS,
 }: Props) {
   const group = useRef<Group>(null);
   const bounce = useRef(0);
@@ -91,19 +103,32 @@ export function Cat3DModel({
   );
   const tunables = design ?? storedDesign;
   const modelScale = resolveModelScale(tunables);
+  const cues = useMemo(
+    () => needVisualCues(needs),
+    [needs.energy, needs.fun, needs.hunger, needs.hygiene],
+  );
   const anatomy = useMemo(
-    () => resolveCatAnatomy(CAT_ANATOMY, tunables),
+    () =>
+      applyNeedVisualsToAnatomy(
+        resolveCatAnatomy(CAT_ANATOMY, tunables),
+        cues,
+      ),
     [
+      cues,
       tunables.bodyDepth,
       tunables.earSize,
       tunables.headHeight,
       tunables.modelScale,
     ],
   );
-  const palette = useMemo(() => paletteFromCoat(colors), [
-    colors.accent,
-    colors.primary,
-    colors.secondary,
+  const coatForNeeds = useMemo(
+    () => applyNeedDirtToCoat(colors, cues),
+    [colors.accent, colors.primary, colors.secondary, cues],
+  );
+  const palette = useMemo(() => paletteFromCoat(coatForNeeds), [
+    coatForNeeds.accent,
+    coatForNeeds.primary,
+    coatForNeeds.secondary,
   ]);
 
   useEffect(() => {
@@ -124,13 +149,14 @@ export function Cat3DModel({
 
   useFrame((state, delta) => {
     if (!group.current) return;
-    const t = state.clock.getElapsedTime();
+    const t = state.clock.getElapsedTime() * cues.idleSpeed;
     if (!orbiting) {
-      group.current.rotation.y = yawBias + Math.sin(t * 0.45) * 0.22;
+      group.current.rotation.y =
+        yawBias + Math.sin(t * 0.45) * 0.22 * cues.idleAmp;
     } else {
       group.current.rotation.y = yawBias;
     }
-    const bob = Math.sin(t * 1.6) * 0.03;
+    const bob = Math.sin(t * 1.6) * 0.03 * cues.idleAmp;
     if (bounce.current > 0) {
       bounce.current = Math.max(0, bounce.current - delta * 2.4);
     }

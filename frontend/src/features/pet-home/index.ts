@@ -29,9 +29,15 @@ export {
 export {
   EMPTY_PET_NEEDS,
   NEED_LABELS,
+  PREVIEW_PET_NEEDS,
   type CareAction,
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
+export {
+  NEED_LOW_THRESHOLD,
+  describeNeedVisuals,
+  needVisualCues,
+} from "@/features/pet-home/need-visuals";
 export {
   PET_INTERACT_HINT,
   petInteractStatusKey,
