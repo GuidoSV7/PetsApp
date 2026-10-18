@@ -20,6 +20,7 @@ Operational skills live under `.cursor/skills/`. The agent does not use `.claude
 
 ## Commits and PRs
 
-Never add `Co-authored-by` for Claude or Cursor, and never add
-"Generated with Claude Code", in commits or pull requests. Use Conventional
-Commits.
+Never add `Co-authored-by` for Claude or Cursor (including
+`Co-authored-by: Cursor`), and never add "Generated with Claude Code", in
+commits or pull requests. See `.cursor/rules/no-coauthored-by.mdc`. Use
+Conventional Commits.

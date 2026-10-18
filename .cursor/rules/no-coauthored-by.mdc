@@ -1,0 +1,13 @@
+---
+description: Never add Co-authored-by Cursor (or Claude) to commits or PRs.
+alwaysApply: true
+---
+
+# No Co-authored-by
+
+When creating commits or pull requests:
+
+- Do **not** add `Co-authored-by: Cursor` or any `Co-authored-by` line naming Cursor.
+- Do **not** add `Co-authored-by` for Claude, or "Generated with Claude Code".
+- Do **not** add trailer lines that attribute the commit to the AI tool.
+- Use Conventional Commits only; keep the author as the human/repo identity already configured for git.
