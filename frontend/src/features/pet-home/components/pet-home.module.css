@@ -121,6 +121,13 @@
   background: #2fbf6b;
 }
 
+.loadError {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c0392b;
+}
+
 .petFrame {
   position: relative;
   width: min(100%, var(--pet-frame-max));

@@ -2,6 +2,7 @@ import {
   type AnyPgColumn,
   boolean,
   foreignKey,
+  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -83,4 +84,30 @@ export const userRoles = pgTable(
   ],
 );
 
-export const schema = { users, roles, userRoles };
+/** One virtual-pet save per anonymous guest key (home UI). */
+export const petStates = pgTable(
+  'pet_states',
+  {
+    id: uuidId(),
+    guestKey: varchar('guest_key', { length: 64 }).notNull(),
+    coins: integer('coins').notNull().default(30),
+    hunger: integer('hunger').notNull().default(72),
+    fun: integer('fun').notNull().default(80),
+    energy: integer('energy').notNull().default(65),
+    hygiene: integer('hygiene').notNull().default(78),
+    coatPrimary: varchar('coat_primary', { length: 7 }).notNull().default('#8a8a8e'),
+    coatSecondary: varchar('coat_secondary', { length: 7 })
+      .notNull()
+      .default('#b4b4b8'),
+    coatAccent: varchar('coat_accent', { length: 7 }).notNull().default('#c9a0a8'),
+    statusKey: varchar('status_key', { length: 32 }).notNull().default('idle'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+    updatedAt: ts('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    pk('pk_pet_states', t.id),
+    unique('uq_pet_states_guest_key').on(t.guestKey),
+  ],
+);
+
+export const schema = { users, roles, userRoles, petStates };
