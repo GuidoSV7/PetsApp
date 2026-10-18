@@ -1,6 +1,6 @@
 :root {
-  /* Fondo general (capa mas externa) */
-  --fondo: #040f12;
+  /* Fondo general (capa mas externa) — bosque oscuro */
+  --fondo: #07140c;
 
   /* Texto principal para zonas claras (contenido) */
   --texto: #131317;
@@ -8,9 +8,9 @@
   --texto-secundario: color-mix(in srgb, var(--texto) 70%, transparent);
 
   /* Panel del lado izquierdo (opciones) */
-  --panel-izquierdo-fondo: #1a1a2e;
-  --panel-izquierdo-acento: #6b63ff;
-  --panel-izquierdo-texto: #f0f2f5;
+  --panel-izquierdo-fondo: #0f2418;
+  --panel-izquierdo-acento: #3dcc7a;
+  --panel-izquierdo-texto: #e8f5ec;
   --panel-izquierdo-texto-secundario: color-mix(
     in srgb,
     var(--panel-izquierdo-texto) 70%,
@@ -18,7 +18,7 @@
   );
 
   /* Contenido principal (derecha) */
-  --superficie: #f0f2f5; /* fondo del area */
+  --superficie: #eef6f0; /* fondo del area */
   --tarjeta: #ffffff; /* tarjetas o bloques dentro del area */
 
   --borde: color-mix(in srgb, var(--texto) 18%, transparent);
@@ -28,13 +28,13 @@
     transparent
   );
 
-  /* Accento principal (botones y enlaces) */
-  --primario: #00f2ff;
-  --secundario: #00ebf7;
+  /* Accento principal (botones y enlaces) — verde */
+  --primario: #3dff8a;
+  --secundario: #2fd976;
 
   /* Colores para estados */
-  --estado-exito: #aef400;
-  --estado-informacion: #00ebf7;
+  --estado-exito: #3dff8a;
+  --estado-informacion: #6ee7b0;
   --estado-error: #f500dc;
   --estado-advertencia: #ffcc33;
 }
@@ -42,20 +42,20 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Mantener la misma identidad de color en modo oscuro */
-    --fondo: #040f12;
+    --fondo: #07140c;
     --texto: #131317;
   }
 }
 
 /* Overrides del tema por ruta (se aplican vía RouteThemeProvider) */
 [data-area="admin"] {
-  --primario: #00f2ff;
-  --secundario: #00ebf7;
+  --primario: #3dff8a;
+  --secundario: #2fd976;
 }
 
 [data-area="cliente"] {
-  --primario: #00f2ff;
-  --secundario: #00ebf7;
+  --primario: #3dff8a;
+  --secundario: #2fd976;
 }
 
 html {

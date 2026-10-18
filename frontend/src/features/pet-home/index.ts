@@ -1,6 +1,6 @@
 export { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 export {
-  DEFAULT_GREEN_COAT,
+  DEFAULT_GREY_COAT,
   extractCoatColors,
   type PetCoatColors,
 } from "@/features/pet-home/extract-coat-colors";

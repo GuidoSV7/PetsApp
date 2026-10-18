@@ -5,10 +5,10 @@ export type PetCoatColors = {
   accent: string;
 };
 
-/** Default green Michi before the user samples a photo. */
-export const DEFAULT_GREEN_COAT: PetCoatColors = {
-  primary: "#2f9e6f",
-  secondary: "#9ee0b8",
+/** Default grey Michi before the user samples a photo. */
+export const DEFAULT_GREY_COAT: PetCoatColors = {
+  primary: "#8a8a8e",
+  secondary: "#b4b4b8",
   accent: "#c9a0a8",
 };
 
@@ -88,7 +88,7 @@ export function extractCoatColors(image: ImageData): PetCoatColors {
     .sort((a, b) => b.count - a.count);
 
   if (ranked.length === 0) {
-    return { ...DEFAULT_GREEN_COAT };
+    return { ...DEFAULT_GREY_COAT };
   }
 
   const primary = ranked[0]!;
