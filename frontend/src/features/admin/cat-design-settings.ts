@@ -31,8 +31,8 @@ export function normalizeCatDesign(
       Number.isFinite(partial.modelScale)
         ? Number(partial.modelScale)
         : defaults.modelScale,
-      0.45,
-      1.2,
+      0.2,
+      2.5,
     ),
     bodyDepth: clamp(
       Number.isFinite(partial.bodyDepth)

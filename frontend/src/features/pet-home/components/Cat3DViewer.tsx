@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
-import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
+import {
+  defaultCatDesign,
+  loadCatDesign,
+  type CatDesignTunables,
+} from "@/features/admin/cat-design-settings";
+import { resolveModelScale } from "@/features/admin/resolve-cat-design";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
+import { GlbPetModel } from "@/features/pet-home/components/GlbPetModel";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import {
   describeNeedVisuals,
@@ -26,9 +32,11 @@ type Props = {
   /** Admin / preview override; home loads persisted tunables when omitted. */
   design?: CatDesignTunables;
   needs?: PetNeeds;
+  /** When set, renders a custom GLB/GLTF instead of the procedural cat. */
+  modelUrl?: string | null;
 };
 
-/** WebGL stage for the procedural feline Michi (client-only). */
+/** WebGL stage for procedural Michi or an admin-confirmed GLB. */
 export function Cat3DViewer({
   colors,
   yawBias = 0,
@@ -36,22 +44,22 @@ export function Cat3DViewer({
   onPetInteract,
   design,
   needs = PREVIEW_PET_NEEDS,
+  modelUrl = null,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
+  const tunables = design ?? (typeof window === "undefined" ? defaultCatDesign() : loadCatDesign());
+  const modelScale = resolveModelScale(tunables);
   const needHint = describeNeedVisuals(needVisualCues(needs));
   const ariaLabel = [
     `${PET_NAME}. Arrastrá para girar, tocá para ronronear.`,
+    modelUrl ? "Modelo personalizado." : null,
     needHint,
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <div
-      className={styles.canvasHost}
-      role="img"
-      aria-label={ariaLabel}
-    >
+    <div className={styles.canvasHost} role="img" aria-label={ariaLabel}>
       <Canvas
         camera={{ position: [0, 0.42, 3.05], fov: 28 }}
         dpr={[1, 1.75]}
@@ -69,15 +77,25 @@ export function Cat3DViewer({
           color="#d7e8ff"
         />
         <directionalLight position={[0, 1.2, 3]} intensity={0.35} />
-        <Cat3DModel
-          colors={colors}
-          orbiting={orbiting}
-          yawBias={yawBias}
-          reactPulse={reactPulse}
-          onPetInteract={onPetInteract}
-          design={design}
-          needs={needs}
-        />
+        <Suspense fallback={null}>
+          {modelUrl ? (
+            <GlbPetModel
+              url={modelUrl}
+              scale={modelScale}
+              onPetInteract={onPetInteract}
+            />
+          ) : (
+            <Cat3DModel
+              colors={colors}
+              orbiting={orbiting}
+              yawBias={yawBias}
+              reactPulse={reactPulse}
+              onPetInteract={onPetInteract}
+              design={design}
+              needs={needs}
+            />
+          )}
+        </Suspense>
         <ContactShadows
           position={[0, -0.62, 0]}
           opacity={0.28}
