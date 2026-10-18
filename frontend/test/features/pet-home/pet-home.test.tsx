@@ -15,10 +15,8 @@ import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
 import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
 import {
-  API_COAT_REWARD,
   API_FEED_COST,
   API_INITIAL_NEEDS,
-  API_PET_REWARD,
   API_STARTING_COINS,
   API_RENAME_COST,
   createApiPetState,
@@ -210,13 +208,13 @@ describe("PetHomeStage (API-backed)", () => {
     expect(latestCoins).toBe(leftover);
   });
 
-  it("raises fun and earns coins when playing", async () => {
+  it("raises fun without minting coins when playing", async () => {
     await ready();
     fireEvent.click(screen.getByRole("button", { name: /Jugar/i }));
     await waitFor(() => {
       expect(screen.getByText(PET_STATUS.petted)).toBeTruthy();
     });
-    expect(latestCoins).toBe(API_STARTING_COINS + API_PET_REWARD);
+    expect(latestCoins).toBe(API_STARTING_COINS);
     expect(
       screen.getByText(`${Math.min(100, API_INITIAL_NEEDS.fun + 16)}%`),
     ).toBeTruthy();
@@ -253,7 +251,7 @@ describe("PetHomeStage (API-backed)", () => {
       expect(screen.getByText(PET_STATUS.petted)).toBeTruthy();
     });
     expect(playPurr).toHaveBeenCalled();
-    expect(latestCoins).toBe(API_STARTING_COINS + API_PET_REWARD);
+    expect(latestCoins).toBe(API_STARTING_COINS);
   });
 
   it("opens camera from Personalizar, applies coat via API", async () => {
@@ -269,7 +267,7 @@ describe("PetHomeStage (API-backed)", () => {
     expect(
       screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary"),
     ).toBe("#8b5a2b");
-    expect(latestCoins).toBe(API_STARTING_COINS + API_COAT_REWARD);
+    expect(latestCoins).toBe(API_STARTING_COINS);
   });
 
   it("applies a coat preset via API", async () => {

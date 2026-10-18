@@ -4,7 +4,8 @@ import NotificationsProvider from "./_components/NotificationsProvider";
 import AppProviders from "./providers";
 import "./globals.css";
 import RouteThemeProvider from "./theme/RouteThemeProvider";
-import { siteName, siteUrl } from "@/config/site";
+import { getSiteUrl } from "@/config/site";
+import { landingShareMetadata } from "@/features/public-marketing/share-metadata";
 
 const fuenteSans = Space_Grotesk({
   variable: "--fuente-geist-sans",
@@ -16,21 +17,18 @@ const fuenteMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const siteOrigin = getSiteUrl();
+const share = landingShareMetadata();
+
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: `${siteName} — Tu app para el cuidado de mascotas`,
-    template: `%s | ${siteName}`,
-  },
-  description:
-    "PetsApp: cuidá, encontrá y acompañá a tus mascotas desde un solo lugar.",
+  ...share,
+  metadataBase: new URL(siteOrigin),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    type: "website",
-    locale: "es_LA",
-    siteName,
+    ...share.openGraph,
+    url: siteOrigin,
   },
 };
 

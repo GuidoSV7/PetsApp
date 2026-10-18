@@ -41,20 +41,20 @@ describe('pet-rules', () => {
     expect(result.snapshot.statusKey).toBe('broke');
   });
 
-  it('play and pet earn coins', () => {
+  it('play and pet do not mint coins', () => {
     const play = applyCare(initialSnapshot(), 'play');
-    expect(play.ok && play.snapshot.coins).toBe(STARTING_COINS + 2);
+    expect(play.ok && play.snapshot.coins).toBe(STARTING_COINS);
     const pet = applyCare(initialSnapshot(), 'pet');
-    expect(pet.ok && pet.snapshot.coins).toBe(STARTING_COINS + 2);
+    expect(pet.ok && pet.snapshot.coins).toBe(STARTING_COINS);
   });
 
-  it('coat earns coins and replaces palette', () => {
+  it('coat replaces palette without minting coins', () => {
     const next = applyCoat(initialSnapshot(), {
       primary: '#112233',
       secondary: '#445566',
       accent: '#778899',
     });
-    expect(next.coins).toBe(STARTING_COINS + 5);
+    expect(next.coins).toBe(STARTING_COINS);
     expect(next.coat.primary).toBe('#112233');
     expect(next.statusKey).toBe('coated');
   });

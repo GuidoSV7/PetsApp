@@ -75,7 +75,7 @@ describe('PetService (drizzle)', () => {
       accent: '#123456',
     });
     expect(state.coat.primary).toBe('#aabbcc');
-    expect(state.coins).toBe(STARTING_COINS + 5);
+    expect(state.coins).toBe(STARTING_COINS);
     expect(state.statusKey).toBe('coated');
   });
 

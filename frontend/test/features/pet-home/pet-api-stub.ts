@@ -8,8 +8,8 @@ import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
 
 export const API_STARTING_COINS = 5;
 export const API_FEED_COST = 5;
-export const API_PET_REWARD = 2;
-export const API_COAT_REWARD = 5;
+export const API_PET_REWARD = 0;
+export const API_COAT_REWARD = 0;
 export const API_RENAME_COST = 5;
 export const API_DEFAULT_NAME = "Michi";
 
@@ -79,7 +79,6 @@ export function stubApplyAction(
     };
     return {
       ...state,
-      coins: state.coins + API_PET_REWARD,
       needs,
       statusKey: "petted",
       mood: moodFromNeeds(needs),
@@ -116,7 +115,6 @@ export function stubApplyAction(
     };
     return {
       ...state,
-      coins: state.coins + API_PET_REWARD,
       needs,
       statusKey: "petted",
       mood: moodFromNeeds(needs),
@@ -132,7 +130,6 @@ export function stubApplyCoat(
   return {
     ...state,
     coat: { ...coat },
-    coins: state.coins + API_COAT_REWARD,
     statusKey: "coated",
     mood: moodFromNeeds(state.needs),
   };

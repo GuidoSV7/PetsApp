@@ -10,8 +10,6 @@ export const MAX_PET_NAME_LENGTH = 16;
 
 export const COIN_COSTS = { feed: 5 } as const;
 
-export const COIN_REWARDS = { pet: 2, coat: 5 } as const;
-
 export const INITIAL_NEEDS = {
   hunger: 72,
   fun: 80,
@@ -175,16 +173,10 @@ export function applyCare(
     };
   }
 
-  let coins = snapshot.coins;
-  if (action === 'play' || action === 'pet') {
-    coins += COIN_REWARDS.pet;
-  }
-
   return {
     ok: true,
     snapshot: {
       ...snapshot,
-      coins,
       needs: applyNeeds(snapshot.needs, action),
       statusKey: STATUS_FOR_ACTION[action],
     },
@@ -198,7 +190,6 @@ export function applyCoat(
   return {
     ...snapshot,
     coat: { ...coat },
-    coins: snapshot.coins + COIN_REWARDS.coat,
     statusKey: 'coated',
   };
 }

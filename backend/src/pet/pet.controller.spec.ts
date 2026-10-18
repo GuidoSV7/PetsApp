@@ -65,7 +65,7 @@ describe('PetController (drizzle)', () => {
       accent: '#123456',
     });
     expect(coated.coat.primary).toBe('#aabbcc');
-    expect(coated.coins).toBe(STARTING_COINS + 5);
+    expect(coated.coins).toBe(STARTING_COINS);
     expect(coated.statusKey).toBe('coated');
   });
 
