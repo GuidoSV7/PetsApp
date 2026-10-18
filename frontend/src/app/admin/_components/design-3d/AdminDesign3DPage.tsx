@@ -7,19 +7,21 @@ import {
   clearCatDesign,
   defaultCatDesign,
   loadCatDesign,
+  normalizeCatDesign,
   saveCatDesign,
   type CatDesignTunables,
 } from "@/features/admin/cat-design-settings";
 import {
   assertModelFileSize,
-  clearCatModelAsset,
-  defaultCatModelAsset,
   isAcceptedModelFile,
-  loadCatModelAsset,
   notifyCatModelChanged,
-  readFileAsDataUrl,
-  saveCatModelAsset,
 } from "@/features/admin/cat-model-asset";
+import {
+  clearGlobalPetModel,
+  fetchGlobalPetModel,
+  resolvePetModelFileUrl,
+  uploadGlobalPetModel,
+} from "@/features/admin/pet-model.service";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import estilos from "./admin-design-3d.module.css";
 
@@ -42,7 +44,7 @@ function formatNum(value: number, digits = 2) {
   return value.toFixed(digits);
 }
 
-/** Admin: upload .glb, tune scale, preview, confirm for the home stage. */
+/** Admin: upload .glb, tune scale, preview, confirm for every user. */
 export function AdminDesign3DPage() {
   const [draft, setDraft] = useState<CatDesignTunables>(() => loadCatDesign());
   const [confirmedUrl, setConfirmedUrl] = useState<string | null>(null);
@@ -55,13 +57,21 @@ export function AdminDesign3DPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void loadCatModelAsset().then((asset) => {
-      if (cancelled) return;
-      if (asset.kind === "glb" && asset.dataUrl) {
-        setConfirmedUrl(asset.dataUrl);
-        setConfirmedName(asset.fileName ?? "modelo.glb");
-      }
-    });
+    void fetchGlobalPetModel()
+      .then((meta) => {
+        if (cancelled) return;
+        setDraft((prev) =>
+          normalizeCatDesign({ ...prev, modelScale: meta.modelScale }),
+        );
+        const url = resolvePetModelFileUrl(meta);
+        if (url) {
+          setConfirmedUrl(url);
+          setConfirmedName(meta.fileName ?? "modelo.glb");
+        }
+      })
+      .catch(() => {
+        /* offline / API down — keep local draft */
+      });
     return () => {
       cancelled = true;
     };
@@ -114,31 +124,21 @@ export function AdminDesign3DPage() {
       const savedTunables = saveCatDesign(draft);
       setDraft(savedTunables);
 
-      if (pendingFile) {
-        const dataUrl = await readFileAsDataUrl(pendingFile);
-        const saved = await saveCatModelAsset({
-          kind: "glb",
-          fileName: pendingFile.name,
-          mimeType: pendingFile.type || "model/gltf-binary",
-          dataUrl,
-        });
-        setConfirmedUrl(saved.dataUrl ?? null);
-        setConfirmedName(saved.fileName ?? pendingFile.name);
-        if (pendingUrl?.startsWith("blob:")) URL.revokeObjectURL(pendingUrl);
-        setPendingFile(null);
-        setPendingUrl(null);
-      } else if (confirmedUrl) {
-        await saveCatModelAsset({
-          kind: "glb",
-          fileName: confirmedName ?? "modelo.glb",
-          dataUrl: confirmedUrl,
-        });
-      } else {
-        await saveCatModelAsset(defaultCatModelAsset());
-      }
+      const meta = await uploadGlobalPetModel({
+        modelScale: savedTunables.modelScale,
+        file: pendingFile,
+      });
+      const url = resolvePetModelFileUrl(meta);
+      setConfirmedUrl(url);
+      setConfirmedName(
+        meta.kind === "glb" ? (meta.fileName ?? "modelo.glb") : null,
+      );
+      if (pendingUrl?.startsWith("blob:")) URL.revokeObjectURL(pendingUrl);
+      setPendingFile(null);
+      setPendingUrl(null);
 
       notifyCatModelChanged();
-      setMessage("Cambio confirmado");
+      setMessage("Cambio confirmado para todos los usuarios");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "No se pudo confirmar el cambio.",
@@ -153,7 +153,7 @@ export function AdminDesign3DPage() {
     setError(null);
     try {
       clearCatDesign();
-      await clearCatModelAsset();
+      await clearGlobalPetModel();
       notifyCatModelChanged();
       setDraft(defaultCatDesign());
       setConfirmedUrl(null);
@@ -175,7 +175,7 @@ export function AdminDesign3DPage() {
     <>
       <AdminPageHeader
         titulo="Diseño 3D"
-        subtitulo="Subí un .glb, ajustá el tamaño, previsualizá y confirmá"
+        subtitulo="Subí un .glb, ajustá el tamaño, previsualizá y confirmá para todos"
       />
       <div className={estilos.layout}>
         <section className={estilos.previewCard} aria-labelledby="preview-heading">
@@ -183,7 +183,7 @@ export function AdminDesign3DPage() {
             Vista previa
           </h2>
           <p className={estilos.cardHint}>
-            Así se verá Michi en el home cuando confirmes el cambio.
+            Así se verá Michi en el home de todos los usuarios cuando confirmes.
           </p>
           <div className={estilos.previewHost} key={previewKey}>
             <Cat3DViewer
@@ -199,8 +199,8 @@ export function AdminDesign3DPage() {
             Modelo 3D
           </h2>
           <p className={estilos.cardHint}>
-            Elegí un archivo .glb (también .gltf). Si no hay modelo custom, se
-            usa el gato procedural.
+            Elegí un archivo .glb (también .gltf). Al confirmar, el modelo se
+            publica para todos los hogares.
           </p>
 
           <label className={estilos.fileDrop}>

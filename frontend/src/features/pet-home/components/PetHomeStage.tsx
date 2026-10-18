@@ -19,9 +19,15 @@ import {
 } from "@/features/pet-home/extract-coat-colors";
 import { moodCaption } from "@/features/pet-home/pet-customize";
 import {
-  CAT_MODEL_CHANGED_EVENT,
-  loadCatModelAsset,
-} from "@/features/admin/cat-model-asset";
+  defaultCatDesign,
+  normalizeCatDesign,
+  type CatDesignTunables,
+} from "@/features/admin/cat-design-settings";
+import { CAT_MODEL_CHANGED_EVENT } from "@/features/admin/cat-model-asset";
+import {
+  fetchGlobalPetModel,
+  resolvePetModelFileUrl,
+} from "@/features/admin/pet-model.service";
 import {
   PET_LAYOUT_MODE,
   petLayoutCssVars,
@@ -89,6 +95,9 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [modelUrl, setModelUrl] = useState<string | null>(null);
+  const [catDesign, setCatDesign] = useState<CatDesignTunables>(() =>
+    defaultCatDesign(),
+  );
   const purrRef = useRef(createPurrPlayer());
   const onCoinsChangeRef = useRef(onCoinsChange);
   onCoinsChangeRef.current = onCoinsChange;
@@ -103,12 +112,18 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   useEffect(() => {
     let cancelled = false;
     const refreshModel = () => {
-      void loadCatModelAsset().then((asset) => {
-        if (cancelled) return;
-        setModelUrl(
-          asset.kind === "glb" && asset.dataUrl ? asset.dataUrl : null,
-        );
-      });
+      void fetchGlobalPetModel()
+        .then((meta) => {
+          if (cancelled) return;
+          setModelUrl(resolvePetModelFileUrl(meta));
+          setCatDesign((prev) =>
+            normalizeCatDesign({ ...prev, modelScale: meta.modelScale }),
+          );
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setModelUrl(null);
+        });
     };
     refreshModel();
     window.addEventListener(CAT_MODEL_CHANGED_EVENT, refreshModel);
@@ -273,6 +288,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
           <div className={styles.petFrame}>
             <Cat3DViewer
               colors={coat}
+              design={catDesign}
               reactPulse={reactPulse}
               needs={needs}
               modelUrl={modelUrl}

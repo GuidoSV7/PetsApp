@@ -33,6 +33,9 @@ Thumbs.db
 test-results/
 playwright-report/
 
+# Uploaded global pet mesh (runtime)
+backend/uploads/
+
 # Agent / local tooling (not repo state)
 .engram/
 .opencode/

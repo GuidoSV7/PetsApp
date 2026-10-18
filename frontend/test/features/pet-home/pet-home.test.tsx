@@ -51,6 +51,18 @@ vi.mock("@/features/pet-home/api/pet.service", () => ({
   getOrCreateGuestKey: () => "11111111-1111-4111-8111-111111111111",
 }));
 
+vi.mock("@/features/admin/pet-model.service", () => ({
+  fetchGlobalPetModel: vi.fn(async () => ({
+    kind: "procedural",
+    modelScale: 0.78,
+    fileName: null,
+    mimeType: null,
+    updatedAt: "2026-01-01T00:00:00.000Z",
+    fileUrl: null,
+  })),
+  resolvePetModelFileUrl: () => null,
+}));
+
 vi.mock("@/features/pet-home/pet-purr", () => ({
   createPurrPlayer: () => ({
     play: playPurr,

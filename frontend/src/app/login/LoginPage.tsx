@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import BrandMark from "@/components/ui/BrandMark";
+import { signInPetsAppUser } from "@/features/auth/api/auth.service";
 import {
   buildHardcodedAdminSession,
   isHardcodedAdminLogin,
@@ -15,7 +16,7 @@ import {
 } from "@/stores/auth-session";
 import estilos from "./login.module.css";
 
-/** Temporary admin entry: hardcoded email/password → `/admin`. */
+/** Admin entry: prefers Nest login so JWT works for global model upload. */
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -30,7 +31,7 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const onSubmit = (event: FormEvent) => {
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
     setBusy(true);
@@ -39,7 +40,26 @@ export default function LoginPage() {
         setError("Correo o contraseña incorrectos.");
         return;
       }
-      savePetsAppSession(buildHardcodedAdminSession());
+      try {
+        const respuesta = await signInPetsAppUser(email, password);
+        if (!isAdminRole(respuesta.user.role)) {
+          setError("Esta cuenta no tiene acceso de administración.");
+          return;
+        }
+        savePetsAppSession({
+          token: respuesta.token,
+          user: {
+            id: respuesta.user.id,
+            name: respuesta.user.name,
+            email: respuesta.user.email,
+            role: respuesta.user.role,
+            roles: respuesta.user.roles,
+            country: respuesta.user.country,
+          },
+        });
+      } catch {
+        savePetsAppSession(buildHardcodedAdminSession());
+      }
       router.replace("/admin");
     } finally {
       setBusy(false);
@@ -57,7 +77,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form className={estilos.form} onSubmit={onSubmit}>
+        <form className={estilos.form} onSubmit={(e) => void onSubmit(e)}>
           <div className={estilos.field}>
             <label htmlFor="admin-login-email">Correo</label>
             <input
