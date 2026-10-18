@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   applyCare,
   applyCoat,
+  applyRename,
   initialSnapshot,
   isCareAction,
   isHexColor,
@@ -80,6 +81,20 @@ export class PetService {
     return this.toDto(saved);
   }
 
+  async rename(
+    guestKey: string | undefined,
+    rawName: string,
+  ): Promise<PetStateDto> {
+    const key = this.assertGuestKey(guestKey);
+    const current = await this.requireRow(key);
+    const result = applyRename(this.toSnapshot(current), rawName);
+    if (!result.ok && result.reason === 'invalid') {
+      throw new BadRequestException('Invalid pet name');
+    }
+    const saved = await this.pets.update(key, result.snapshot);
+    return this.toDto(saved);
+  }
+
   private async requireRow(guestKey: string): Promise<PetStateRow> {
     const existing = await this.pets.findByGuestKey(guestKey);
     if (existing) return existing;
@@ -92,6 +107,8 @@ export class PetService {
       needs: { ...row.needs },
       coat: { ...row.coat },
       statusKey: row.statusKey,
+      name: row.name,
+      renameCount: row.renameCount,
     };
   }
 

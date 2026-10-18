@@ -6,10 +6,12 @@ import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import type { PetNeeds } from "@/features/pet-home/pet-stats";
 import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
 
-export const API_STARTING_COINS = 30;
+export const API_STARTING_COINS = 5;
 export const API_FEED_COST = 5;
 export const API_PET_REWARD = 2;
 export const API_COAT_REWARD = 5;
+export const API_RENAME_COST = 5;
+export const API_DEFAULT_NAME = "Michi";
 
 export const API_INITIAL_NEEDS: PetNeeds = {
   hunger: 72,
@@ -44,6 +46,8 @@ export function createApiPetState(): PetStateResponse {
     coat: { ...DEFAULT_COAT },
     statusKey: "idle",
     mood: "Feliz",
+    name: API_DEFAULT_NAME,
+    renameCount: 0,
   };
 }
 
@@ -130,6 +134,28 @@ export function stubApplyCoat(
     coat: { ...coat },
     coins: state.coins + API_COAT_REWARD,
     statusKey: "coated",
+    mood: moodFromNeeds(state.needs),
+  };
+}
+
+export function stubRename(
+  state: PetStateResponse,
+  rawName: string,
+): PetStateResponse {
+  const name = rawName.trim().replace(/\s+/g, " ");
+  if (!name || name === state.name || name.length > 16) {
+    return state;
+  }
+  const paid = state.renameCount > 0;
+  if (paid && state.coins < API_RENAME_COST) {
+    return { ...state, statusKey: "broke", mood: moodFromNeeds(state.needs) };
+  }
+  return {
+    ...state,
+    name,
+    renameCount: state.renameCount + 1,
+    coins: paid ? state.coins - API_RENAME_COST : state.coins,
+    statusKey: "renamed",
     mood: moodFromNeeds(state.needs),
   };
 }

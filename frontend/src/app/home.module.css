@@ -82,20 +82,32 @@
   gap: 18px;
   width: min(100%, 400px);
   margin: auto;
-  padding: 28px 20px;
+  padding: 32px 22px;
   text-align: center;
+  border-radius: 26px;
+  background:
+    linear-gradient(
+      165deg,
+      #ffffff 0%,
+      #f3fbf6 55%,
+      #eaf7ef 100%
+    );
+  border: 1px solid color-mix(in srgb, #143022 8%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 70%, transparent) inset,
+    0 18px 40px rgba(20, 48, 34, 0.08);
 }
 .gateBrand {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .gateTitle {
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.1rem;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
   color: #143022;
 }
 .gateHint {
@@ -105,6 +117,17 @@
   font-weight: 650;
   font-size: 0.95rem;
   line-height: 1.4;
+}
+.gateLoading {
+  margin: auto;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 100%;
+  text-align: center;
+  color: #3a5246;
+  font-weight: 650;
+  font-size: 0.95rem;
 }
 .gateError {
   margin: 0;
@@ -250,35 +273,82 @@
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.62);
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 20%,
+      color-mix(in srgb, var(--primario, #3dff8a) 12%, transparent),
+      transparent 55%
+    ),
+    rgba(12, 32, 22, 0.48);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 18px;
+  backdrop-filter: blur(8px);
+  animation: overlayIn 0.22s ease both;
 }
 .modalContenedor {
   width: 100%;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--fondo) 86%, rgba(236, 245, 255, 0.12));
-  border: 1px solid rgba(236, 245, 255, 0.16);
-  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5);
-  padding: 18px;
-  color: rgba(236, 245, 255, 0.92);
-  backdrop-filter: blur(14px);
+  border-radius: 26px;
+  background:
+    linear-gradient(
+      165deg,
+      #ffffff 0%,
+      #f3fbf6 55%,
+      #eaf7ef 100%
+    );
+  border: 1px solid color-mix(in srgb, #143022 8%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 70%, transparent) inset,
+    0 28px 64px rgba(20, 48, 34, 0.22);
+  padding: 22px 20px 20px;
+  color: #143022;
+  animation: panelIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .modonClose {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
-  border: 1px solid rgba(236, 245, 255, 0.16);
-  background: transparent;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, #143022 10%, transparent);
+  background: color-mix(in srgb, #fff 70%, transparent);
+  color: #3a5246;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
 }
 .modonClose:hover {
-  background: rgba(236, 245, 255, 0.06);
+  background: #fff;
+  color: #143022;
+}
+.modonClose:active {
+  transform: scale(0.96);
+}
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalContenedor {
+    animation: none;
+  }
 }
 @media (max-width: 900px) {
   .hero {

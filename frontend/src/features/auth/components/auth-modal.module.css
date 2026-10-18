@@ -1,21 +1,46 @@
-/* Layout y densidad del modal de auth: menos scroll, mejor jerarquía en móvil y escritorio. */
+/* Auth modal: soft mint glass that matches the public home. */
 
 .tamanoIngresar {
-  max-width: min(92vw, 440px);
+  max-width: min(92vw, 400px);
 }
 
 .tamanoRegistro {
-  max-width: min(92vw, 528px);
+  max-width: min(92vw, 440px);
 }
 
 .modalInterior {
-  max-height: min(90vh, 640px);
+  max-height: min(90vh, 680px);
   display: flex;
   flex-direction: column;
   min-height: 0;
+  position: relative;
+  isolation: isolate;
+}
+
+.modalInterior::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 55%;
+  background:
+    radial-gradient(
+      ellipse 70% 60% at 20% 20%,
+      color-mix(in srgb, var(--primario, #3dff8a) 28%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 55% 50% at 90% 10%,
+      color-mix(in srgb, #7cf0b0 22%, transparent),
+      transparent 65%
+    );
+  pointer-events: none;
+  z-index: 0;
+  animation: auraFloat 8s ease-in-out infinite;
 }
 
 .modalScroll {
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -27,55 +52,84 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.marcaBloque {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
-  margin-bottom: 10px;
+  min-width: 0;
+}
+
+.marcaFila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.marcaNombre {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #143022;
+}
+
+.marcaGlow {
+  animation: brandPop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .tituloModal {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  color: rgba(236, 245, 255, 0.96);
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: #143022;
 }
 
 .hintLinea {
   margin: 6px 0 0;
-  font-size: 12px;
-  line-height: 1.35;
-  color: rgba(236, 245, 255, 0.58);
-  max-width: 36ch;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #5a7a66;
+  max-width: 34ch;
 }
 
 .segmentoGrupo {
   display: flex;
   padding: 4px;
-  border-radius: 14px;
-  background: rgba(236, 245, 255, 0.06);
-  border: 1px solid rgba(236, 245, 255, 0.1);
+  border-radius: 16px;
+  background: color-mix(in srgb, #143022 5%, #fff);
+  border: 1px solid color-mix(in srgb, #143022 8%, transparent);
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .segmentoBoton {
   flex: 1;
   border: none;
-  border-radius: 11px;
-  padding: 9px 10px;
-  font-size: 13px;
+  border-radius: 12px;
+  padding: 10px 10px;
+  font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
-  color: rgba(236, 245, 255, 0.55);
+  color: #5a7a66;
   background: transparent;
   transition:
-    background 0.15s ease,
-    color 0.15s ease;
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease;
 }
 
 .segmentoBoton:hover:not(:disabled) {
-  color: rgba(236, 245, 255, 0.88);
-  background: rgba(236, 245, 255, 0.05);
+  color: #143022;
+  background: color-mix(in srgb, #143022 4%, #fff);
 }
 
 .segmentoBoton:disabled {
@@ -84,25 +138,27 @@
 }
 
 .segmentoBotonActivo {
-  color: var(--fondo, #040f12);
-  background: var(--primario, #00f2ff);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--primario) 35%, transparent);
+  color: #0b1f14;
+  background: var(--primario, #3dff8a);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 35%, transparent) inset,
+    0 8px 18px color-mix(in srgb, var(--primario, #3dff8a) 35%, transparent);
 }
 
 .segmentoBotonActivo:hover:not(:disabled) {
-  color: var(--fondo, #040f12);
-  filter: brightness(1.03);
+  color: #0b1f14;
+  filter: brightness(1.02);
 }
 
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .gridRegistro {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-columns: 1fr;
 }
 
@@ -119,32 +175,39 @@
 .label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(236, 245, 255, 0.78);
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 750;
+  color: #3a5246;
   letter-spacing: 0.02em;
 }
 
 .input {
   width: 100%;
-  padding: 8px 11px;
-  min-height: 40px;
-  border-radius: 11px;
-  border: 1px solid rgba(236, 245, 255, 0.14);
-  background: rgba(236, 245, 255, 0.04);
-  color: rgba(236, 245, 255, 0.94);
+  padding: 11px 13px;
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, #143022 10%, transparent);
+  background: #fff;
+  color: #143022;
   outline: none;
-  font-size: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 
 .input:focus {
-  border-color: var(--primario, #00f2ff);
-  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.16);
+  border-color: color-mix(in srgb, var(--primario, #3dff8a) 70%, #1f8f4e);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primario, #3dff8a) 22%, transparent);
+  background: #fbfffc;
 }
 
 .input::placeholder {
-  color: rgba(236, 245, 255, 0.32);
+  color: #8aa394;
+  font-weight: 550;
 }
 
 .dropdownControl {
@@ -154,28 +217,31 @@
 
 .dropdownBoton {
   width: 100%;
-  min-height: 40px;
-  border-radius: 11px;
-  border: 1px solid rgba(236, 245, 255, 0.14);
-  background: rgba(236, 245, 255, 0.04);
-  color: rgba(236, 245, 255, 0.92);
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, #143022 10%, transparent);
+  background: #fff;
+  color: #143022;
   cursor: pointer;
-  padding: 8px 11px;
+  padding: 11px 13px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .dropdownBoton:focus {
   outline: none;
-  border-color: var(--primario, #00f2ff);
-  box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.16);
+  border-color: color-mix(in srgb, var(--primario, #3dff8a) 70%, #1f8f4e);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primario, #3dff8a) 22%, transparent);
 }
 
 .dropdownTexto {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 0.9rem;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -187,7 +253,7 @@
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 6px solid rgba(236, 245, 255, 0.85);
+  border-top: 6px solid #3a5246;
   flex-shrink: 0;
 }
 
@@ -197,59 +263,75 @@
   left: 0;
   right: 0;
   z-index: 30;
-  background: rgba(8, 22, 28, 0.94);
-  border: 1px solid rgba(236, 245, 255, 0.14);
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, #143022 10%, transparent);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(20, 48, 34, 0.14);
   padding: 6px;
   max-height: 200px;
   overflow-y: auto;
-  backdrop-filter: blur(14px);
+  animation: menuIn 0.16s ease both;
 }
 
 .dropdownItem {
   width: 100%;
   display: block;
-  padding: 8px 10px;
+  padding: 9px 11px;
   border: none;
   background: transparent;
-  color: rgba(236, 245, 255, 0.9);
+  color: #143022;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 0.88rem;
   text-align: left;
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
 .dropdownItem:hover {
-  background: rgba(0, 242, 255, 0.08);
+  background: color-mix(in srgb, var(--primario, #3dff8a) 14%, #fff);
 }
 
 .dropdownItem[data-activo="true"] {
-  background: rgba(0, 242, 255, 0.12);
+  background: color-mix(in srgb, var(--primario, #3dff8a) 22%, #fff);
 }
 
 .botonEnviar {
-  margin-top: 4px;
-  padding: 11px 14px;
-  border-radius: 12px;
+  margin-top: 2px;
+  padding: 13px 16px;
+  border-radius: 16px;
   border: none;
-  background: var(--primario, #00f2ff);
-  color: var(--fondo, #040f12);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primario, #3dff8a) 92%, #fff) 0%,
+    var(--primario, #3dff8a) 100%
+  );
+  color: #0b1f14;
   cursor: pointer;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 0.98rem;
   width: 100%;
-  transition: filter 0.15s ease;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 40%, transparent) inset,
+    0 12px 24px color-mix(in srgb, var(--primario, #3dff8a) 32%, transparent);
+  transition:
+    transform 0.12s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .botonEnviar:hover:not(:disabled) {
-  filter: brightness(1.05);
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+}
+
+.botonEnviar:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
 }
 
 .botonEnviar:disabled {
   opacity: 0.65;
   cursor: wait;
+  transform: none;
 }
 
 .enlacePie {
@@ -261,7 +343,7 @@
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  color: rgba(0, 242, 255, 0.85);
+  color: #1f8f4e;
   cursor: pointer;
 }
 
@@ -274,14 +356,14 @@
 }
 
 .mensajeAuth {
-  margin: 0 0 10px;
-  padding: 8px 11px;
-  border-radius: 11px;
-  border: 1px solid rgba(245, 0, 220, 0.25);
-  background: rgba(245, 0, 220, 0.08);
-  color: rgba(236, 245, 255, 0.95);
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, #c0392b 28%, transparent);
+  background: color-mix(in srgb, #c0392b 8%, #fff);
+  color: #8b241c;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 0.82rem;
   line-height: 1.4;
 }
 
@@ -300,10 +382,87 @@
   width: 100%;
 }
 
+.googleSoon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #c5cec8;
+  background: linear-gradient(180deg, #f3f5f4 0%, #e6ebe8 100%);
+  color: #6b7870;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: not-allowed;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+.googleSoonIcon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  opacity: 0.85;
+}
+
+.googleSoonLabel {
+  letter-spacing: -0.01em;
+}
+
 .error {
   margin: 0;
   color: #c0392b;
   font-weight: 700;
   font-size: 0.85rem;
   text-align: center;
+}
+
+@keyframes brandPop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes auraFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marcaGlow,
+  .modalInterior::before,
+  .dropdownMenu,
+  .botonEnviar {
+    animation: none;
+    transition: none;
+  }
 }

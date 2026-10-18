@@ -50,11 +50,15 @@ describe('DrizzlePetRepository (pglite)', () => {
         accent: '#123456',
       },
       statusKey: 'fed',
+      name: 'Luna',
+      renameCount: 1,
     });
     expect(updated.coins).toBe(20);
     expect(updated.needs.hunger).toBe(90);
     expect(updated.statusKey).toBe('fed');
     expect(updated.coat.primary).toBe('#aabbcc');
+    expect(updated.name).toBe('Luna');
+    expect(updated.renameCount).toBe(1);
 
     const again = await repo.findByGuestKey(GUEST);
     expect(again?.coins).toBe(20);

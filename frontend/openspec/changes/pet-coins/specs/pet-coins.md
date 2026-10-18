@@ -1,6 +1,6 @@
 # Spec: pet coins
 
-- Starting balance is `STARTING_COINS` (30).
+- Starting balance is `STARTING_COINS` (5).
 - Stage shows a coin balance labelled for assistive tech (`Monedas: …`) with a gold coin SVG.
 - `spendCoins` refuses when balance &lt; cost and leaves balance unchanged.
 - `earnCoins` adds a non-negative amount.

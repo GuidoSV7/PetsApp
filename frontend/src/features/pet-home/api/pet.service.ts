@@ -12,6 +12,8 @@ export type PetStateResponse = {
   coat: PetCoatColors;
   statusKey: PetStatusKey | string;
   mood: string;
+  name: string;
+  renameCount: number;
 };
 
 export type CareActionName = "feed" | "play" | "sleep" | "bathe" | "pet";
@@ -62,5 +64,14 @@ export async function applyPetCoat(
   const { data } = await api.post<PetStateResponse>("/pet/coat", coat, {
     headers: guestHeaders(),
   });
+  return data;
+}
+
+export async function renamePet(name: string): Promise<PetStateResponse> {
+  const { data } = await api.post<PetStateResponse>(
+    "/pet/name",
+    { name },
+    { headers: guestHeaders() },
+  );
   return data;
 }

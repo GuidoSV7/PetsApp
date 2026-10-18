@@ -90,7 +90,7 @@ export const petStates = pgTable(
   {
     id: uuidId(),
     guestKey: varchar('guest_key', { length: 64 }).notNull(),
-    coins: integer('coins').notNull().default(30),
+    coins: integer('coins').notNull().default(5),
     hunger: integer('hunger').notNull().default(72),
     fun: integer('fun').notNull().default(80),
     energy: integer('energy').notNull().default(65),
@@ -101,6 +101,8 @@ export const petStates = pgTable(
       .default('#b4b4b8'),
     coatAccent: varchar('coat_accent', { length: 7 }).notNull().default('#c9a0a8'),
     statusKey: varchar('status_key', { length: 32 }).notNull().default('idle'),
+    name: varchar('name', { length: 16 }).notNull().default('Michi'),
+    renameCount: integer('rename_count').notNull().default(0),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },

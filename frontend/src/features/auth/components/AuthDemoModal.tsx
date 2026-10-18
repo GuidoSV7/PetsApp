@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import estilosHome from "@/app/home.module.css";
 import estilosModal from "./auth-modal.module.css";
+import BrandMark from "@/components/ui/BrandMark";
 import {
   signInPetsAppUser,
   registerPetsAppUser,
@@ -201,15 +202,21 @@ export default function AuthDemoModal({
         <div className={estilosModal.modalInterior}>
           <div className={estilosModal.modalScroll}>
             <div className={estilosModal.cabeceraCompacta}>
-              <div>
-                <h2 id="titulo-modal" className={estilosModal.tituloModal}>
-                  {modalMode === "sign-in" ? "Entrá a PetsApp" : "Crear cuenta"}
-                </h2>
-                <p className={estilosModal.hintLinea}>
-                  {modalMode === "sign-in"
-                    ? "Ingresá con tu correo y contraseña."
-                    : "Completá los datos para crear tu cuenta."}
-                </p>
+              <div className={estilosModal.marcaBloque}>
+                <div className={`${estilosModal.marcaFila} ${estilosModal.marcaGlow}`}>
+                  <BrandMark size={40} />
+                  <p className={estilosModal.marcaNombre}>PetsApp</p>
+                </div>
+                <div>
+                  <h2 id="titulo-modal" className={estilosModal.tituloModal}>
+                    {modalMode === "sign-in" ? "Entrá a cuidar" : "Creá tu cuenta"}
+                  </h2>
+                  <p className={estilosModal.hintLinea}>
+                    {modalMode === "sign-in"
+                      ? "Tu correo abre la puerta a Michi."
+                      : "Unos datos y ya podés empezar a cuidar."}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"

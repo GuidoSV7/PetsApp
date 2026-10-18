@@ -15,6 +15,20 @@
       "when": 1792282800000,
       "tag": "0001_pet_states",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792290000000,
+      "tag": "0002_pet_name",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792291000000,
+      "tag": "0003_starting_coins_5",
+      "breakpoints": true
     }
   ]
 }

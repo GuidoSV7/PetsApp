@@ -9,6 +9,8 @@ export type PetStateRow = {
   needs: PetNeeds;
   coat: PetCoat;
   statusKey: string;
+  name: string;
+  renameCount: number;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -18,6 +20,8 @@ export type PetStateWrite = {
   needs: PetNeeds;
   coat: PetCoat;
   statusKey: string;
+  name: string;
+  renameCount: number;
 };
 
 export interface PetRepository {

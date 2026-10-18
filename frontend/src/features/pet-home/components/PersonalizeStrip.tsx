@@ -1,9 +1,10 @@
 import { COAT_PRESETS } from "@/features/pet-home/pet-customize";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
-import { PET_NAME } from "@/features/pet-home/pet-status";
+import { DEFAULT_PET_NAME } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
 
 type Props = {
+  petName?: string;
   activeCoat: PetCoatColors;
   disabled?: boolean;
   onSelectCoat: (coat: PetCoatColors) => void;
@@ -12,6 +13,7 @@ type Props = {
 
 /** Personalizar card: coat presets + open camera/gallery. */
 export function PersonalizeStrip({
+  petName = DEFAULT_PET_NAME,
   activeCoat,
   disabled,
   onSelectCoat,
@@ -20,7 +22,7 @@ export function PersonalizeStrip({
   return (
     <section
       className={styles.personalize}
-      aria-label={`Personalizar a ${PET_NAME}`}
+      aria-label={`Personalizar a ${petName}`}
     >
       <button
         type="button"
@@ -38,7 +40,7 @@ export function PersonalizeStrip({
         </span>
         <span className={styles.personalizeText}>
           <span className={styles.personalizeTitle}>
-            Personalizar a {PET_NAME}
+            Personalizar a {petName}
           </span>
           <span className={styles.personalizeSub}>
             Colores, accesorios y más

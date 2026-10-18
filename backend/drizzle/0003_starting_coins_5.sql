@@ -1,0 +1,1 @@
+ALTER TABLE "pet_states" ALTER COLUMN "coins" SET DEFAULT 5;

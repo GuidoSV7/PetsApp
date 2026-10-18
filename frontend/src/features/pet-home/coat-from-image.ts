@@ -37,9 +37,10 @@ export async function loadImageDataFromFile(file: File): Promise<ImageData> {
 
 export async function coatColorsFromFile(file: File): Promise<PetCoatColors> {
   const image = await loadImageDataFromFile(file);
+  // Wider crop keeps calico patches that sit off dead-center.
   const focused =
     image.width >= 64 && image.height >= 64
-      ? cropCenterImageData(image, 0.75)
+      ? cropCenterImageData(image, 0.85)
       : image;
   return extractCoatColors(focused);
 }

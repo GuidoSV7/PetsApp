@@ -5,8 +5,15 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(20, 48, 34, 0.55);
-  backdrop-filter: blur(4px);
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 20%,
+      color-mix(in srgb, var(--primario, #3dff8a) 12%, transparent),
+      transparent 55%
+    ),
+    rgba(12, 32, 22, 0.48);
+  backdrop-filter: blur(8px);
+  animation: overlayIn 0.22s ease both;
 }
 
 .panel {
@@ -14,32 +21,84 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 22px 20px 20px;
-  border-radius: 22px;
-  background: #ffffff;
-  box-shadow: 0 18px 48px rgba(20, 48, 34, 0.22);
+  padding: 24px 20px 20px;
+  border-radius: 26px;
+  background:
+    linear-gradient(
+      165deg,
+      #ffffff 0%,
+      #f3fbf6 55%,
+      #eaf7ef 100%
+    );
+  border: 1px solid color-mix(in srgb, #143022 8%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 70%, transparent) inset,
+    0 28px 64px rgba(20, 48, 34, 0.22);
   text-align: left;
-  color: #1c2b22;
+  color: #143022;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  animation: panelIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 50%;
+  background:
+    radial-gradient(
+      ellipse 70% 60% at 20% 20%,
+      color-mix(in srgb, var(--primario, #3dff8a) 28%, transparent),
+      transparent 70%
+    );
+  pointer-events: none;
+  z-index: 0;
+  animation: auraFloat 8s ease-in-out infinite;
+}
+
+.brandRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: brandPop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brandName {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #143022;
 }
 
 .eyebrow {
+  position: relative;
+  z-index: 1;
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #1f8f4e;
 }
 
 .title {
+  position: relative;
+  z-index: 1;
   margin: 0;
-  font-size: 1.45rem;
+  font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
 }
 
 .hint {
+  position: relative;
+  z-index: 1;
   margin: 0;
   color: #5a7a66;
   font-weight: 600;
@@ -48,6 +107,8 @@
 }
 
 .actions {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -59,19 +120,26 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 14px;
   border-radius: 16px;
-  border: 1.5px solid #d7e6dc;
-  background: #f7fbf8;
+  border: 1.5px solid color-mix(in srgb, #143022 10%, transparent);
+  background: #fff;
   color: #143022;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.12s ease;
+  box-shadow: 0 1px 0 color-mix(in srgb, #fff 80%, transparent) inset;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.12s ease,
+    box-shadow 0.15s ease;
 }
 
 .option:hover:not(:disabled) {
-  border-color: #2fbf6b;
-  background: #eefaf2;
+  border-color: color-mix(in srgb, var(--primario, #3dff8a) 55%, #1f8f4e);
+  background: #fbfffc;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(20, 48, 34, 0.1);
 }
 
 .option:active:not(:disabled) {
@@ -88,9 +156,22 @@
 }
 
 .freighter {
-  background: #f4f7ff;
-  border-color: #d5dff5;
-  color: #1a2744;
+  background: linear-gradient(180deg, #f7faf8 0%, #eef6f1 100%);
+}
+
+.optionIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #143022 4%, #fff);
+  flex-shrink: 0;
+}
+
+.freighter .optionIcon {
+  color: #1a3d2a;
+  background: color-mix(in srgb, var(--primario, #3dff8a) 16%, #fff);
 }
 
 .optionText {
@@ -111,20 +192,78 @@
   color: #5a7a66;
 }
 
-.freighter .optionSub {
-  color: #5a6a8a;
-}
-
 .error {
+  position: relative;
+  z-index: 1;
   margin: 0;
-  color: #c0392b;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, #c0392b 28%, transparent);
+  background: color-mix(in srgb, #c0392b 8%, #fff);
+  color: #8b241c;
   font-weight: 700;
   font-size: 0.85rem;
 }
 
 .status {
+  position: relative;
+  z-index: 1;
   margin: 0;
   color: #3a5246;
   font-weight: 650;
   font-size: 0.85rem;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes brandPop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes auraFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .panel,
+  .brandRow,
+  .panel::before,
+  .option {
+    animation: none;
+    transition: none;
+  }
 }

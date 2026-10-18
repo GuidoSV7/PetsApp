@@ -36,7 +36,7 @@ export function PollarHomePage() {
       <div className={estilosHome.contenedor}>
         <HomeHeader />
         <main className={estilosHome.main}>
-          <p className={estilosHome.gateHint} role="status">
+          <p className={estilosHome.gateLoading} role="status">
             Cargando…
           </p>
         </main>

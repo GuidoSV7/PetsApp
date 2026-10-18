@@ -78,4 +78,17 @@ describe('PetService (drizzle)', () => {
     expect(state.coins).toBe(STARTING_COINS + 5);
     expect(state.statusKey).toBe('coated');
   });
+
+  it('renames for free once, then charges five coins', async () => {
+    await service.getOrCreate(GUEST);
+    const first = await service.rename(GUEST, 'Luna');
+    expect(first.name).toBe('Luna');
+    expect(first.renameCount).toBe(1);
+    expect(first.coins).toBe(STARTING_COINS);
+
+    const second = await service.rename(GUEST, 'Nube');
+    expect(second.name).toBe('Nube');
+    expect(second.renameCount).toBe(2);
+    expect(second.coins).toBe(STARTING_COINS - 5);
+  });
 });

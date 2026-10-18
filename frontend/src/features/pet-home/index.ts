@@ -37,11 +37,19 @@ export {
   petInteractStatusKey,
 } from "@/features/pet-home/pet-interaction";
 export { createPurrPlayer } from "@/features/pet-home/pet-purr";
-export { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
+export {
+  DEFAULT_PET_NAME,
+  PET_NAME,
+  PET_STATUS,
+  RENAME_COST,
+  petStatusText,
+  renameHint,
+} from "@/features/pet-home/pet-status";
 export {
   applyPetAction,
   applyPetCoat,
   fetchPetState,
   getOrCreateGuestKey,
+  renamePet,
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";

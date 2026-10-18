@@ -81,6 +81,29 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.petNameButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 2px 4px 2px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  border-radius: 8px;
+}
+
+.petNameButton:hover:not(:disabled) {
+  background: color-mix(in srgb, #143022 4%, transparent);
+}
+
+.petNameButton:disabled {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .petName {
@@ -91,13 +114,85 @@
   color: #143022;
 }
 
-.levelPill {
-  padding: 3px 8px;
-  border-radius: 999px;
+.nameEditGlyph {
+  font-size: 0.85rem;
+  color: #5a7a66;
+  line-height: 1;
+}
+
+.nameEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(100%, 220px);
+}
+
+.nameEditorLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.nameEditorRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nameInput {
+  flex: 1 1 120px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1.5px solid color-mix(in srgb, #143022 12%, transparent);
+  background: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #143022;
+}
+
+.nameInput:focus {
+  outline: none;
+  border-color: #2fbf6b;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #2fbf6b 22%, transparent);
+}
+
+.nameSave,
+.nameCancel {
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.nameSave {
+  border: none;
   background: #2fbf6b;
   color: #fff;
-  font-size: 0.68rem;
-  font-weight: 800;
+}
+
+.nameSave:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.nameCancel {
+  border: 1px solid color-mix(in srgb, #143022 12%, transparent);
+  background: #fff;
+  color: #3a5246;
+}
+
+.renameHint {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #5a7a66;
 }
 
 .moodLine {

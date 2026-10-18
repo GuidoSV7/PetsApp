@@ -20,9 +20,11 @@ import {
   API_INITIAL_NEEDS,
   API_PET_REWARD,
   API_STARTING_COINS,
+  API_RENAME_COST,
   createApiPetState,
   stubApplyAction,
   stubApplyCoat,
+  stubRename,
 } from "./pet-api-stub";
 
 const playPurr = vi.fn();
@@ -39,6 +41,10 @@ vi.mock("@/features/pet-home/api/pet.service", () => ({
   }),
   applyPetCoat: vi.fn(async (coat: typeof DEFAULT_GREY_COAT) => {
     serverState = stubApplyCoat(serverState, coat);
+    return structuredClone(serverState);
+  }),
+  renamePet: vi.fn(async (name: string) => {
+    serverState = stubRename(serverState, name);
     return structuredClone(serverState);
   }),
   getOrCreateGuestKey: () => "11111111-1111-4111-8111-111111111111",
@@ -156,7 +162,7 @@ describe("PetHomeStage (API-backed)", () => {
   it("hydrates chrome from the pet API before enabling care", async () => {
     await ready();
     expect(screen.queryByText("PetsApp")).toBeNull();
-    expect(screen.getByText("Nv. 1")).toBeTruthy();
+    expect(screen.queryByText(/Nv\./i)).toBeNull();
     expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
     expect(screen.getByText(/Feliz y saludable/i)).toBeTruthy();
     expect(screen.queryByText(/Arrastrá/i)).toBeNull();
@@ -275,5 +281,35 @@ describe("PetHomeStage (API-backed)", () => {
     expect(
       screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary"),
     ).toBe("#e8a05a");
+  });
+
+  it("renames for free once, then charges five coins", async () => {
+    await ready();
+    fireEvent.click(screen.getByRole("button", { name: /Editar nombre/i }));
+    expect(screen.getByText("Gratis")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Nombre"), {
+      target: { value: "Luna" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Guardar/i }));
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Editar nombre: Luna/i }),
+      ).toBeTruthy();
+    });
+    expect(latestCoins).toBe(API_STARTING_COINS);
+    expect(screen.getByText(/Ahora se llama Luna/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /Editar nombre/i }));
+    expect(screen.getByText(`${API_RENAME_COST} monedas`)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Nombre"), {
+      target: { value: "Nube" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Guardar/i }));
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /Editar nombre: Nube/i }),
+      ).toBeTruthy();
+    });
+    expect(latestCoins).toBe(API_STARTING_COINS - API_RENAME_COST);
   });
 });

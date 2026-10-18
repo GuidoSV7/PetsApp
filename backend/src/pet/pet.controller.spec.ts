@@ -68,4 +68,12 @@ describe('PetController (drizzle)', () => {
     expect(coated.coins).toBe(STARTING_COINS + 5);
     expect(coated.statusKey).toBe('coated');
   });
+
+  it('renames via POST body', async () => {
+    await controller.getState(GUEST);
+    const renamed = await controller.rename(GUEST, { name: 'Luna' });
+    expect(renamed.name).toBe('Luna');
+    expect(renamed.renameCount).toBe(1);
+    expect(renamed.coins).toBe(STARTING_COINS);
+  });
 });

@@ -151,7 +151,87 @@ describe("extractCoatColors", () => {
     );
     expect(colorDistance(coat.primary, rgbToHex(70, 72, 78))).toBeLessThan(35);
   });
+
+  it("keeps red/yellow calico spots instead of collapsing to black", () => {
+    // Phone photos: blown-out cream (filtered out) + large shadows/black + spots.
+    const blownCream: [number, number, number] = [252, 250, 246];
+    const yellow: [number, number, number] = [220, 170, 55];
+    const red: [number, number, number] = [180, 70, 40];
+    const shadowBlack: [number, number, number] = [28, 24, 22];
+    const coat = extractCoatColors(
+      calicoSpotsImage(72, 72, blownCream, yellow, red, shadowBlack),
+    );
+    const primary = hexToRgb(coat.primary);
+    const primaryLum =
+      0.2126 * primary.r + 0.7152 * primary.g + 0.0722 * primary.b;
+    expect(primaryLum).toBeGreaterThan(60);
+    expect(
+      colorDistance(coat.primary, rgbToHex(...shadowBlack)),
+    ).toBeGreaterThan(70);
+
+    const nearYellow =
+      colorDistance(coat.secondary, rgbToHex(...yellow)) < 75 ||
+      colorDistance(coat.accent, rgbToHex(...yellow)) < 75 ||
+      colorDistance(coat.primary, rgbToHex(...yellow)) < 75;
+    const nearRed =
+      colorDistance(coat.secondary, rgbToHex(...red)) < 75 ||
+      colorDistance(coat.accent, rgbToHex(...red)) < 75 ||
+      colorDistance(coat.primary, rgbToHex(...red)) < 75;
+    expect(nearYellow).toBe(true);
+    expect(nearRed).toBe(true);
+  });
 });
+
+/**
+ * Blown cream field + large dark patches + yellow/red spots.
+ * Mirrors phone calico shots where highlights clip and shadows steal the vote.
+ */
+function calicoSpotsImage(
+  width: number,
+  height: number,
+  cream: [number, number, number],
+  yellow: [number, number, number],
+  red: [number, number, number],
+  black: [number, number, number],
+): ImageData {
+  const data = new Uint8ClampedArray(width * height * 4);
+  const cx = (width - 1) / 2;
+  const cy = (height - 1) / 2;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const dx = x - cx;
+      const dy = y - cy;
+      let rgb = cream;
+      // Large dark patches (would steal primary without chroma bias)
+      if (
+        (dx + 4) ** 2 + (dy - 2) ** 2 < 220 ||
+        (dx - 10) ** 2 + (dy + 8) ** 2 < 160
+      ) {
+        rgb = black;
+      }
+      // Yellow spots
+      if (
+        (dx - 8) ** 2 + (dy + 12) ** 2 < 70 ||
+        (dx + 14) ** 2 + (dy + 2) ** 2 < 55
+      ) {
+        rgb = yellow;
+      }
+      // Red / orange spots
+      if (
+        (dx + 4) ** 2 + (dy - 14) ** 2 < 65 ||
+        (dx - 12) ** 2 + (dy - 4) ** 2 < 50
+      ) {
+        rgb = red;
+      }
+      const i = (y * width + x) * 4;
+      data[i] = rgb[0];
+      data[i + 1] = rgb[1];
+      data[i + 2] = rgb[2];
+      data[i + 3] = 255;
+    }
+  }
+  return { data, width, height, colorSpace: "srgb" } as ImageData;
+}
 
 describe("cropCenterImageData", () => {
   it("returns a smaller centered crop", () => {

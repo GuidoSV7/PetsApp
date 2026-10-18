@@ -1,6 +1,6 @@
 # Spec: pet state
 
-- Starting coins = 30; initial needs match frontend INITIAL_PET_NEEDS.
+- Starting coins = 5; initial needs match frontend INITIAL_PET_NEEDS.
 - `getOrCreate(guestKey)` returns defaults for a new guest.
 - `feed` with coins &lt; 5 leaves state unchanged and signals insufficient funds.
 - `feed` with enough coins deducts 5 and raises hunger.

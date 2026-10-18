@@ -14,7 +14,10 @@ export const DEFAULT_GREY_COAT: PetCoatColors = {
 
 const FALLBACK_ACCENT = "#c9a0a8";
 const BUCKET = 24;
-const MIN_SECONDARY_DISTANCE = 28;
+const MIN_SECONDARY_DISTANCE = 32;
+/** Prefer non-shadow fur for the body color when spots exist. */
+const PRIMARY_MIN_LUM = 55;
+const DARK_ALT_WEIGHT_RATIO = 0.22;
 
 export function rgbToHex(r: number, g: number, b: number): string {
   const clamp = (n: number) =>
@@ -41,6 +44,12 @@ function luminance(r: number, g: number, b: number): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+function saturation(r: number, g: number, b: number): number {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  return max === 0 ? 0 : (max - min) / max;
+}
+
 function colorDist(
   a: { r: number; g: number; b: number },
   b: { r: number; g: number; b: number },
@@ -52,7 +61,8 @@ function colorDist(
 function isFurCandidate(r: number, g: number, b: number, a: number): boolean {
   if (a < 180) return false;
   const lum = luminance(r, g, b);
-  if (lum < 16 || lum > 244) return false;
+  // Clip highlights harder; keep a little more dark fur than pure noise.
+  if (lum < 14 || lum > 238) return false;
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
@@ -68,6 +78,7 @@ function isFurCandidate(r: number, g: number, b: number, a: number): boolean {
 }
 
 type Bucket = { r: number; g: number; b: number; weight: number };
+type Ranked = { r: number; g: number; b: number; weight: number };
 
 /**
  * Center crop of an ImageData (fraction of width/height, clamped).
@@ -98,9 +109,71 @@ export function cropCenterImageData(
   return { data, width, height, colorSpace: image.colorSpace } as ImageData;
 }
 
+function sampleWeight(
+  r: number,
+  g: number,
+  b: number,
+  centerWeight: number,
+): number {
+  const lum = luminance(r, g, b);
+  const sat = saturation(r, g, b);
+  let weight = centerWeight;
+
+  // Shadows / deep black must not drown colorful spots for the body color.
+  if (lum < 40) weight *= 0.18;
+  else if (lum < 55) weight *= 0.45;
+  else if (lum < 70) weight *= 0.75;
+
+  // Calico / tortie patches punch above their area.
+  if (sat > 0.1) weight *= 1 + sat * 2.8;
+
+  return weight;
+}
+
+function pickPrimary(ranked: Ranked[]): Ranked {
+  const top = ranked[0]!;
+  if (luminance(top.r, top.g, top.b) >= PRIMARY_MIN_LUM) return top;
+
+  const alt = ranked.find(
+    (candidate) =>
+      luminance(candidate.r, candidate.g, candidate.b) >= PRIMARY_MIN_LUM &&
+      candidate.weight >= top.weight * DARK_ALT_WEIGHT_RATIO,
+  );
+  return alt ?? top;
+}
+
+function pickDistinct(
+  ranked: Ranked[],
+  used: Ranked[],
+  minDist: number,
+): Ranked | null {
+  return (
+    ranked.find((candidate) =>
+      used.every((u) => colorDist(candidate, u) >= minDist),
+    ) ?? null
+  );
+}
+
+function pickAccent(ranked: Ranked[], used: Ranked[]): Ranked | null {
+  const distinct = ranked.filter((candidate) =>
+    used.every((u) => colorDist(candidate, u) >= MIN_SECONDARY_DISTANCE),
+  );
+  if (distinct.length === 0) return null;
+
+  const colorful = [...distinct].sort(
+    (a, b) =>
+      saturation(b.r, b.g, b.b) * b.weight -
+      saturation(a.r, a.g, a.b) * a.weight,
+  );
+  if (saturation(colorful[0]!.r, colorful[0]!.g, colorful[0]!.b) > 0.14) {
+    return colorful[0]!;
+  }
+  return distinct[0]!;
+}
+
 /**
  * Samples center-weighted fur-like pixels and returns a 3-stop coat palette.
- * Deterministic; down-weights edge backgrounds and strong greens/blues.
+ * Deterministic; favors chromatic spots over shadow-black bodies.
  */
 export function extractCoatColors(image: ImageData): PetCoatColors {
   const { data, width, height } = image;
@@ -127,9 +200,11 @@ export function extractCoatColors(image: ImageData): PetCoatColors {
       const nx = (x - cx) / rx;
       const ny = (y - cy) / ry;
       const dist2 = nx * nx + ny * ny;
-      // Soft elliptical falloff: center ~3× edge weight
-      const weight = dist2 <= 1 ? 3.2 - dist2 * 1.8 : 0.35;
-      if (weight < 0.2) continue;
+      const centerWeight = dist2 <= 1 ? 3.2 - dist2 * 1.8 : 0.35;
+      if (centerWeight < 0.2) continue;
+
+      const weight = sampleWeight(r, g, b, centerWeight);
+      if (weight < 0.05) continue;
 
       const key = `${Math.floor(r / BUCKET)}:${Math.floor(g / BUCKET)}:${Math.floor(b / BUCKET)}`;
       const existing = buckets.get(key);
@@ -149,7 +224,7 @@ export function extractCoatColors(image: ImageData): PetCoatColors {
     }
   }
 
-  const ranked = [...buckets.values()]
+  const ranked: Ranked[] = [...buckets.values()]
     .map((bucket) => ({
       weight: bucket.weight,
       r: bucket.r / bucket.weight,
@@ -162,32 +237,31 @@ export function extractCoatColors(image: ImageData): PetCoatColors {
     return { ...DEFAULT_GREY_COAT };
   }
 
-  const primary = ranked[0]!;
+  const primary = pickPrimary(ranked);
 
-  const secondaryMatch =
-    ranked.find((candidate, index) => {
-      if (index === 0) return false;
-      return colorDist(candidate, primary) >= MIN_SECONDARY_DISTANCE;
-    }) ?? null;
+  const secondaryMatch = pickDistinct(
+    ranked.filter((c) => c !== primary),
+    [primary],
+    MIN_SECONDARY_DISTANCE,
+  );
 
   const secondary = secondaryMatch ?? {
     r: Math.min(255, primary.r + 32),
     g: Math.min(255, primary.g + 32),
     b: Math.min(255, primary.b + 28),
+    weight: 0,
   };
 
-  const warm =
-    ranked.find((c, index) => {
-      if (index === 0) return false;
-      if (secondaryMatch && c === secondaryMatch) return false;
-      return c.r > c.g + 6 && c.r > c.b + 6 && luminance(c.r, c.g, c.b) < 200;
-    }) ?? null;
+  const accentMatch = pickAccent(
+    ranked.filter((c) => c !== primary && c !== secondaryMatch),
+    [primary, secondary],
+  );
 
   return {
     primary: rgbToHex(primary.r, primary.g, primary.b),
     secondary: rgbToHex(secondary.r, secondary.g, secondary.b),
-    accent: warm
-      ? rgbToHex(warm.r, warm.g, warm.b)
+    accent: accentMatch
+      ? rgbToHex(accentMatch.r, accentMatch.g, accentMatch.b)
       : FALLBACK_ACCENT,
   };
 }

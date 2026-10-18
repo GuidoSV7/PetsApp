@@ -28,6 +28,8 @@ function toRow(row: Row): PetStateRow {
       accent: row.coatAccent,
     },
     statusKey: row.statusKey,
+    name: row.name,
+    renameCount: row.renameCount,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -60,6 +62,8 @@ export class DrizzlePetRepository implements PetRepository {
         coatSecondary: data.coat.secondary,
         coatAccent: data.coat.accent,
         statusKey: data.statusKey,
+        name: data.name,
+        renameCount: data.renameCount,
       })
       .returning();
     return toRow(row);
@@ -78,6 +82,8 @@ export class DrizzlePetRepository implements PetRepository {
         coatSecondary: data.coat.secondary,
         coatAccent: data.coat.accent,
         statusKey: data.statusKey,
+        name: data.name,
+        renameCount: data.renameCount,
         updatedAt: new Date(),
       })
       .where(eq(petStates.guestKey, guestKey))

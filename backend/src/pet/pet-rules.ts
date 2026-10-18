@@ -1,6 +1,12 @@
 /** Care + coin rules for the virtual pet (mirrors frontend). */
 
-export const STARTING_COINS = 30;
+export const STARTING_COINS = 5;
+
+export const DEFAULT_PET_NAME = 'Michi';
+
+export const RENAME_COST = 5;
+
+export const MAX_PET_NAME_LENGTH = 16;
 
 export const COIN_COSTS = { feed: 5 } as const;
 
@@ -41,6 +47,8 @@ export type PetSnapshot = {
   needs: PetNeeds;
   coat: PetCoat;
   statusKey: string;
+  name: string;
+  renameCount: number;
 };
 
 const NEED_DELTAS: Record<CareAction, Partial<PetNeeds>> = {
@@ -92,12 +100,56 @@ export function initialSnapshot(): PetSnapshot {
     needs: { ...INITIAL_NEEDS },
     coat: { ...DEFAULT_COAT },
     statusKey: 'idle',
+    name: DEFAULT_PET_NAME,
+    renameCount: 0,
   };
 }
 
 export type CareResult =
   | { ok: true; snapshot: PetSnapshot }
   | { ok: false; reason: 'broke'; snapshot: PetSnapshot };
+
+export type RenameResult =
+  | { ok: true; snapshot: PetSnapshot }
+  | { ok: false; reason: 'broke' | 'invalid'; snapshot: PetSnapshot };
+
+/** Trim and validate a display name; null when unusable. */
+export function normalizePetName(raw: string): string | null {
+  const name = raw.trim().replace(/\s+/g, ' ');
+  if (name.length < 1 || name.length > MAX_PET_NAME_LENGTH) return null;
+  return name;
+}
+
+/** First rename free; later renames cost RENAME_COST coins. */
+export function applyRename(
+  snapshot: PetSnapshot,
+  rawName: string,
+): RenameResult {
+  const name = normalizePetName(rawName);
+  if (!name || name === snapshot.name) {
+    return { ok: false, reason: 'invalid', snapshot };
+  }
+
+  const paid = snapshot.renameCount > 0;
+  if (paid && snapshot.coins < RENAME_COST) {
+    return {
+      ok: false,
+      reason: 'broke',
+      snapshot: { ...snapshot, statusKey: 'broke' },
+    };
+  }
+
+  return {
+    ok: true,
+    snapshot: {
+      ...snapshot,
+      name,
+      renameCount: snapshot.renameCount + 1,
+      coins: paid ? snapshot.coins - RENAME_COST : snapshot.coins,
+      statusKey: 'renamed',
+    },
+  };
+}
 
 /** Pure transition for a care action. */
 export function applyCare(
@@ -115,9 +167,9 @@ export function applyCare(
     return {
       ok: true,
       snapshot: {
+        ...snapshot,
         coins: snapshot.coins - COIN_COSTS.feed,
         needs: applyNeeds(snapshot.needs, 'feed'),
-        coat: snapshot.coat,
         statusKey: STATUS_FOR_ACTION.feed,
       },
     };
@@ -131,9 +183,9 @@ export function applyCare(
   return {
     ok: true,
     snapshot: {
+      ...snapshot,
       coins,
       needs: applyNeeds(snapshot.needs, action),
-      coat: snapshot.coat,
       statusKey: STATUS_FOR_ACTION[action],
     },
   };
@@ -149,6 +201,10 @@ export function applyCoat(
     coins: snapshot.coins + COIN_REWARDS.coat,
     statusKey: 'coated',
   };
+}
+
+export function renameCostFor(renameCount: number): number {
+  return renameCount > 0 ? RENAME_COST : 0;
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;

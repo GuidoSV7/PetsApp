@@ -7,11 +7,13 @@ import {
   applyPetAction,
   applyPetCoat,
   fetchPetState,
+  renamePet,
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
 import { NeedMeter } from "@/features/pet-home/components/NeedMeter";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
+import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
 import {
   DEFAULT_GREY_COAT,
   type PetCoatColors,
@@ -28,8 +30,8 @@ import {
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
 import {
-  PET_NAME,
-  PET_STATUS,
+  DEFAULT_PET_NAME,
+  petStatusText,
   type PetStatusKey,
 } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
@@ -43,14 +45,25 @@ const Cat3DViewer = dynamic(
     ssr: false,
     loading: () => (
       <div className={styles.canvasHost} role="status">
-        Cargando a {PET_NAME}…
+        Cargando a {DEFAULT_PET_NAME}…
       </div>
     ),
   },
 );
 
+const STATUS_KEYS: readonly PetStatusKey[] = [
+  "idle",
+  "fed",
+  "petted",
+  "coated",
+  "broke",
+  "slept",
+  "bathed",
+  "renamed",
+];
+
 function isStatusKey(value: string): value is PetStatusKey {
-  return value in PET_STATUS;
+  return (STATUS_KEYS as readonly string[]).includes(value);
 }
 
 type Props = {
@@ -66,6 +79,8 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [coat, setCoat] = useState<PetCoatColors>(DEFAULT_GREY_COAT);
   const [needs, setNeeds] = useState<PetNeeds>(EMPTY_PET_NEEDS);
   const [mood, setMood] = useState("Feliz");
+  const [petName, setPetName] = useState(DEFAULT_PET_NAME);
+  const [renameCount, setRenameCount] = useState(0);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -85,6 +100,8 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     setNeeds(state.needs);
     setCoat(state.coat);
     setMood(state.mood);
+    setPetName(state.name || DEFAULT_PET_NAME);
+    setRenameCount(state.renameCount ?? 0);
     if (isStatusKey(state.statusKey)) {
       setStatusKey(state.statusKey);
     }
@@ -105,7 +122,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       } catch {
         if (!cancelled) {
           setReady(false);
-          setLoadError("No pudimos cargar a Michi. Reintentá en un momento.");
+          setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
         }
       }
     })();
@@ -113,6 +130,20 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       cancelled = true;
     };
   }, []);
+
+  const onRename = async (nextName: string) => {
+    if (locked) return;
+    setBusy(true);
+    try {
+      const state = await renamePet(nextName);
+      applyState(state);
+      setLoadError(null);
+    } catch {
+      setLoadError("No pudimos guardar el nombre.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const runAction = async (
     action: "feed" | "play" | "sleep" | "bathe" | "pet",
@@ -149,7 +180,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   return (
     <section
       className={styles.stage}
-      aria-label={`Escenario de ${PET_NAME}`}
+      aria-label={`Escenario de ${petName}`}
       data-layout={PET_LAYOUT_MODE}
       data-ready={ready ? "true" : "false"}
       style={petLayoutCssVars() as CSSProperties}
@@ -157,8 +188,12 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       <div className={styles.stageCard}>
         <div className={styles.stageMeta}>
           <div className={styles.stageIdentity}>
-            <p className={styles.petName}>{PET_NAME}</p>
-            <span className={styles.levelPill}>Nv. 1</span>
+            <PetNameEditor
+              name={petName}
+              renameCount={renameCount}
+              disabled={locked}
+              onSave={(next) => void onRename(next)}
+            />
           </div>
           <p className={styles.moodLine}>
             <span className={styles.moodDot} aria-hidden="true" />
@@ -178,7 +213,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
             role="status"
             aria-live="polite"
           >
-            {PET_STATUS[statusKey]}
+            {petStatusText(statusKey, petName)}
           </p>
 
           <button
@@ -270,6 +305,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       </div>
 
       <PersonalizeStrip
+        petName={petName}
         activeCoat={coat}
         disabled={locked}
         onSelectCoat={(next) => void onCoat(next)}

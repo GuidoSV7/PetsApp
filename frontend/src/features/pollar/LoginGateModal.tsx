@@ -1,5 +1,6 @@
 "use client";
 
+import BrandMark from "@/components/ui/BrandMark";
 import estilos from "./login-gate.module.css";
 
 type Props = {
@@ -31,7 +32,11 @@ export function LoginGateModal({
       aria-label="Iniciar sesión"
     >
       <div className={estilos.panel}>
-        <p className={estilos.eyebrow}>PetsApp</p>
+        <div className={estilos.brandRow}>
+          <BrandMark size={40} />
+          <p className={estilos.brandName}>PetsApp</p>
+        </div>
+        <p className={estilos.eyebrow}>Cuidado virtual</p>
         <h2 className={estilos.title}>Entrá para cuidar a Michi</h2>
         <p className={estilos.hint}>
           Continuá con Google o conectá tu billetera Freighter de Stellar.
@@ -44,7 +49,9 @@ export function LoginGateModal({
             disabled={busy}
             onClick={onGoogle}
           >
-            <GoogleGlyph />
+            <span className={estilos.optionIcon}>
+              <GoogleGlyph />
+            </span>
             <span className={estilos.optionText}>
               <span className={estilos.optionLabel}>Continuar con Google</span>
               <span className={estilos.optionSub}>Pollar crea tu cuenta Stellar</span>
@@ -57,7 +64,9 @@ export function LoginGateModal({
             disabled={busy}
             onClick={onFreighter}
           >
-            <WalletGlyph />
+            <span className={estilos.optionIcon}>
+              <WalletGlyph />
+            </span>
             <span className={estilos.optionText}>
               <span className={estilos.optionLabel}>Freighter</span>
               <span className={estilos.optionSub}>Billetera Stellar del navegador</span>
