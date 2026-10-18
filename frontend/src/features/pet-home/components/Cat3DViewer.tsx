@@ -10,6 +10,7 @@ import styles from "./pet-home.module.css";
 
 type Props = {
   colors: PetCoatColors;
+  yawBias?: number;
   /** Bump from parent to replay the happy bounce. */
   reactPulse?: number;
   onPetInteract?: () => void;
@@ -18,6 +19,7 @@ type Props = {
 /** WebGL stage for the procedural 3D cat (client-only). */
 export function Cat3DViewer({
   colors,
+  yawBias = 0,
   reactPulse = 0,
   onPetInteract,
 }: Props) {
@@ -34,12 +36,13 @@ export function Cat3DViewer({
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.85} />
-        <directionalLight position={[3, 4, 2]} intensity={1.05} />
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[3, 4, 2]} intensity={1.1} />
         <directionalLight position={[-2, 1.5, -2]} intensity={0.45} />
         <Cat3DModel
           colors={colors}
           orbiting={orbiting}
+          yawBias={yawBias}
           reactPulse={reactPulse}
           onPetInteract={onPetInteract}
         />

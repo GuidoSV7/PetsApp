@@ -3,9 +3,9 @@
 export const PET_LAYOUT_MODE = "compact" as const;
 
 export const PET_LAYOUT = {
-  petFrameMaxPx: 140,
-  stageGapPx: 6,
-  careMinHeightPx: 48,
+  petFrameMaxPx: 240,
+  stageGapPx: 8,
+  careMinHeightPx: 64,
 } as const;
 
 export function petLayoutCssVars(

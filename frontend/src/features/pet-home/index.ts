@@ -1,18 +1,20 @@
 export { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 export {
+  coatColorsFromFile,
+  loadImageDataFromFile,
+} from "@/features/pet-home/coat-from-image";
+export {
   DEFAULT_GREY_COAT,
+  cropCenterImageData,
   extractCoatColors,
   type PetCoatColors,
 } from "@/features/pet-home/extract-coat-colors";
+export { coinsLabel } from "@/features/pet-home/pet-coins";
 export {
-  COIN_COSTS,
-  COIN_REWARDS,
-  STARTING_COINS,
-  canAfford,
-  coinsLabel,
-  earnCoins,
-  spendCoins,
-} from "@/features/pet-home/pet-coins";
+  COAT_PRESETS,
+  moodCaption,
+  isCoatPresetId,
+} from "@/features/pet-home/pet-customize";
 export {
   CAT_MODEL_SCALE,
   PET_LAYOUT,
@@ -20,10 +22,9 @@ export {
   petLayoutCssVars,
 } from "@/features/pet-home/pet-layout";
 export {
-  INITIAL_PET_NEEDS,
+  EMPTY_PET_NEEDS,
   NEED_LABELS,
-  applyCareAction,
-  moodFromNeeds,
+  type CareAction,
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
 export {
@@ -32,3 +33,10 @@ export {
 } from "@/features/pet-home/pet-interaction";
 export { createPurrPlayer } from "@/features/pet-home/pet-purr";
 export { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
+export {
+  applyPetAction,
+  applyPetCoat,
+  fetchPetState,
+  getOrCreateGuestKey,
+  type PetStateResponse,
+} from "@/features/pet-home/api/pet.service";

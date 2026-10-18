@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   DEFAULT_GREY_COAT,
+  cropCenterImageData,
   extractCoatColors,
   hexToRgb,
   rgbToHex,
@@ -41,6 +42,34 @@ function twoToneImageData(
   return { data, width, height, colorSpace: "srgb" } as ImageData;
 }
 
+/** Edge ring = background, center ellipse = subject fur. */
+function subjectOnBackground(
+  width: number,
+  height: number,
+  subject: [number, number, number],
+  background: [number, number, number],
+): ImageData {
+  const data = new Uint8ClampedArray(width * height * 4);
+  const cx = (width - 1) / 2;
+  const cy = (height - 1) / 2;
+  const rx = width * 0.28;
+  const ry = height * 0.28;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const nx = (x - cx) / rx;
+      const ny = (y - cy) / ry;
+      const inSubject = nx * nx + ny * ny <= 1;
+      const [r, g, b] = inSubject ? subject : background;
+      const i = (y * width + x) * 4;
+      data[i] = r;
+      data[i + 1] = g;
+      data[i + 2] = b;
+      data[i + 3] = 255;
+    }
+  }
+  return { data, width, height, colorSpace: "srgb" } as ImageData;
+}
+
 function colorDistance(a: string, b: string) {
   const A = hexToRgb(a);
   const B = hexToRgb(b);
@@ -61,10 +90,12 @@ describe("extractCoatColors", () => {
 
   it("maps majority and minority mid colors to primary and secondary", () => {
     const coat = extractCoatColors(
-      twoToneImageData(20, 20, [60, 110, 160], [180, 120, 70]),
+      twoToneImageData(20, 20, [95, 88, 82], [196, 150, 110]),
     );
-    expect(colorDistance(coat.primary, rgbToHex(60, 110, 160))).toBeLessThan(45);
-    expect(colorDistance(coat.secondary, rgbToHex(180, 120, 70))).toBeLessThan(55);
+    expect(colorDistance(coat.primary, rgbToHex(95, 88, 82))).toBeLessThan(45);
+    expect(colorDistance(coat.secondary, rgbToHex(196, 150, 110))).toBeLessThan(
+      55,
+    );
   });
 
   it("ignores near-white and near-black pixels", () => {
@@ -93,5 +124,42 @@ describe("extractCoatColors", () => {
       colorSpace: "srgb",
     } as ImageData);
     expect(colorDistance(coat.primary, rgbToHex(120, 80, 50))).toBeLessThan(45);
+  });
+
+  it("prefers center subject color over edge background", () => {
+    const coat = extractCoatColors(
+      subjectOnBackground(48, 48, [150, 95, 50], [70, 130, 200]),
+    );
+    expect(colorDistance(coat.primary, rgbToHex(150, 95, 50))).toBeLessThan(50);
+    expect(colorDistance(coat.primary, rgbToHex(70, 130, 200))).toBeGreaterThan(
+      70,
+    );
+  });
+
+  it("does not pick grass green when orange fur is centered", () => {
+    const coat = extractCoatColors(
+      subjectOnBackground(56, 56, [210, 120, 45], [55, 160, 70]),
+    );
+    expect(colorDistance(coat.primary, rgbToHex(210, 120, 45))).toBeLessThan(55);
+    const primary = hexToRgb(coat.primary);
+    expect(primary.g).toBeLessThan(primary.r);
+  });
+
+  it("accepts mid-dark grey fur", () => {
+    const coat = extractCoatColors(
+      solidImageData(24, 24, [70, 72, 78, 255]),
+    );
+    expect(colorDistance(coat.primary, rgbToHex(70, 72, 78))).toBeLessThan(35);
+  });
+});
+
+describe("cropCenterImageData", () => {
+  it("returns a smaller centered crop", () => {
+    const source = solidImageData(40, 40, [10, 20, 30, 255]);
+    const cropped = cropCenterImageData(source, 0.7);
+    expect(cropped.width).toBeLessThan(source.width);
+    expect(cropped.height).toBeLessThan(source.height);
+    expect(cropped.width).toBeGreaterThanOrEqual(24);
+    expect(cropped.data[0]).toBe(10);
   });
 });

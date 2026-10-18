@@ -10,23 +10,21 @@ import {
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
-import { CoinBalance } from "@/features/pet-home/components/CoinBalance";
 import { NeedMeter } from "@/features/pet-home/components/NeedMeter";
+import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import {
   DEFAULT_GREY_COAT,
   type PetCoatColors,
 } from "@/features/pet-home/extract-coat-colors";
-import { STARTING_COINS } from "@/features/pet-home/pet-coins";
-import {
-  PET_INTERACT_HINT,
-} from "@/features/pet-home/pet-interaction";
+import { moodCaption } from "@/features/pet-home/pet-customize";
+import { PET_INTERACT_HINT } from "@/features/pet-home/pet-interaction";
 import {
   PET_LAYOUT_MODE,
   petLayoutCssVars,
 } from "@/features/pet-home/pet-layout";
 import { createPurrPlayer } from "@/features/pet-home/pet-purr";
 import {
-  INITIAL_PET_NEEDS,
+  EMPTY_PET_NEEDS,
   NEED_LABELS,
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
@@ -56,19 +54,27 @@ function isStatusKey(value: string): value is PetStatusKey {
   return value in PET_STATUS;
 }
 
-/** Mint care dashboard backed by the pet state API. */
-export function PetHomeStage() {
+type Props = {
+  onCoinsChange?: (coins: number) => void;
+};
+
+/** Reference-style care dashboard backed by the Nest pet API. */
+export function PetHomeStage({ onCoinsChange }: Props) {
   const [statusKey, setStatusKey] = useState<PetStatusKey>("idle");
   const [pulse, setPulse] = useState(0);
   const [reactPulse, setReactPulse] = useState(0);
+  const [yawBias, setYawBias] = useState(0);
   const [coat, setCoat] = useState<PetCoatColors>(DEFAULT_GREY_COAT);
-  const [coins, setCoins] = useState(STARTING_COINS);
-  const [needs, setNeeds] = useState<PetNeeds>(INITIAL_PET_NEEDS);
+  const [needs, setNeeds] = useState<PetNeeds>(EMPTY_PET_NEEDS);
   const [mood, setMood] = useState("Feliz");
+  const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const purrRef = useRef(createPurrPlayer());
+  const onCoinsChangeRef = useRef(onCoinsChange);
+  onCoinsChangeRef.current = onCoinsChange;
+  const locked = busy || !ready;
 
   useEffect(() => {
     const player = purrRef.current;
@@ -76,13 +82,14 @@ export function PetHomeStage() {
   }, []);
 
   const applyState = (state: PetStateResponse, bounce = false) => {
-    setCoins(state.coins);
+    onCoinsChangeRef.current?.(state.coins);
     setNeeds(state.needs);
     setCoat(state.coat);
     setMood(state.mood);
     if (isStatusKey(state.statusKey)) {
       setStatusKey(state.statusKey);
     }
+    setReady(true);
     setPulse((n) => n + 1);
     if (bounce) setReactPulse((n) => n + 1);
   };
@@ -98,6 +105,7 @@ export function PetHomeStage() {
         }
       } catch {
         if (!cancelled) {
+          setReady(false);
           setLoadError("No pudimos cargar a Michi. Reintentá en un momento.");
         }
       }
@@ -111,7 +119,7 @@ export function PetHomeStage() {
     action: "feed" | "play" | "sleep" | "bathe" | "pet",
     options?: { purr?: boolean; bounce?: boolean },
   ) => {
-    if (busy) return;
+    if (locked) return;
     setBusy(true);
     try {
       if (options?.purr) purrRef.current.play();
@@ -126,7 +134,7 @@ export function PetHomeStage() {
   };
 
   const onCoat = async (colors: PetCoatColors) => {
-    if (busy) return;
+    if (locked) return;
     setBusy(true);
     try {
       const state = await applyPetCoat(colors);
@@ -144,29 +152,18 @@ export function PetHomeStage() {
       className={styles.stage}
       aria-label={`Escenario de ${PET_NAME}`}
       data-layout={PET_LAYOUT_MODE}
+      data-ready={ready ? "true" : "false"}
       style={petLayoutCssVars() as CSSProperties}
     >
-      <div className={styles.topBar}>
-        <div className={styles.petIdentity}>
-          <p className={styles.petName}>{PET_NAME}</p>
-          <p className={styles.petLevel}>LV. 1</p>
-        </div>
-        <CoinBalance balance={coins} />
-      </div>
-
-      <div className={styles.petCard}>
-        <div className={styles.petCardHeader}>
-          <p
-            key={pulse}
-            className={styles.speech}
-            role="status"
-            aria-live="polite"
-          >
-            {PET_STATUS[statusKey]}
-          </p>
+      <div className={styles.stageCard}>
+        <div className={styles.stageMeta}>
+          <div className={styles.stageIdentity}>
+            <p className={styles.petName}>{PET_NAME}</p>
+            <span className={styles.levelPill}>Nv. 1</span>
+          </div>
           <p className={styles.moodLine}>
-            Ánimo: <span className={styles.moodValue}>{mood}</span>
             <span className={styles.moodDot} aria-hidden="true" />
+            <span className={styles.moodValue}>{moodCaption(mood)}</span>
           </p>
           {loadError ? (
             <p className={styles.loadError} role="alert">
@@ -174,16 +171,47 @@ export function PetHomeStage() {
             </p>
           ) : null}
         </div>
-        <div className={styles.petFrame}>
-          <Cat3DViewer
-            colors={coat}
-            reactPulse={reactPulse}
-            onPetInteract={() =>
-              void runAction("pet", { purr: true, bounce: true })
-            }
-          />
+
+        <div className={styles.petViewport}>
+          <p
+            key={pulse}
+            className={styles.speechBubble}
+            role="status"
+            aria-live="polite"
+          >
+            {PET_STATUS[statusKey]}
+          </p>
+
+          <button
+            type="button"
+            className={`${styles.orbitBtn} ${styles.orbitLeft}`}
+            aria-label="Girar a la izquierda"
+            onClick={() => setYawBias((y) => y - 0.45)}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            className={`${styles.orbitBtn} ${styles.orbitRight}`}
+            aria-label="Girar a la derecha"
+            onClick={() => setYawBias((y) => y + 0.45)}
+          >
+            ›
+          </button>
+
+          <div className={styles.petFrame}>
+            <Cat3DViewer
+              colors={coat}
+              yawBias={yawBias}
+              reactPulse={reactPulse}
+              onPetInteract={() =>
+                void runAction("pet", { purr: true, bounce: true })
+              }
+            />
+          </div>
+
+          <p className={styles.interactHint}>{PET_INTERACT_HINT}</p>
         </div>
-        <p className={styles.interactHint}>{PET_INTERACT_HINT}</p>
       </div>
 
       <div className={styles.needsGrid}>
@@ -209,45 +237,47 @@ export function PetHomeStage() {
         <button
           type="button"
           className={`${styles.careButton} ${styles.careFeed}`}
-          disabled={busy}
+          disabled={locked}
           onClick={() => void runAction("feed")}
         >
+          <CareIcon kind="feed" />
           Alimentar
         </button>
         <button
           type="button"
           className={`${styles.careButton} ${styles.carePlay}`}
-          disabled={busy}
+          disabled={locked}
           onClick={() => void runAction("play", { bounce: true })}
         >
+          <CareIcon kind="play" />
           Jugar
         </button>
         <button
           type="button"
           className={`${styles.careButton} ${styles.careSleep}`}
-          disabled={busy}
+          disabled={locked}
           onClick={() => void runAction("sleep")}
         >
+          <CareIcon kind="sleep" />
           Dormir
         </button>
         <button
           type="button"
           className={`${styles.careButton} ${styles.careBathe}`}
-          disabled={busy}
+          disabled={locked}
           onClick={() => void runAction("bathe")}
         >
+          <CareIcon kind="bathe" />
           Bañar
         </button>
       </div>
 
-      <button
-        type="button"
-        className={styles.colorsButton}
-        disabled={busy}
-        onClick={() => setCameraOpen(true)}
-      >
-        Colores de mi gato
-      </button>
+      <PersonalizeStrip
+        activeCoat={coat}
+        disabled={locked}
+        onSelectCoat={(next) => void onCoat(next)}
+        onOpenCamera={() => setCameraOpen(true)}
+      />
 
       <CameraCoatCapture
         open={cameraOpen}
@@ -255,5 +285,44 @@ export function PetHomeStage() {
         onColors={(colors) => void onCoat(colors)}
       />
     </section>
+  );
+}
+
+function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" }) {
+  if (kind === "feed") {
+    return (
+      <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M6 10c0-2 1.5-4 3-4s3 2 3 4v1H6v-1zm9-3h2v5h-2V7zm-8 7h12l-1 6H8l-1-6z"
+        />
+      </svg>
+    );
+  }
+  if (kind === "play") {
+    return (
+      <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+        <circle cx="12" cy="12" r="8" fill="currentColor" opacity="0.95" />
+        <circle cx="12" cy="12" r="2.2" fill="#fff" />
+      </svg>
+    );
+  }
+  if (kind === "sleep") {
+    return (
+      <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M14 4a7 7 0 1 0 6 10.5A8 8 0 0 1 14 4z"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M7 10h10a3 3 0 0 1 3 3v1H4v-1a3 3 0 0 1 3-3zm1 6h8v2H8v-2z"
+      />
+    </svg>
   );
 }

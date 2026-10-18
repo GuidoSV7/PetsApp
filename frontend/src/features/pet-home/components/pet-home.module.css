@@ -1,112 +1,144 @@
 .stage {
-  --pet-frame-max: 140px;
-  --stage-gap: 6px;
-  --care-min-height: 48px;
+  --pet-frame-max: 240px;
+  --stage-gap: 8px;
+  --care-min-height: 64px;
 
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--stage-gap);
-  width: min(100%, 420px);
+  width: min(100%, 440px);
   height: 100%;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 0 2px;
   text-align: left;
   color: #1c2b22;
   min-height: 0;
 }
 
-.topBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.petIdentity {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.petName {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: #143022;
-}
-
-.petLevel {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #5a7a66;
-}
-
 .coinBalance {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   margin: 0;
-  padding: 3px 8px 3px 4px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, #f0c14b 55%, #fff);
-  background: #fff8e8;
+  padding: 4px 6px 4px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 48, 34, 0.06);
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(20, 48, 34, 0.06);
 }
 
 .coinIcon {
   display: block;
   flex-shrink: 0;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
 }
 
 .coinAmount {
   font-weight: 800;
-  font-size: 0.8rem;
-  color: #8a6208;
+  font-size: 0.88rem;
+  color: #1c2b22;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
-.petCard {
+.coinAdd {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2fbf6b;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.stageCard {
   position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 40% at 18% 78%, #7cb88a 0%, transparent 55%),
+    radial-gradient(ellipse 55% 35% at 82% 72%, #6aa87c 0%, transparent 50%),
+    radial-gradient(ellipse 90% 45% at 50% 100%, #a8d4b4 0%, transparent 60%),
+    linear-gradient(180deg, #e2f3ea 0%, #c5e4d2 38%, #9fc9ae 100%);
+  box-shadow: 0 10px 28px rgba(20, 48, 34, 0.1);
+}
+
+.stageCard::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  bottom: 8%;
+  width: 22%;
+  height: 28%;
+  border-radius: 12px 12px 6px 6px;
+  background: linear-gradient(180deg, #8fd4a0 0%, #5fad75 100%);
+  opacity: 0.55;
+  filter: blur(0.2px);
+  pointer-events: none;
+}
+
+.stageCard::after {
+  content: "";
+  position: absolute;
+  right: 12%;
+  bottom: 10%;
+  width: 14%;
+  height: 34%;
+  border-radius: 40% 40% 8px 8px;
+  background:
+    radial-gradient(circle at 50% 18%, #4a8f5c 0 28%, transparent 30%),
+    linear-gradient(180deg, #6fb882 0%, #4e9a66 100%);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.stageMeta {
+  position: relative;
+  z-index: 2;
+  padding: 12px 14px 0;
+  flex-shrink: 0;
+}
+
+.stageIdentity {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px 8px;
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.06);
+  gap: 8px;
 }
 
-.petCardHeader {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 2px;
-}
-
-.speech {
+.petName {
   margin: 0;
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.25;
-  color: #1c2b22;
-  animation: statusIn 0.25s ease-out;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #143022;
+}
+
+.levelPill {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #2fbf6b;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
 }
 
 .moodLine {
-  margin: 0;
+  margin: 4px 0 0;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
-  font-weight: 650;
-  color: #4d6b5a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2a5c3d;
 }
 
 .moodValue {
@@ -115,26 +147,95 @@
 }
 
 .moodDot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #2fbf6b;
+  box-shadow: 0 0 0 3px rgba(47, 191, 107, 0.2);
 }
 
 .loadError {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: 0.72rem;
   font-weight: 700;
   color: #c0392b;
 }
 
+.petViewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px 10px;
+}
+
+.speechBubble {
+  position: relative;
+  z-index: 2;
+  margin: 0 0 4px;
+  max-width: 90%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #1c2b22;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.25;
+  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.1);
+  animation: statusIn 0.25s ease-out;
+}
+
+.speechBubble::after {
+  content: "";
+  position: absolute;
+  left: 28%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+
+.orbitBtn {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  color: #1c2b22;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(20, 48, 34, 0.12);
+}
+
+.orbitLeft {
+  left: 8px;
+}
+
+.orbitRight {
+  right: 8px;
+}
+
 .petFrame {
   position: relative;
+  flex: 1 1 auto;
   width: min(100%, var(--pet-frame-max));
+  max-height: min(var(--pet-frame-max), 38dvh);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  margin: 0;
+  margin: 0 auto;
+  min-height: 150px;
 }
 
 .canvasHost {
@@ -143,38 +244,41 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(180deg, #f3fbf6 0%, #e4f3ea 100%);
+  background: transparent;
 }
 
 .interactHint {
-  margin: 0;
-  padding: 4px 10px;
-  border-radius: 10px;
-  background: #f0f3f1;
-  color: #5a6f63;
+  margin: 6px 0 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #3a5246;
   font-size: 0.68rem;
   font-weight: 650;
   text-align: center;
-  max-width: 100%;
+  max-width: 95%;
   line-height: 1.2;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(20, 48, 34, 0.08);
 }
 
 .needsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 7px;
+  flex-shrink: 0;
 }
 
 .needCard {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 7px 8px 6px;
-  border-radius: 12px;
+  gap: 5px;
+  padding: 8px 9px 7px;
+  border-radius: 14px;
   background: #ffffff;
-  box-shadow: 0 3px 10px rgba(20, 48, 34, 0.04);
+  box-shadow: 0 4px 12px rgba(20, 48, 34, 0.05);
 }
 
 .needTop {
@@ -183,25 +287,46 @@
   gap: 6px;
 }
 
-.needMark {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
+.needIconWell {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  color: #fff;
   flex-shrink: 0;
-  background: #2fbf6b;
 }
 
-.needTone_hunger .needMark {
-  background: #ff7a6e;
+.needSvg {
+  width: 13px;
+  height: 13px;
+  display: block;
 }
-.needTone_fun .needMark {
-  background: #2ec4b6;
+
+.needTone_hunger .needIconWell {
+  background: #ff6b7a;
 }
-.needTone_energy .needMark {
+.needTone_fun .needIconWell {
+  background: #2fbf6b;
+}
+.needTone_energy .needIconWell {
   background: #f4a261;
 }
-.needTone_hygiene .needMark {
+.needTone_hygiene .needIconWell {
   background: #4dabf7;
+}
+
+.needTone_hunger .needFill {
+  background: linear-gradient(90deg, #ff8a96, #ff5a6a);
+}
+.needTone_fun .needFill {
+  background: linear-gradient(90deg, #5fd98f, #2fbf6b);
+}
+.needTone_energy .needFill {
+  background: linear-gradient(90deg, #ffd07a, #f4a261);
+}
+.needTone_hygiene .needFill {
+  background: linear-gradient(90deg, #7ec8ff, #4dabf7);
 }
 
 .needLabel {
@@ -228,30 +353,38 @@
 .needFill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #3dff8a, #2fbf6b);
   transition: width 0.25s ease;
 }
 
 .actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 7px;
+  flex-shrink: 0;
 }
 
 .careButton {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   min-height: var(--care-min-height);
-  padding: 6px 2px;
+  padding: 8px 2px 7px;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   color: #fff;
   font-weight: 800;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.01em;
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.careSvg {
+  width: 22px;
+  height: 22px;
+  display: block;
 }
 
 .careButton:hover {
@@ -262,39 +395,119 @@
   transform: scale(0.96);
 }
 
+.careButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
 .careFeed {
-  background: linear-gradient(160deg, #ff8a7a, #f25555);
+  background: linear-gradient(160deg, #ff8a9a, #ff5c6e);
 }
 .carePlay {
-  background: linear-gradient(160deg, #4fd6c8, #1fa89a);
+  background: linear-gradient(160deg, #57d89a, #2fbf6b);
 }
 .careSleep {
-  background: linear-gradient(160deg, #f6b86a, #e0892e);
+  background: linear-gradient(160deg, #ffc078, #f4a261);
 }
 .careBathe {
-  background: linear-gradient(160deg, #6bc0ff, #2f8fdf);
+  background: linear-gradient(160deg, #7ec8ff, #4dabf7);
 }
 
-.colorsButton {
-  width: 100%;
-  min-height: 40px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1.5px solid color-mix(in srgb, var(--primario) 55%, #1f8f4e);
+.personalize {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-radius: 18px;
   background: #ffffff;
-  color: #1f8f4e;
-  font-weight: 800;
-  font-size: 0.85rem;
+  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.06);
+}
+
+.personalizeHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
   cursor: pointer;
-  transition: transform 0.12s ease, background 0.15s ease;
+  color: inherit;
 }
 
-.colorsButton:hover {
-  background: #f3fbf6;
+.personalizeIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #e7f8ee;
+  color: #1f8f4e;
+  flex-shrink: 0;
 }
 
-.colorsButton:active {
-  transform: scale(0.98);
+.personalizeText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.personalizeTitle {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #143022;
+}
+
+.personalizeSub {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #5a7a66;
+}
+
+.personalizeChevron {
+  font-size: 1.4rem;
+  color: #8aa894;
+  line-height: 1;
+}
+
+.presetRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.presetRow::-webkit-scrollbar {
+  display: none;
+}
+
+.presetTile {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(20, 48, 34, 0.06);
+}
+
+.presetTileActive {
+  border-color: #2fbf6b;
+  box-shadow: 0 0 0 3px rgba(47, 191, 107, 0.2);
+}
+
+.presetCamera {
+  display: grid;
+  place-items: center;
+  background: #eef6f1;
+  color: #1f8f4e;
+  font-size: 0.65rem;
+  font-weight: 800;
 }
 
 .actionButton {
@@ -332,6 +545,7 @@
 }
 
 .cameraPanel {
+  position: relative;
   width: min(100%, 420px);
   display: flex;
   flex-direction: column;
@@ -365,6 +579,18 @@
   background: #0d1a12;
 }
 
+.cameraFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .cameraActions {
   display: flex;
   flex-wrap: wrap;
@@ -384,15 +610,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .speech {
+  .speechBubble {
     animation: none;
   }
 }
 
 @media (min-height: 780px) {
   .stage {
-    --pet-frame-max: 160px;
-    --stage-gap: 8px;
-    --care-min-height: 52px;
+    --pet-frame-max: 280px;
+    --stage-gap: 10px;
+    --care-min-height: 70px;
   }
 }

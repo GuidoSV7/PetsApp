@@ -10,86 +10,36 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import {
-  COIN_COSTS,
-  COIN_REWARDS,
-  STARTING_COINS,
-} from "@/features/pet-home/pet-coins";
 import { PET_INTERACT_HINT } from "@/features/pet-home/pet-interaction";
-import {
-  INITIAL_PET_NEEDS,
-  NEED_LABELS,
-  applyCareAction,
-} from "@/features/pet-home/pet-stats";
+import { NEED_LABELS } from "@/features/pet-home/pet-stats";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
 import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
+import {
+  API_COAT_REWARD,
+  API_FEED_COST,
+  API_INITIAL_NEEDS,
+  API_PET_REWARD,
+  API_STARTING_COINS,
+  createApiPetState,
+  stubApplyAction,
+  stubApplyCoat,
+} from "./pet-api-stub";
 
 const playPurr = vi.fn();
 const stopPurr = vi.fn();
 
 let serverState: PetStateResponse;
-
-function baseState(): PetStateResponse {
-  return {
-    coins: STARTING_COINS,
-    needs: { ...INITIAL_PET_NEEDS },
-    coat: { ...DEFAULT_GREY_COAT },
-    statusKey: "idle",
-    mood: "Feliz",
-  };
-}
+let latestCoins: number | null;
 
 vi.mock("@/features/pet-home/api/pet.service", () => ({
   fetchPetState: vi.fn(async () => structuredClone(serverState)),
   applyPetAction: vi.fn(async (action: string) => {
-    if (action === "feed") {
-      if (serverState.coins < COIN_COSTS.feed) {
-        serverState = { ...serverState, statusKey: "broke" };
-      } else {
-        serverState = {
-          ...serverState,
-          coins: serverState.coins - COIN_COSTS.feed,
-          needs: applyCareAction(serverState.needs, "feed"),
-          statusKey: "fed",
-        };
-      }
-    } else if (action === "play") {
-      serverState = {
-        ...serverState,
-        coins: serverState.coins + COIN_REWARDS.pet,
-        needs: applyCareAction(serverState.needs, "play"),
-        statusKey: "petted",
-      };
-    } else if (action === "sleep") {
-      serverState = {
-        ...serverState,
-        needs: applyCareAction(serverState.needs, "sleep"),
-        statusKey: "slept",
-      };
-    } else if (action === "bathe") {
-      serverState = {
-        ...serverState,
-        needs: applyCareAction(serverState.needs, "bathe"),
-        statusKey: "bathed",
-      };
-    } else if (action === "pet") {
-      serverState = {
-        ...serverState,
-        coins: serverState.coins + COIN_REWARDS.pet,
-        needs: applyCareAction(serverState.needs, "pet"),
-        statusKey: "petted",
-      };
-    }
+    serverState = stubApplyAction(serverState, action);
     return structuredClone(serverState);
   }),
   applyPetCoat: vi.fn(async (coat: typeof DEFAULT_GREY_COAT) => {
-    serverState = {
-      ...serverState,
-      coat: { ...coat },
-      coins: serverState.coins + COIN_REWARDS.coat,
-      statusKey: "coated",
-    };
+    serverState = stubApplyCoat(serverState, coat);
     return structuredClone(serverState);
   }),
   getOrCreateGuestKey: () => "11111111-1111-4111-8111-111111111111",
@@ -179,7 +129,8 @@ vi.mock("@/features/pet-home/components/CameraCoatCapture", () => ({
 import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 
 beforeEach(() => {
-  serverState = baseState();
+  serverState = createApiPetState();
+  latestCoins = null;
   playPurr.mockClear();
   stopPurr.mockClear();
 });
@@ -189,73 +140,69 @@ afterEach(() => {
 });
 
 async function ready() {
-  render(<PetHomeStage />);
-  await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
-  await waitFor(() =>
-    expect(screen.getByLabelText(`Monedas: ${STARTING_COINS}`)).toBeTruthy(),
+  render(
+    <PetHomeStage
+      onCoinsChange={(coins) => {
+        latestCoins = coins;
+      }}
+    />,
   );
+  await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
+  await waitFor(() => expect(latestCoins).toBe(API_STARTING_COINS));
+  const stage = screen.getByLabelText(`Escenario de ${PET_NAME}`);
+  expect(stage.getAttribute("data-ready")).toBe("true");
 }
 
-describe("PetHomeStage", () => {
-  it("shows playful care chrome: cat, coins, needs, mood, actions", async () => {
+describe("PetHomeStage (API-backed)", () => {
+  it("hydrates chrome from the pet API before enabling care", async () => {
     await ready();
     expect(screen.queryByText("PetsApp")).toBeNull();
-    const stage = screen.getByLabelText(`Escenario de ${PET_NAME}`);
-    expect(stage.getAttribute("data-layout")).toBe("compact");
-    expect(stage.style.getPropertyValue("--pet-frame-max")).toBe("140px");
+    expect(screen.getByText("Nv. 1")).toBeTruthy();
     expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
     expect(screen.getByText(PET_INTERACT_HINT)).toBeTruthy();
-    expect(screen.getByText(/Ánimo:/i)).toBeTruthy();
-    expect(screen.getAllByText("Feliz").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Feliz y saludable/i)).toBeTruthy();
+    expect(screen.getByText(`${API_INITIAL_NEEDS.hunger}%`)).toBeTruthy();
 
     for (const label of Object.values(NEED_LABELS)) {
       expect(screen.getByText(label)).toBeTruthy();
     }
-    expect(screen.getByText(`${INITIAL_PET_NEEDS.hunger}%`)).toBeTruthy();
 
-    expect(screen.getByRole("button", { name: /Alimentar/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Jugar/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Dormir/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Bañar/i })).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: /Colores de mi gato/i }),
-    ).toBeTruthy();
+      (screen.getByRole("button", { name: /Alimentar/i }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
   });
 
-  it("spends coins and raises hunger when feeding", async () => {
+  it("spends coins and raises hunger when feeding via API", async () => {
     await ready();
     fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
     await waitFor(() => {
       expect(screen.getByText(PET_STATUS.fed)).toBeTruthy();
     });
-    expect(
-      screen.getByLabelText(
-        `Monedas: ${STARTING_COINS - COIN_COSTS.feed}`,
-      ),
-    ).toBeTruthy();
+    expect(latestCoins).toBe(API_STARTING_COINS - API_FEED_COST);
     expect(
       screen.getByText(
-        `${Math.min(100, INITIAL_PET_NEEDS.hunger + 18)}%`,
+        `${Math.min(100, API_INITIAL_NEEDS.hunger + 18)}%`,
       ),
     ).toBeTruthy();
   });
 
   it("blocks feeding when broke and keeps balance", async () => {
     await ready();
-    const feeds = Math.floor(STARTING_COINS / COIN_COSTS.feed);
+    const feeds = Math.floor(API_STARTING_COINS / API_FEED_COST);
     for (let i = 0; i < feeds; i++) {
       fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
       await waitFor(() =>
         expect(screen.getByText(PET_STATUS.fed)).toBeTruthy(),
       );
     }
-    const leftover = STARTING_COINS - feeds * COIN_COSTS.feed;
-    expect(screen.getByLabelText(`Monedas: ${leftover}`)).toBeTruthy();
+    const leftover = API_STARTING_COINS - feeds * API_FEED_COST;
+    expect(latestCoins).toBe(leftover);
     fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
     await waitFor(() => {
       expect(screen.getByText(PET_STATUS.broke)).toBeTruthy();
     });
-    expect(screen.getByLabelText(`Monedas: ${leftover}`)).toBeTruthy();
+    expect(latestCoins).toBe(leftover);
   });
 
   it("raises fun and earns coins when playing", async () => {
@@ -264,13 +211,9 @@ describe("PetHomeStage", () => {
     await waitFor(() => {
       expect(screen.getByText(PET_STATUS.petted)).toBeTruthy();
     });
+    expect(latestCoins).toBe(API_STARTING_COINS + API_PET_REWARD);
     expect(
-      screen.getByLabelText(
-        `Monedas: ${STARTING_COINS + COIN_REWARDS.pet}`,
-      ),
-    ).toBeTruthy();
-    expect(
-      screen.getByText(`${Math.min(100, INITIAL_PET_NEEDS.fun + 16)}%`),
+      screen.getByText(`${Math.min(100, API_INITIAL_NEEDS.fun + 16)}%`),
     ).toBeTruthy();
   });
 
@@ -280,7 +223,7 @@ describe("PetHomeStage", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          `${Math.min(100, INITIAL_PET_NEEDS.energy + 20)}%`,
+          `${Math.min(100, API_INITIAL_NEEDS.energy + 20)}%`,
         ),
       ).toBeTruthy();
     });
@@ -292,7 +235,7 @@ describe("PetHomeStage", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          `${Math.min(100, INITIAL_PET_NEEDS.hygiene + 18)}%`,
+          `${Math.min(100, API_INITIAL_NEEDS.hygiene + 18)}%`,
         ),
       ).toBeTruthy();
     });
@@ -305,23 +248,15 @@ describe("PetHomeStage", () => {
       expect(screen.getByText(PET_STATUS.petted)).toBeTruthy();
     });
     expect(playPurr).toHaveBeenCalled();
-    expect(
-      screen.getByLabelText(
-        `Monedas: ${STARTING_COINS + COIN_REWARDS.pet}`,
-      ),
-    ).toBeTruthy();
+    expect(latestCoins).toBe(API_STARTING_COINS + API_PET_REWARD);
   });
 
-  it("opens camera flow, applies coat, and earns coat coins", async () => {
+  it("opens camera from Personalizar, applies coat via API", async () => {
     await ready();
 
     fireEvent.click(
       screen.getByRole("button", { name: /Colores de mi gato/i }),
     );
-    expect(
-      screen.getByRole("dialog", { name: "Colores de mi gato" }),
-    ).toBeTruthy();
-
     fireEvent.click(screen.getByRole("button", { name: "Capturar colores" }));
     await waitFor(() => {
       expect(screen.getByText(PET_STATUS.coated)).toBeTruthy();
@@ -329,10 +264,17 @@ describe("PetHomeStage", () => {
     expect(
       screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary"),
     ).toBe("#8b5a2b");
+    expect(latestCoins).toBe(API_STARTING_COINS + API_COAT_REWARD);
+  });
+
+  it("applies a coat preset via API", async () => {
+    await ready();
+    fireEvent.click(screen.getByRole("button", { name: /Pelaje Naranja/i }));
+    await waitFor(() => {
+      expect(screen.getByText(PET_STATUS.coated)).toBeTruthy();
+    });
     expect(
-      screen.getByLabelText(
-        `Monedas: ${STARTING_COINS + COIN_REWARDS.coat}`,
-      ),
-    ).toBeTruthy();
+      screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary"),
+    ).toBe("#e8a05a");
   });
 });

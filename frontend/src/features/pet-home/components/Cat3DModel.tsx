@@ -10,6 +10,8 @@ type Props = {
   colors: PetCoatColors;
   /** When true, skip idle yaw (user is orbiting). */
   orbiting?: boolean;
+  /** Extra yaw from UI chevrons. */
+  yawBias?: number;
   /** Bump this to trigger a happy bounce. */
   reactPulse?: number;
   onPetInteract?: () => void;
@@ -19,6 +21,7 @@ type Props = {
 export function Cat3DModel({
   colors,
   orbiting = false,
+  yawBias = 0,
   reactPulse = 0,
   onPetInteract,
 }: Props) {
@@ -43,7 +46,9 @@ export function Cat3DModel({
     if (!group.current) return;
     const t = state.clock.getElapsedTime();
     if (!orbiting) {
-      group.current.rotation.y = Math.sin(t * 0.45) * 0.35;
+      group.current.rotation.y = yawBias + Math.sin(t * 0.45) * 0.22;
+    } else {
+      group.current.rotation.y = yawBias;
     }
     const bob = Math.sin(t * 1.6) * 0.03;
     if (bounce.current > 0) {

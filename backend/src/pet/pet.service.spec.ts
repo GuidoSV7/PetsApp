@@ -1,21 +1,34 @@
 import { BadRequestException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { DRIZZLE } from '../database/database.tokens.js';
+import { createTestDb, type TestDb } from '../testing/pglite.js';
+import { DrizzlePetRepository } from './infrastructure/drizzle-pet.repository.js';
 import { PET_REPOSITORY } from './ports/pet-repository.port.js';
-import { PetService } from './pet.service.js';
-import { InMemoryPetRepository } from './testing/in-memory-pet.repository.js';
 import { STARTING_COINS } from './pet-rules.js';
+import { PetService } from './pet.service.js';
+import { Test } from '@nestjs/testing';
 
 const GUEST = '11111111-1111-4111-8111-111111111111';
 
-describe('PetService', () => {
+describe('PetService (drizzle)', () => {
   let service: PetService;
+  let testDb: TestDb;
+
+  beforeAll(async () => {
+    testDb = await createTestDb();
+  });
+
+  afterAll(async () => {
+    await testDb.close();
+  });
 
   beforeEach(async () => {
+    await testDb.client.exec('TRUNCATE pet_states RESTART IDENTITY CASCADE');
     const module = await Test.createTestingModule({
       providers: [
         PetService,
-        { provide: PET_REPOSITORY, useClass: InMemoryPetRepository },
+        { provide: DRIZZLE, useValue: testDb.db },
+        { provide: PET_REPOSITORY, useClass: DrizzlePetRepository },
       ],
     }).compile();
     service = module.get(PetService);
