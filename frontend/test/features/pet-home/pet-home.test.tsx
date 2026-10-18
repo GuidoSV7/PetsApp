@@ -4,6 +4,7 @@
 import * as React from "react";
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -12,7 +13,11 @@ import {
 } from "@testing-library/react";
 import { NEED_LABELS } from "@/features/pet-home/pet-stats";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
-import { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
+import {
+  PET_NAME,
+  PET_STATUS,
+  SPEECH_DISMISS_MS,
+} from "@/features/pet-home/pet-status";
 import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
 import {
   API_FEED_COST,
@@ -140,6 +145,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 async function ready() {
@@ -206,6 +212,31 @@ describe("PetHomeStage (API-backed)", () => {
       expect(screen.getByText(PET_STATUS.broke)).toBeTruthy();
     });
     expect(latestCoins).toBe(leftover);
+  });
+
+  it("clears the broke speech after a few seconds", async () => {
+    vi.useFakeTimers();
+    serverState = {
+      ...createApiPetState(),
+      coins: 0,
+      statusKey: "broke",
+    };
+    render(
+      <PetHomeStage
+        onCoinsChange={(coins) => {
+          latestCoins = coins;
+        }}
+      />,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText(PET_STATUS.broke)).toBeTruthy();
+    await act(async () => {
+      vi.advanceTimersByTime(SPEECH_DISMISS_MS);
+    });
+    expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
+    expect(screen.queryByText(PET_STATUS.broke)).toBeNull();
   });
 
   it("raises fun without minting coins when playing", async () => {

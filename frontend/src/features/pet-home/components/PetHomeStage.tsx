@@ -31,6 +31,7 @@ import {
 } from "@/features/pet-home/pet-stats";
 import {
   DEFAULT_PET_NAME,
+  SPEECH_DISMISS_MS,
   petStatusText,
   type PetStatusKey,
 } from "@/features/pet-home/pet-status";
@@ -94,6 +95,14 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     const player = purrRef.current;
     return () => player.stop();
   }, []);
+
+  useEffect(() => {
+    if (statusKey === "idle") return;
+    const timer = window.setTimeout(() => {
+      setStatusKey("idle");
+    }, SPEECH_DISMISS_MS);
+    return () => window.clearTimeout(timer);
+  }, [statusKey]);
 
   const applyState = (state: PetStateResponse, bounce = false) => {
     onCoinsChangeRef.current?.(state.coins);

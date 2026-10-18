@@ -7,6 +7,9 @@ export const PET_NAME = DEFAULT_PET_NAME;
 
 export const RENAME_COST = 5;
 
+/** How long feedback speech (broke, fed, …) stays before returning to idle. */
+export const SPEECH_DISMISS_MS = 3500;
+
 export type PetStatusKey =
   | "idle"
   | "fed"
