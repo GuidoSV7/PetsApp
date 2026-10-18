@@ -7,11 +7,10 @@ import { useRouter } from "next/navigation";
 import {
   PetsAppApiError,
   updateAdminUser,
-  toggleAdminUserActive,
+  toggleAdminUserBlock,
   getAdminUserById,
-  verifyAdminUser,
+  type AdminUserResponse,
   type PetsAppApiRole,
-  type PetsAppUserResponse,
 } from "../../../_lib/petsapp-api";
 import { useNotification } from "../../../_components/NotificationsProvider";
 import { clearSession, getSessionToken } from "../../../demoAuth";
@@ -24,30 +23,29 @@ type Props = {
   mostrarConfiguracion?: boolean;
 };
 
-function claseActivo(activo: boolean | undefined) {
-  if (activo === false) return estilos.estadoSuspendido;
-  return estilos.estadoActivo;
+function blockedClass(blocked: boolean) {
+  return blocked ? estilos.estadoSuspendido : estilos.estadoActivo;
 }
 
-function labelActivo(activo: boolean | undefined) {
-  if (activo === false) return "Inactivo";
-  return "Activo";
+function blockedLabel(blocked: boolean) {
+  return blocked ? "Bloqueado" : "Activo";
 }
 
-function labelRol(rol: PetsAppApiRole) {
-  return rol === "admin" ? "Administrador" : "Usuario";
+function roleLabel(role: PetsAppApiRole) {
+  if (role === "admin") return "Administrador";
+  if (role === "super_admin") return "Super admin";
+  return "Miembro";
 }
 
-function labelVerificado(verificado: boolean | undefined) {
-  return verificado ? "Verificado" : "Sin verificar";
+function verifiedLabel(verified: boolean) {
+  return verified ? "Verificado" : "Sin verificar";
 }
 
-function textoBotonToggle(activo: boolean | undefined) {
-  if (activo === false) return "Activar cuenta";
-  return "Desactivar cuenta";
+function toggleBlockButtonLabel(blocked: boolean) {
+  return blocked ? "Desbloquear cuenta" : "Bloquear cuenta";
 }
 
-// Ficha de usuario con GET /admin/users/:id, PATCH de rol/activo y POST toggle-active.
+// User detail: GET /admin/users/:id, PATCH name/email/country, POST toggle-block.
 export default function AdminUserDetailView({
   idUsuario,
   modalMode = false,
@@ -57,23 +55,20 @@ export default function AdminUserDetailView({
   const { showNotification } = useNotification();
   const router = useRouter();
   const [cargando, setCargando] = useState(true);
-  const [usuario, setUsuario] = useState<PetsAppUserResponse | null>(null);
+  const [usuario, setUsuario] = useState<AdminUserResponse | null>(null);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
 
-  const [rolEdit, setRolEdit] = useState<PetsAppApiRole>("merchant");
+  const [nombreEdit, setNombreEdit] = useState("");
   const [correoEdit, setCorreoEdit] = useState("");
   const [paisEdit, setPaisEdit] = useState("");
-  const [activoEdit, setActivoEdit] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [alternando, setAlternando] = useState(false);
-  const [verificando, setVerificando] = useState(false);
 
-  const aplicarUsuario = useCallback((u: PetsAppUserResponse) => {
+  const aplicarUsuario = useCallback((u: AdminUserResponse) => {
     setUsuario(u);
-    setRolEdit(u.role);
+    setNombreEdit(u.userName ?? "");
     setCorreoEdit(u.email ?? "");
     setPaisEdit(u.country ?? "");
-    setActivoEdit(u.isActive !== false);
   }, []);
 
   const recargar = useCallback(async () => {
@@ -108,13 +103,12 @@ export default function AdminUserDetailView({
     if (!token || !idUsuario) return;
     setGuardando(true);
     try {
-      const actualizado = await updateAdminUser(token, idUsuario, {
-        role: rolEdit,
-        isActive: activoEdit,
+      await updateAdminUser(token, idUsuario, {
+        name: nombreEdit,
         email: correoEdit,
         country: paisEdit,
       });
-      aplicarUsuario(actualizado);
+      await recargar();
       showNotification("Cambios guardados.");
       onListRefresh?.();
     } catch (e) {
@@ -128,28 +122,23 @@ export default function AdminUserDetailView({
       setGuardando(false);
     }
   }, [
-    activoEdit,
-    aplicarUsuario,
     correoEdit,
     idUsuario,
-    paisEdit,
-    rolEdit,
-    router,
+    nombreEdit,
     onListRefresh,
+    paisEdit,
+    recargar,
+    router,
     showNotification,
   ]);
 
-  const ejecutarToggle = useCallback(async () => {
+  const ejecutarToggleBloqueo = useCallback(async () => {
     const token = getSessionToken();
     if (!token || !idUsuario) return;
     setAlternando(true);
     try {
-      const respuesta = await toggleAdminUserActive(token, idUsuario);
-      if (respuesta && typeof respuesta === "object" && "id" in respuesta) {
-        aplicarUsuario(respuesta);
-      } else {
-        await recargar();
-      }
+      await toggleAdminUserBlock(token, idUsuario);
+      await recargar();
       showNotification("Estado actualizado correctamente.");
       onListRefresh?.();
     } catch (e) {
@@ -158,36 +147,11 @@ export default function AdminUserDetailView({
         router.replace("/");
         return;
       }
-      showNotification(e instanceof PetsAppApiError ? e.message : "No se pudo alternar el estado.");
+      showNotification(e instanceof PetsAppApiError ? e.message : "No se pudo alternar el bloqueo.");
     } finally {
       setAlternando(false);
     }
-  }, [aplicarUsuario, idUsuario, recargar, router, onListRefresh, showNotification]);
-
-  const ejecutarVerificar = useCallback(async () => {
-    const token = getSessionToken();
-    if (!token || !idUsuario) return;
-    setVerificando(true);
-    try {
-      const respuesta = await verifyAdminUser(token, idUsuario);
-      if (respuesta && typeof respuesta === "object" && "id" in respuesta) {
-        aplicarUsuario(respuesta);
-      } else {
-        await recargar();
-      }
-      showNotification("Usuario verificado correctamente.");
-      onListRefresh?.();
-    } catch (e) {
-      if (e instanceof PetsAppApiError && e.codigoEstado === 401) {
-        clearSession();
-        router.replace("/");
-        return;
-      }
-      showNotification(e instanceof PetsAppApiError ? e.message : "No se pudo verificar el usuario.");
-    } finally {
-      setVerificando(false);
-    }
-  }, [aplicarUsuario, idUsuario, recargar, router, onListRefresh, showNotification]);
+  }, [idUsuario, onListRefresh, recargar, router, showNotification]);
 
   if (cargando && !usuario) {
     return (
@@ -233,21 +197,42 @@ export default function AdminUserDetailView({
 
       <section className={estilos.tarjetaFicha} aria-labelledby="titulo-usuario">
         <h1 id="titulo-usuario" className={estilos.tituloFicha}>
-          {usuario.fullName}
+          {usuario.userName}
         </h1>
         <p className={estilos.metaFicha}>
-          <span className={`${estilos.pillEstado} ${claseActivo(usuario.isActive)}`}>
-            {labelActivo(usuario.isActive)}
+          <span className={`${estilos.pillEstado} ${blockedClass(usuario.isBlocked)}`}>
+            {blockedLabel(usuario.isBlocked)}
           </span>
           {" · "}
-          <span className={`${estilos.pillEstado} ${estilos.pillRol}`}>Rol actual: {labelRol(usuario.role)}</span>
+          <span className={`${estilos.pillEstado} ${estilos.pillRol}`}>
+            Rol actual: {roleLabel(usuario.role)}
+          </span>
           {" · "}
-          <span className={`${estilos.pillEstado} ${usuario.isVerified ? estilos.estadoActivo : estilos.estadoPendiente}`}>
-            {labelVerificado(usuario.isVerified)}
+          <span
+            className={`${estilos.pillEstado} ${
+              usuario.isVerified ? estilos.estadoActivo : estilos.estadoPendiente
+            }`}
+          >
+            {verifiedLabel(usuario.isVerified)}
           </span>
         </p>
 
         <div className={estilos.gridDatos}>
+          <div>
+            <p className={estilos.labelCampo}>Nombre</p>
+            {mostrarConfiguracion ? (
+              <input
+                id="nombre-usuario"
+                className={estilos.inputTexto}
+                type="text"
+                value={nombreEdit}
+                onChange={(e) => setNombreEdit(e.target.value)}
+                placeholder="Nombre"
+              />
+            ) : (
+              <p className={estilos.valorCampo}>{usuario.userName}</p>
+            )}
+          </div>
           <div>
             <p className={estilos.labelCampo}>Correo</p>
             {mostrarConfiguracion ? (
@@ -275,36 +260,17 @@ export default function AdminUserDetailView({
                 className={estilos.inputTexto}
                 value={paisEdit}
                 onChange={(e) => setPaisEdit(e.target.value)}
-                placeholder="País"
+                placeholder="BO"
+                maxLength={2}
               />
             ) : (
-              <p className={estilos.valorCampo}>{usuario.country}</p>
+              <p className={estilos.valorCampo}>{usuario.country ?? "—"}</p>
             )}
           </div>
-          {mostrarConfiguracion ? (
-            <div>
-              <p className={estilos.labelCampo}>Rol del usuario</p>
-              <select
-                id="rol-usuario"
-                className={estilos.selectRol}
-                value={rolEdit}
-                onChange={(e) => setRolEdit(e.target.value as PetsAppApiRole)}
-              >
-                <option value="merchant">Usuario</option>
-                <option value="admin">Administrador</option>
-              </select>
-            </div>
-          ) : null}
         </div>
 
         {mostrarConfiguracion ? (
           <div className={estilos.formularioAdmin}>
-            <div className={estilos.filaForm}>
-              <label className={estilos.checkActivo}>
-                <input type="checkbox" checked={activoEdit} onChange={(e) => setActivoEdit(e.target.checked)} />
-                Cuenta activa
-              </label>
-            </div>
             <div className={estilos.filaBotonesAccion}>
               <button
                 type="button"
@@ -317,23 +283,13 @@ export default function AdminUserDetailView({
               <button
                 type="button"
                 className={`${estilos.botonAlternar} ${
-                  usuario.isActive === false ? estilos.botonActivar : estilos.botonDesactivar
+                  usuario.isBlocked ? estilos.botonActivar : estilos.botonDesactivar
                 }`}
                 disabled={alternando}
-                onClick={() => void ejecutarToggle()}
+                onClick={() => void ejecutarToggleBloqueo()}
               >
-                {alternando ? "Procesando…" : textoBotonToggle(usuario.isActive)}
+                {alternando ? "Procesando…" : toggleBlockButtonLabel(usuario.isBlocked)}
               </button>
-              {usuario.isVerified !== true ? (
-                <button
-                  type="button"
-                  className={estilos.botonVerificar}
-                  disabled={verificando}
-                  onClick={() => void ejecutarVerificar()}
-                >
-                  {verificando ? "Verificando…" : "Verificar usuario"}
-                </button>
-              ) : null}
             </div>
           </div>
         ) : null}

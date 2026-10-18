@@ -8,33 +8,32 @@ vi.mock("@/lib/axios", () => ({
 }));
 
 import api from "@/lib/axios";
-import { signInPetsAppUser } from "@/features/auth/api/auth.service";
+import {
+  signInPetsAppUser,
+  registerPetsAppUser,
+} from "@/features/auth/api/auth.service";
 
 describe("signInPetsAppUser", () => {
   beforeEach(() => {
     vi.mocked(api.post).mockReset();
   });
 
-  it("envía email, password y wallet opcional a /auth/login", async () => {
+  it("posts trimmed email and password to /auth/login", async () => {
     vi.mocked(api.post).mockResolvedValue({
-      data: { token: "t", user: { id: "1", email: "a@test.app" } },
+      data: {
+        token: "t",
+        user: {
+          id: "1",
+          name: "Ada",
+          email: "a@test.app",
+          role: "member",
+          roles: ["member"],
+          country: null,
+        },
+      },
     });
 
-    await signInPetsAppUser("  a@test.app  ", "secret", "  wallet123  ");
-
-    expect(api.post).toHaveBeenCalledWith("/auth/login", {
-      email: "a@test.app",
-      password: "secret",
-      walletAddress: "wallet123",
-    });
-  });
-
-  it("omite walletAddress si viene vacía", async () => {
-    vi.mocked(api.post).mockResolvedValue({
-      data: { token: "t", user: { id: "1", email: "a@test.app" } },
-    });
-
-    await signInPetsAppUser("a@test.app", "secret", "   ");
+    await signInPetsAppUser("  a@test.app  ", "secret");
 
     expect(api.post).toHaveBeenCalledWith("/auth/login", {
       email: "a@test.app",
@@ -48,28 +47,62 @@ describe("registerPetsAppUser", () => {
     vi.mocked(api.post).mockReset();
   });
 
-  it("normaliza email y wallet en POST /auth/register", async () => {
-    const { registerPetsAppUser } = await import(
-      "@/features/auth/api/auth.service"
-    );
+  it("normalizes email, name and country on POST /auth/register", async () => {
     vi.mocked(api.post).mockResolvedValue({
-      data: { token: "t", user: { id: "1", email: "n@test.app" } },
+      data: {
+        token: "t",
+        user: {
+          id: "1",
+          name: "Nombre",
+          email: "n@test.app",
+          role: "member",
+          roles: ["member"],
+          country: "BO",
+        },
+      },
     });
 
     await registerPetsAppUser({
       email: "  n@test.app ",
-      password: "123456",
-      fullName: "  Nombre ",
-      country: " Bolivia ",
-      walletAddress: "  wallet ",
+      password: "12345678",
+      name: "  Nombre ",
+      country: " bo ",
     });
 
     expect(api.post).toHaveBeenCalledWith("/auth/register", {
       email: "n@test.app",
-      password: "123456",
-      fullName: "Nombre",
-      country: "Bolivia",
-      walletAddress: "wallet",
+      password: "12345678",
+      name: "Nombre",
+      country: "BO",
+    });
+  });
+
+  it("omits country when absent or blank", async () => {
+    vi.mocked(api.post).mockResolvedValue({
+      data: {
+        token: "t",
+        user: {
+          id: "1",
+          name: "Nombre",
+          email: "n@test.app",
+          role: "member",
+          roles: ["member"],
+          country: null,
+        },
+      },
+    });
+
+    await registerPetsAppUser({
+      email: "n@test.app",
+      password: "12345678",
+      name: "Nombre",
+      country: "   ",
+    });
+
+    expect(api.post).toHaveBeenCalledWith("/auth/register", {
+      email: "n@test.app",
+      password: "12345678",
+      name: "Nombre",
     });
   });
 });

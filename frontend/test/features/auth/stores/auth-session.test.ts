@@ -8,6 +8,8 @@ import {
   clearSession,
   getSessionToken,
   getSession,
+  landingPathForRole,
+  isAdminRole,
 } from "@/stores/auth-session";
 
 function installMemoryLocalStorage() {
@@ -60,46 +62,47 @@ describe("auth-session store", () => {
     localStorage.clear();
   });
 
-  it("persiste y recupera token y usuario merchant", () => {
+  it("persists and recovers token and member user", () => {
     savePetsAppSession({
       token: "jwt-abc",
       user: {
         id: "u1",
-        fullName: "Demo",
-        email: "Merchant@Test.App",
-        role: "merchant",
-        country: "Bolivia",
-        walletAddress: "wallet1",
+        name: "Demo",
+        email: "Member@Test.App",
+        role: "member",
+        roles: ["member"],
+        country: "BO",
       },
     });
 
-    const sesion = getPetsAppSession();
-    expect(sesion?.token).toBe("jwt-abc");
-    expect(sesion?.user.email).toBe("Merchant@Test.App");
+    const session = getPetsAppSession();
+    expect(session?.token).toBe("jwt-abc");
+    expect(session?.user.email).toBe("Member@Test.App");
+    expect(session?.user.name).toBe("Demo");
     expect(getSessionToken()).toBe("jwt-abc");
     expect(getSession()).toEqual({
-      email: "merchant@test.app",
-      role: "merchant",
+      email: "member@test.app",
+      role: "member",
     });
   });
 
-  it("devuelve null si el JSON en localStorage es inválido", () => {
+  it("returns null when localStorage JSON is invalid", () => {
     localStorage.setItem("petsapp_session_v1", "{not-json");
     expect(getPetsAppSession()).toBeNull();
   });
 
-  it("lee sesión legacy y migra al guardar", () => {
+  it("reads legacy session key and migrates on save", () => {
     localStorage.setItem(
       "petsapp_sesion_v1",
       JSON.stringify({
         token: "legacy",
         user: {
           id: "1",
-          fullName: "Legacy",
+          name: "Legacy",
           email: "legacy@test.app",
           role: "admin",
+          roles: ["admin"],
           country: "BO",
-          walletAddress: null,
         },
       }),
     );
@@ -109,19 +112,28 @@ describe("auth-session store", () => {
     expect(localStorage.getItem("petsapp_sesion_v1")).toBeNull();
   });
 
-  it("clearSession elimina la clave", () => {
+  it("clearSession removes the key", () => {
     savePetsAppSession({
       token: "t",
       user: {
         id: "1",
-        fullName: "A",
+        name: "A",
         email: "a@test.app",
         role: "admin",
+        roles: ["admin"],
         country: "BO",
-        walletAddress: null,
       },
     });
     clearSession();
     expect(getPetsAppSession()).toBeNull();
+  });
+
+  it("routes admin roles to /admin and members to /account", () => {
+    expect(landingPathForRole("admin")).toBe("/admin");
+    expect(landingPathForRole("super_admin")).toBe("/admin");
+    expect(landingPathForRole("member")).toBe("/account");
+    expect(isAdminRole("admin")).toBe(true);
+    expect(isAdminRole("super_admin")).toBe(true);
+    expect(isAdminRole("member")).toBe(false);
   });
 });

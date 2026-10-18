@@ -37,4 +37,19 @@ export type UserProfileResponse = {
   updatedAt: string;
 };
 
+/** `GET /admin/users` and `GET /admin/users/:id` (CompleteUserDto). */
+export type AdminUserResponse = {
+  id: string;
+  email: string;
+  userName: string;
+  role: PetsAppApiRole;
+  roles: PetsAppApiRole[];
+  isBlocked: boolean;
+  isVerified: boolean;
+  country: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastLogin: string | null;
+};
+
 export type AuthModalMode = "sign-in" | "sign-up";

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 
 import AdminUserDetailView from "../../_components/customers/AdminUserDetailView";
 
-// Detalle de usuario admin: GET /admin/users/:id y acciones PATCH / toggle-active.
+// Admin user detail: GET /admin/users/:id, PATCH profile fields, POST toggle-block.
 export default function PaginaDetalleCliente() {
   const params = useParams();
   const id = typeof params.id === "string" ? params.id : "";

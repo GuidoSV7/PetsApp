@@ -1,15 +1,16 @@
-// Cliente HTTP hacia el backend PetsApp: login, registro, perfil y cuenta.
-// Centraliza la URL base y el header Bearer para no repetir lógica en componentes.
+// HTTP client toward the PetsApp NestJS API: auth, profile, and admin users.
+// Centralizes the public base URL and Bearer header for UI callers.
 
 import { PetsAppApiError } from "@/lib/errors";
 import { petsappPublicClientUrl } from "@/lib/petsapp-api-origin";
 import {
   signInPetsAppUser,
-  obtenerPerfilAuth,
-  obtenerUsuarioYo,
+  fetchAuthProfile,
+  fetchCurrentUser,
   registerPetsAppUser,
 } from "@/features/auth/api/auth.service";
 import type {
+  AdminUserResponse,
   LoginRegisterResponse,
   PetsAppApiRole,
   PetsAppUserResponse,
@@ -18,11 +19,16 @@ import type {
 export { PetsAppApiError };
 export {
   signInPetsAppUser,
-  obtenerPerfilAuth,
-  obtenerUsuarioYo,
+  fetchAuthProfile,
+  fetchCurrentUser,
   registerPetsAppUser,
 };
-export type { LoginRegisterResponse, PetsAppApiRole, PetsAppUserResponse };
+export type {
+  AdminUserResponse,
+  LoginRegisterResponse,
+  PetsAppApiRole,
+  PetsAppUserResponse,
+};
 
 export function getPetsAppBaseUrl() {
   return petsappPublicClientUrl();
@@ -34,231 +40,166 @@ export type ApiErrorBody = {
   statusCode?: number;
 };
 
-async function parsearError(respuesta: Response): Promise<never> {
-  let cuerpo: unknown;
+async function parseError(response: Response): Promise<never> {
+  let body: unknown;
   try {
-    cuerpo = await respuesta.json();
+    body = await response.json();
   } catch {
-    cuerpo = null;
+    body = null;
   }
-  const mensaje =
-    typeof cuerpo === "object" &&
-    cuerpo !== null &&
-    "message" in cuerpo &&
-    typeof (cuerpo as ApiErrorBody).message === "string"
-      ? (cuerpo as ApiErrorBody).message!
-      : respuesta.statusText || "Error de red";
-  throw new PetsAppApiError(mensaje, respuesta.status, cuerpo);
+  const message =
+    typeof body === "object" &&
+    body !== null &&
+    "message" in body &&
+    typeof (body as ApiErrorBody).message === "string"
+      ? (body as ApiErrorBody).message!
+      : response.statusText || "Network error";
+  throw new PetsAppApiError(message, response.status, body);
 }
 
-function mensajeErrorRed(base: string, causa: unknown): string {
-  const texto =
-    causa instanceof Error ? causa.message : typeof causa === "string" ? causa : "";
-  const esConexion =
-    /failed to fetch|networkerror|load failed|connection refused|aborted/i.test(texto) ||
-    texto === "";
-  if (esConexion) {
-    return `No se pudo conectar con el API (${base}). ¿Está el backend en marcha en ese puerto? (p. ej. npm run start:dev en la carpeta del servidor).`;
+function networkErrorMessage(base: string, cause: unknown): string {
+  const text =
+    cause instanceof Error ? cause.message : typeof cause === "string" ? cause : "";
+  const isConnection =
+    /failed to fetch|networkerror|load failed|connection refused|aborted/i.test(text) ||
+    text === "";
+  if (isConnection) {
+    return `Could not reach the API (${base}). Is the backend running?`;
   }
-  return `Error de red: ${texto || "desconocido"}`;
+  return `Network error: ${text || "unknown"}`;
 }
 
-async function solicitudJson<T>(
-  ruta: string,
-  opciones: RequestInit & { token?: string }
+async function requestJson<T>(
+  path: string,
+  options: RequestInit & { token?: string },
 ): Promise<T> {
   const base = getPetsAppBaseUrl();
-  const encabezados = new Headers(opciones.headers);
-  if (!encabezados.has("Content-Type") && opciones.body !== undefined) {
-    encabezados.set("Content-Type", "application/json");
+  const headers = new Headers(options.headers);
+  if (!headers.has("Content-Type") && options.body !== undefined) {
+    headers.set("Content-Type", "application/json");
   }
-  if (opciones.token) {
-    encabezados.set("Authorization", `Bearer ${opciones.token}`);
+  if (options.token) {
+    headers.set("Authorization", `Bearer ${options.token}`);
   }
 
-  let respuesta: Response;
+  let response: Response;
   try {
-    respuesta = await fetch(`${base}${ruta}`, {
-      ...opciones,
-      headers: encabezados,
+    response = await fetch(`${base}${path}`, {
+      ...options,
+      headers,
     });
-  } catch (causa) {
-    throw new PetsAppApiError(mensajeErrorRed(base, causa), 0, causa);
+  } catch (cause) {
+    throw new PetsAppApiError(networkErrorMessage(base, cause), 0, cause);
   }
 
-  if (!respuesta.ok) {
-    await parsearError(respuesta);
+  if (!response.ok) {
+    await parseError(response);
   }
 
-  if (respuesta.status === 204) {
+  if (response.status === 204) {
     return undefined as T;
   }
 
-  const texto = await respuesta.text();
-  if (!texto) return undefined as T;
-  return JSON.parse(texto) as T;
+  const text = await response.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
-// Perfil / users/me: ver @/features/auth/api/auth.service (re-export arriba)
-
-export async function updateCurrentUser(token: string, datos: { fullName: string }) {
-  return solicitudJson<PetsAppUserResponse>("/users/me", {
+export async function updateCurrentUser(token: string, data: { name: string }) {
+  return requestJson<unknown>("/users/me", {
     method: "PATCH",
     token,
-    body: JSON.stringify({ fullName: datos.fullName.trim() }),
+    body: JSON.stringify({ name: data.name.trim() }),
   });
 }
 
-export async function deleteCurrentUserAccount(token: string, contrasena: string) {
-  return solicitudJson<void>("/users/me", {
+export async function deleteCurrentUserAccount(token: string, password: string) {
+  return requestJson<void>("/users/me", {
     method: "DELETE",
     token,
-    body: JSON.stringify({ password: contrasena }),
+    body: JSON.stringify({ password }),
   });
 }
 
 export async function changePetsAppPassword(
   token: string,
-  contrasenaActual: string,
-  contrasenaNueva: string
+  currentPassword: string,
+  newPassword: string,
 ) {
-  return solicitudJson<unknown>("/auth/change-password", {
+  return requestJson<unknown>("/auth/change-password", {
     method: "POST",
     token,
     body: JSON.stringify({
-      currentPassword: contrasenaActual,
-      newPassword: contrasenaNueva,
+      currentPassword,
+      newPassword,
     }),
   });
 }
 
-export async function verifyPetsAppPassword(token: string, contrasena: string) {
-  return solicitudJson<unknown>("/auth/verify-password", {
+export async function verifyPetsAppPassword(token: string, password: string) {
+  return requestJson<unknown>("/auth/verify-password", {
     method: "POST",
     token,
-    body: JSON.stringify({ password: contrasena }),
+    body: JSON.stringify({ password }),
   });
 }
 
-// --- Panel admin: usuarios (listado paginado, detalle, rol/activo y alternar estado).
-
-/** Interpreta el JSON del listado porque el backend puede devolver `data`, `users` o un arreglo plano. */
-function normalizarListadoAdminUsuarios(
-  crudo: unknown,
-  paginaPedida: number,
-  limitePedido: number
-): {
-  usuarios: PetsAppUserResponse[];
-  total: number;
-  pagina: number;
-  limite: number;
-} {
-  if (Array.isArray(crudo)) {
-    return {
-      usuarios: crudo as PetsAppUserResponse[],
-      total: crudo.length,
-      pagina: paginaPedida,
-      limite: limitePedido,
-    };
-  }
-  if (crudo && typeof crudo === "object") {
-    const o = crudo as Record<string, unknown>;
-    const posibleLista = o.data ?? o.users ?? o.items;
-    const usuarios = Array.isArray(posibleLista)
-      ? (posibleLista as PetsAppUserResponse[])
-      : [];
-    const total =
-      typeof o.total === "number"
-        ? o.total
-        : typeof o.totalItems === "number"
-          ? o.totalItems
-          : usuarios.length;
-    const pagina = typeof o.page === "number" ? o.page : paginaPedida;
-    const limite = typeof o.limit === "number" ? o.limit : limitePedido;
-    return { usuarios, total, pagina, limite };
-  }
-  return { usuarios: [], total: 0, pagina: paginaPedida, limite: limitePedido };
+/** `GET /admin/users` returns a CompleteUserDto array; optional `search` only. */
+export async function listAdminUsers(token: string, search?: string) {
+  const query = new URLSearchParams();
+  const trimmed = search?.trim();
+  if (trimmed) query.set("search", trimmed);
+  const suffix = query.size > 0 ? `?${query.toString()}` : "";
+  const raw = await requestJson<AdminUserResponse[] | unknown>(
+    `/admin/users${suffix}`,
+    { method: "GET", token },
+  );
+  if (Array.isArray(raw)) return raw as AdminUserResponse[];
+  return [];
 }
 
-export type AdminUserListFilters = {
-  /** Si se indica, el API filtra por rol (p. ej. para excluir cuentas admin del listado). */
-  role?: PetsAppApiRole;
-  search?: string;
-};
-
-export async function listAdminUsers(
-  token: string,
-  pagina: number,
-  limite: number,
-  filtros?: AdminUserListFilters
-) {
-  const consulta = new URLSearchParams({
-    page: String(pagina),
-    limit: String(limite),
-  });
-  if (filtros?.role) consulta.set("role", filtros.role);
-  if (filtros?.search) consulta.set("search", filtros.search);
-  const crudo = await solicitudJson<unknown>(`/admin/users?${consulta.toString()}`, {
-    method: "GET",
-    token,
-  });
-  return normalizarListadoAdminUsuarios(crudo, pagina, limite);
-}
-
-export async function getAdminUserById(token: string, idUsuario: string) {
-  return solicitudJson<PetsAppUserResponse>(`/admin/users/${encodeURIComponent(idUsuario)}`, {
-    method: "GET",
-    token,
-  });
+export async function getAdminUserById(token: string, userId: string) {
+  return requestJson<AdminUserResponse>(
+    `/admin/users/${encodeURIComponent(userId)}`,
+    { method: "GET", token },
+  );
 }
 
 export async function updateAdminUser(
   token: string,
-  idUsuario: string,
-  datos: {
-    role: PetsAppApiRole;
-    isActive: boolean;
+  userId: string,
+  data: {
+    name?: string;
     email?: string;
-    country?: string;
-  }
+    country?: string | null;
+  },
 ) {
-  const cuerpo: {
-    role: PetsAppApiRole;
-    isActive: boolean;
+  const body: {
+    name?: string;
     email?: string;
-    country?: string;
-  } = {
-    role: datos.role,
-    isActive: datos.isActive,
-  };
-  if (typeof datos.email === "string") cuerpo.email = datos.email.trim();
-  if (typeof datos.country === "string") cuerpo.country = datos.country.trim();
+    country?: string | null;
+  } = {};
+  if (typeof data.name === "string") body.name = data.name.trim();
+  if (typeof data.email === "string") body.email = data.email.trim();
+  if (data.country !== undefined) {
+    body.country =
+      typeof data.country === "string" ? data.country.trim() || null : data.country;
+  }
 
-  return solicitudJson<PetsAppUserResponse>(`/admin/users/${encodeURIComponent(idUsuario)}`, {
+  return requestJson<unknown>(`/admin/users/${encodeURIComponent(userId)}`, {
     method: "PATCH",
     token,
-    body: JSON.stringify(cuerpo),
+    body: JSON.stringify(body),
   });
 }
 
-/** Alterna activo/inactivo en servidor (POST dedicado). */
-export async function toggleAdminUserActive(token: string, idUsuario: string) {
-  return solicitudJson<PetsAppUserResponse | void>(
-    `/admin/users/${encodeURIComponent(idUsuario)}/toggle-active`,
+/** Toggles `isBlocked` on the server. */
+export async function toggleAdminUserBlock(token: string, userId: string) {
+  return requestJson<unknown>(
+    `/admin/users/${encodeURIComponent(userId)}/toggle-block`,
     {
       method: "POST",
       token,
-    }
-  );
-}
-
-/** Marca un usuario como verificado en backend admin. */
-export async function verifyAdminUser(token: string, idUsuario: string) {
-  return solicitudJson<PetsAppUserResponse | void>(
-    `/admin/users/${encodeURIComponent(idUsuario)}/verify`,
-    {
-      method: "POST",
-      token,
-    }
+    },
   );
 }

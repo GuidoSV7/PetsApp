@@ -1,22 +1,26 @@
-import type { PetsAppUserResponse } from "../../../_lib/petsapp-api";
+import type { AdminUserResponse } from "../../../_lib/petsapp-api";
 import estilos from "./customers-list.module.css";
 
 type Props = {
-  usuarios: PetsAppUserResponse[];
+  usuarios: AdminUserResponse[];
   onVerDetalle: (idUsuario: string) => void;
 };
 
-function claseActivo(activo: boolean | undefined) {
-  if (activo === false) return estilos.estadoSuspendido;
-  return estilos.estadoActivo;
+function blockedClass(blocked: boolean) {
+  return blocked ? estilos.estadoSuspendido : estilos.estadoActivo;
 }
 
-function labelActivo(activo: boolean | undefined) {
-  if (activo === false) return "Inactivo";
-  return "Activo";
+function blockedLabel(blocked: boolean) {
+  return blocked ? "Bloqueado" : "Activo";
 }
 
-// Tabla de usuarios del API admin: enlaces al detalle para editar rol y estado.
+function roleLabel(role: AdminUserResponse["role"]) {
+  if (role === "admin") return "Administrador";
+  if (role === "super_admin") return "Super admin";
+  return "Miembro";
+}
+
+// Admin users table: links into detail for block toggle and profile edits.
 export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
   return (
     <div className={estilos.tarjetaTabla}>
@@ -32,6 +36,7 @@ export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
                 <th>Rol</th>
                 <th>País</th>
                 <th>Estado</th>
+                <th>Verificado</th>
                 <th />
               </tr>
             </thead>
@@ -39,17 +44,18 @@ export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
               {usuarios.map((u) => (
                 <tr key={u.id}>
                   <td>
-                    <div className={estilos.celdaPrincipal}>{u.fullName}</div>
+                    <div className={estilos.celdaPrincipal}>{u.userName}</div>
                     <div className={estilos.celdaSecundaria}>{u.id}</div>
                   </td>
                   <td className={estilos.celdaSecundaria}>{u.email}</td>
-                  <td>{u.role}</td>
-                  <td className={estilos.celdaSecundaria}>{u.country}</td>
+                  <td>{roleLabel(u.role)}</td>
+                  <td className={estilos.celdaSecundaria}>{u.country ?? "—"}</td>
                   <td>
-                    <span className={`${estilos.pillEstado} ${claseActivo(u.isActive)}`}>
-                      {labelActivo(u.isActive)}
+                    <span className={`${estilos.pillEstado} ${blockedClass(u.isBlocked)}`}>
+                      {blockedLabel(u.isBlocked)}
                     </span>
                   </td>
+                  <td>{u.isVerified ? "Sí" : "No"}</td>
                   <td>
                     <button
                       type="button"

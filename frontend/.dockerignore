@@ -1,7 +1,13 @@
 node_modules
 .next
-.git
-.env*
-*.md
-test
+.env
+.env.*
+!.env.example
 coverage
+test
+openspec
+*.md
+!README.md
+.git
+.gitignore
+CLAUDE.md
