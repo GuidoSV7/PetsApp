@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
 import { CoinBalance } from "@/features/pet-home/components/CoinBalance";
 import {
-  DEFAULT_GREY_COAT,
+  DEFAULT_GREEN_COAT,
   type PetCoatColors,
 } from "@/features/pet-home/extract-coat-colors";
 import {
@@ -47,7 +47,7 @@ export function PetHomeStage() {
   const [statusKey, setStatusKey] = useState<PetStatusKey>("idle");
   const [pulse, setPulse] = useState(0);
   const [reactPulse, setReactPulse] = useState(0);
-  const [coat, setCoat] = useState<PetCoatColors>(DEFAULT_GREY_COAT);
+  const [coat, setCoat] = useState<PetCoatColors>(DEFAULT_GREEN_COAT);
   const [coins, setCoins] = useState(STARTING_COINS);
   const [cameraOpen, setCameraOpen] = useState(false);
   const purrRef = useRef(createPurrPlayer());
@@ -87,8 +87,6 @@ export function PetHomeStage() {
 
   return (
     <section className={styles.stage} aria-label={`Escenario de ${PET_NAME}`}>
-      <p className={styles.brand}>PetsApp</p>
-      <p className={styles.tagline}>Cuidá a {PET_NAME}, tu mascota virtual 3D</p>
       <CoinBalance balance={coins} />
 
       <div className={styles.petFrame}>

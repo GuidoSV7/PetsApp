@@ -1,4 +1,5 @@
 .stage {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,48 +10,36 @@
   justify-content: center;
 }
 
-.brand {
-  margin: 0;
-  font-size: clamp(2.4rem, 8vw, 3.6rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--primario);
-  text-shadow:
-    0 0 22px color-mix(in srgb, var(--primario) 40%, transparent),
-    0 0 2px color-mix(in srgb, var(--primario) 50%, transparent);
-}
-
-.tagline {
-  margin: 0;
-  max-width: 28rem;
-  color: rgba(236, 245, 255, 0.72);
-  font-size: 1.05rem;
-  line-height: 1.45;
-}
-
 .coinBalance {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 2px 0 0;
-  padding: 6px 14px 6px 10px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, #f0c14b 45%, transparent);
-  background: color-mix(in srgb, #f0c14b 12%, transparent);
+  gap: 4px;
+  margin: 0;
+  padding: 3px 8px 3px 5px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #f0c14b 40%, transparent);
+  background: color-mix(in srgb, #f0c14b 10%, transparent);
 }
 
 .coinIcon {
   display: block;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 .coinAmount {
   font-weight: 800;
-  font-size: 1.15rem;
-  letter-spacing: 0.02em;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
   color: #ffe9a8;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .petFrame {

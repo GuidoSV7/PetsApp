@@ -120,6 +120,8 @@ describe("PetHomeStage", () => {
     await waitFor(() => {
       expect(screen.getByRole("img", { name: PET_NAME })).toBeTruthy();
     });
+    expect(screen.queryByText("PetsApp")).toBeNull();
+    expect(screen.queryByText(/mascota virtual/i)).toBeNull();
     expect(
       screen.getByLabelText(`Monedas: ${STARTING_COINS}`),
     ).toBeTruthy();

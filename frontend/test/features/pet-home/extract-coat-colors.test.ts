@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  DEFAULT_GREY_COAT,
+  DEFAULT_GREEN_COAT,
   extractCoatColors,
   hexToRgb,
   rgbToHex,
@@ -48,9 +48,9 @@ function colorDistance(a: string, b: string) {
 }
 
 describe("extractCoatColors", () => {
-  it("exposes a grey default coat", () => {
-    expect(DEFAULT_GREY_COAT.primary.toLowerCase()).toBe("#8a8a8e");
-    expect(DEFAULT_GREY_COAT.secondary.toLowerCase()).toBe("#b4b4b8");
+  it("exposes a green default coat", () => {
+    expect(DEFAULT_GREEN_COAT.primary.toLowerCase()).toBe("#2f9e6f");
+    expect(DEFAULT_GREEN_COAT.secondary.toLowerCase()).toBe("#9ee0b8");
   });
 
   it("returns a primary close to a solid mid brown fill", () => {
