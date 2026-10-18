@@ -14,6 +14,13 @@ export {
   spendCoins,
 } from "@/features/pet-home/pet-coins";
 export {
+  INITIAL_PET_NEEDS,
+  NEED_LABELS,
+  applyCareAction,
+  moodFromNeeds,
+  type PetNeeds,
+} from "@/features/pet-home/pet-stats";
+export {
   PET_INTERACT_HINT,
   petInteractStatusKey,
 } from "@/features/pet-home/pet-interaction";

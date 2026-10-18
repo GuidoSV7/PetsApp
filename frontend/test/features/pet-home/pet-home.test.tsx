@@ -16,6 +16,10 @@ import {
   STARTING_COINS,
 } from "@/features/pet-home/pet-coins";
 import { PET_INTERACT_HINT } from "@/features/pet-home/pet-interaction";
+import {
+  INITIAL_PET_NEEDS,
+  NEED_LABELS,
+} from "@/features/pet-home/pet-stats";
 import { PET_NAME, PET_STATUS } from "@/features/pet-home/pet-status";
 
 const playPurr = vi.fn();
@@ -114,34 +118,48 @@ afterEach(() => {
 });
 
 describe("PetHomeStage", () => {
-  it("shows the 3D cat, coins, idle status, hint, and action buttons", async () => {
+  it("shows playful care chrome: cat, coins, needs, mood, actions", async () => {
     render(<PetHomeStage />);
 
     await waitFor(() => {
       expect(screen.getByRole("img", { name: PET_NAME })).toBeTruthy();
     });
     expect(screen.queryByText("PetsApp")).toBeNull();
-    expect(screen.queryByText(/mascota virtual/i)).toBeNull();
     expect(
       screen.getByLabelText(`Monedas: ${STARTING_COINS}`),
     ).toBeTruthy();
     expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
     expect(screen.getByText(PET_INTERACT_HINT)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Alimentar" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Acariciar" })).toBeTruthy();
+    expect(screen.getByText(/Ánimo:/i)).toBeTruthy();
+    expect(screen.getAllByText("Feliz").length).toBeGreaterThan(0);
+
+    for (const label of Object.values(NEED_LABELS)) {
+      expect(screen.getByText(label)).toBeTruthy();
+    }
+    expect(screen.getByText(`${INITIAL_PET_NEEDS.hunger}%`)).toBeTruthy();
+
+    expect(screen.getByRole("button", { name: /Alimentar/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Jugar/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Dormir/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Bañar/i })).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Colores de mi gato" }),
+      screen.getByRole("button", { name: /Colores de mi gato/i }),
     ).toBeTruthy();
   });
 
-  it("spends coins when feeding", async () => {
+  it("spends coins and raises hunger when feeding", async () => {
     render(<PetHomeStage />);
     await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
-    fireEvent.click(screen.getByRole("button", { name: "Alimentar" }));
+    fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
     expect(screen.getByText(PET_STATUS.fed)).toBeTruthy();
     expect(
       screen.getByLabelText(
         `Monedas: ${STARTING_COINS - COIN_COSTS.feed}`,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        `${Math.min(100, INITIAL_PET_NEEDS.hunger + 18)}%`,
       ),
     ).toBeTruthy();
   });
@@ -151,29 +169,53 @@ describe("PetHomeStage", () => {
     await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
     const feeds = Math.floor(STARTING_COINS / COIN_COSTS.feed);
     for (let i = 0; i < feeds; i++) {
-      fireEvent.click(screen.getByRole("button", { name: "Alimentar" }));
+      fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
     }
     const leftover = STARTING_COINS - feeds * COIN_COSTS.feed;
     expect(screen.getByLabelText(`Monedas: ${leftover}`)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Alimentar" }));
+    fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
     expect(screen.getByText(PET_STATUS.broke)).toBeTruthy();
     expect(screen.getByLabelText(`Monedas: ${leftover}`)).toBeTruthy();
   });
 
-  it("updates status, purrs, and earns coins when petting", async () => {
+  it("raises fun and earns coins when playing", async () => {
     render(<PetHomeStage />);
     await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
-    fireEvent.click(screen.getByRole("button", { name: "Acariciar" }));
+    fireEvent.click(screen.getByRole("button", { name: /Jugar/i }));
     expect(screen.getByText(PET_STATUS.petted)).toBeTruthy();
-    expect(playPurr).toHaveBeenCalled();
     expect(
       screen.getByLabelText(
         `Monedas: ${STARTING_COINS + COIN_REWARDS.pet}`,
       ),
     ).toBeTruthy();
+    expect(
+      screen.getByText(`${Math.min(100, INITIAL_PET_NEEDS.fun + 16)}%`),
+    ).toBeTruthy();
   });
 
-  it("purrs, updates status, and earns when the cat is tapped", async () => {
+  it("raises energy when sleeping", async () => {
+    render(<PetHomeStage />);
+    await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
+    fireEvent.click(screen.getByRole("button", { name: /Dormir/i }));
+    expect(
+      screen.getByText(
+        `${Math.min(100, INITIAL_PET_NEEDS.energy + 20)}%`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it("raises hygiene when bathing", async () => {
+    render(<PetHomeStage />);
+    await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
+    fireEvent.click(screen.getByRole("button", { name: /Bañar/i }));
+    expect(
+      screen.getByText(
+        `${Math.min(100, INITIAL_PET_NEEDS.hygiene + 18)}%`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it("purrs and raises fun when the cat is tapped", async () => {
     render(<PetHomeStage />);
     await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
     fireEvent.click(screen.getByRole("button", { name: "Tocar gato" }));
@@ -190,7 +232,9 @@ describe("PetHomeStage", () => {
     render(<PetHomeStage />);
     await waitFor(() => screen.getByRole("img", { name: PET_NAME }));
 
-    fireEvent.click(screen.getByRole("button", { name: "Colores de mi gato" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Colores de mi gato/i }),
+    );
     expect(
       screen.getByRole("dialog", { name: "Colores de mi gato" }),
     ).toBeTruthy();

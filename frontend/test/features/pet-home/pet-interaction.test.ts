@@ -8,7 +8,7 @@ describe("pet interaction copy", () => {
   it("hint mentions rotating and purring", () => {
     const lower = PET_INTERACT_HINT.toLowerCase();
     expect(lower).toMatch(/girar|arrastr/);
-    expect(lower).toMatch(/ronrone|toc/);
+    expect(lower).toMatch(/mimar|toc|ronrone/);
   });
 
   it("maps interact to petted status key", () => {

@@ -34,9 +34,9 @@ export function Cat3DViewer({
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.65} />
-        <directionalLight position={[3, 4, 2]} intensity={1.2} />
-        <directionalLight position={[-2, 1.5, -2]} intensity={0.4} />
+        <ambientLight intensity={0.85} />
+        <directionalLight position={[3, 4, 2]} intensity={1.05} />
+        <directionalLight position={[-2, 1.5, -2]} intensity={0.45} />
         <Cat3DModel
           colors={colors}
           orbiting={orbiting}
@@ -45,10 +45,11 @@ export function Cat3DViewer({
         />
         <ContactShadows
           position={[0, -0.55, 0]}
-          opacity={0.35}
+          opacity={0.22}
           scale={4}
-          blur={2.2}
+          blur={2.4}
           far={2}
+          color="#1c2b22"
         />
         <OrbitControls
           enablePan={false}
