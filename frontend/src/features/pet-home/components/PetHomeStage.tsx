@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
 import { CoinBalance } from "@/features/pet-home/components/CoinBalance";
@@ -20,6 +21,10 @@ import {
   PET_INTERACT_HINT,
   petInteractStatusKey,
 } from "@/features/pet-home/pet-interaction";
+import {
+  PET_LAYOUT_MODE,
+  petLayoutCssVars,
+} from "@/features/pet-home/pet-layout";
 import { createPurrPlayer } from "@/features/pet-home/pet-purr";
 import {
   INITIAL_PET_NEEDS,
@@ -116,7 +121,12 @@ export function PetHomeStage() {
   };
 
   return (
-    <section className={styles.stage} aria-label={`Escenario de ${PET_NAME}`}>
+    <section
+      className={styles.stage}
+      aria-label={`Escenario de ${PET_NAME}`}
+      data-layout={PET_LAYOUT_MODE}
+      style={petLayoutCssVars() as CSSProperties}
+    >
       <div className={styles.topBar}>
         <div className={styles.petIdentity}>
           <p className={styles.petName}>{PET_NAME}</p>
@@ -125,23 +135,21 @@ export function PetHomeStage() {
         <CoinBalance balance={coins} />
       </div>
 
-      <div className={styles.moodCard}>
-        <p
-          key={pulse}
-          className={styles.speech}
-          role="status"
-          aria-live="polite"
-        >
-          {PET_STATUS[statusKey]}
-        </p>
-        <p className={styles.moodLine}>
-          Ánimo: <span className={styles.moodValue}>{mood}</span>
-          <span className={styles.moodDot} aria-hidden="true" />
-        </p>
-      </div>
-
       <div className={styles.petCard}>
-        <span className={styles.moodBadge}>{mood}</span>
+        <div className={styles.petCardHeader}>
+          <p
+            key={pulse}
+            className={styles.speech}
+            role="status"
+            aria-live="polite"
+          >
+            {PET_STATUS[statusKey]}
+          </p>
+          <p className={styles.moodLine}>
+            Ánimo: <span className={styles.moodValue}>{mood}</span>
+            <span className={styles.moodDot} aria-hidden="true" />
+          </p>
+        </div>
         <div className={styles.petFrame}>
           <Cat3DViewer
             colors={coat}

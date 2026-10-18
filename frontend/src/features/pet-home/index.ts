@@ -14,6 +14,12 @@ export {
   spendCoins,
 } from "@/features/pet-home/pet-coins";
 export {
+  CAT_MODEL_SCALE,
+  PET_LAYOUT,
+  PET_LAYOUT_MODE,
+  petLayoutCssVars,
+} from "@/features/pet-home/pet-layout";
+export {
   INITIAL_PET_NEEDS,
   NEED_LABELS,
   applyCareAction,

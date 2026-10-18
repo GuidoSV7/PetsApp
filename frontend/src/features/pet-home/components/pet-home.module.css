@@ -1,31 +1,37 @@
 .stage {
+  --pet-frame-max: 140px;
+  --stage-gap: 6px;
+  --care-min-height: 48px;
+
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--stage-gap);
   width: min(100%, 420px);
+  height: 100%;
   margin: 0 auto;
-  padding: 4px 0 16px;
+  padding: 0;
   text-align: left;
   color: #1c2b22;
+  min-height: 0;
 }
 
 .topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .petIdentity {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .petName {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #143022;
@@ -33,7 +39,7 @@
 
 .petLevel {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #5a7a66;
 }
@@ -41,10 +47,10 @@
 .coinBalance {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   margin: 0;
-  padding: 5px 10px 5px 6px;
-  border-radius: 14px;
+  padding: 3px 8px 3px 4px;
+  border-radius: 12px;
   border: 1px solid color-mix(in srgb, #f0c14b 55%, #fff);
   background: #fff8e8;
 }
@@ -52,43 +58,53 @@
 .coinIcon {
   display: block;
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
 }
 
 .coinAmount {
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #8a6208;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
-.moodCard {
+.petCard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 16px 18px;
-  border-radius: 22px;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px 8px;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 8px 24px rgba(20, 48, 34, 0.06);
+  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.06);
+}
+
+.petCardHeader {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 2px;
 }
 
 .speech {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.25;
   color: #1c2b22;
-  animation: statusIn 0.3s ease-out;
+  animation: statusIn 0.25s ease-out;
 }
 
 .moodLine {
   margin: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.92rem;
+  gap: 6px;
+  font-size: 0.75rem;
   font-weight: 650;
   color: #4d6b5a;
 }
@@ -99,45 +115,19 @@
 }
 
 .moodDot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #2fbf6b;
-  box-shadow: 0 0 0 3px rgba(47, 191, 107, 0.2);
-}
-
-.petCard {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 18px 14px 14px;
-  border-radius: 28px;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(20, 48, 34, 0.08);
-}
-
-.moodBadge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 2;
-  padding: 6px 12px;
-  border-radius: 12px;
-  background: #eef8f1;
-  color: #1f8f4e;
-  font-size: 0.8rem;
-  font-weight: 800;
 }
 
 .petFrame {
   position: relative;
-  width: min(100%, 280px);
+  width: min(100%, var(--pet-frame-max));
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  margin: 8px 0 0;
+  margin: 0;
 }
 
 .canvasHost {
@@ -145,50 +135,51 @@
   z-index: 1;
   width: 100%;
   height: 100%;
-  min-height: 240px;
-  border-radius: 20px;
+  min-height: 0;
+  border-radius: 14px;
   overflow: hidden;
   background: linear-gradient(180deg, #f3fbf6 0%, #e4f3ea 100%);
 }
 
 .interactHint {
   margin: 0;
-  padding: 8px 14px;
-  border-radius: 14px;
+  padding: 4px 10px;
+  border-radius: 10px;
   background: #f0f3f1;
   color: #5a6f63;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 650;
   text-align: center;
-  max-width: 95%;
+  max-width: 100%;
+  line-height: 1.2;
 }
 
 .needsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 6px;
 }
 
 .needCard {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 12px 11px;
-  border-radius: 18px;
+  gap: 4px;
+  padding: 7px 8px 6px;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 6px 18px rgba(20, 48, 34, 0.05);
+  box-shadow: 0 3px 10px rgba(20, 48, 34, 0.04);
 }
 
 .needTop {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .needMark {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
   flex-shrink: 0;
   background: #2fbf6b;
 }
@@ -208,20 +199,20 @@
 
 .needLabel {
   flex: 1;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #3a5246;
 }
 
 .needValue {
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 800;
   color: #1c2b22;
   font-variant-numeric: tabular-nums;
 }
 
 .needTrack {
-  height: 7px;
+  height: 5px;
   border-radius: 999px;
   background: #e8efe9;
   overflow: hidden;
@@ -237,22 +228,20 @@
 .actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .careButton {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 72px;
-  padding: 10px 4px;
+  min-height: var(--care-min-height);
+  padding: 6px 2px;
   border: none;
-  border-radius: 18px;
+  border-radius: 14px;
   color: #fff;
   font-weight: 800;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   letter-spacing: 0.01em;
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.15s ease;
@@ -281,14 +270,14 @@
 
 .colorsButton {
   width: 100%;
-  min-height: 48px;
-  padding: 12px 16px;
-  border-radius: 16px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 12px;
   border: 1.5px solid color-mix(in srgb, var(--primario) 55%, #1f8f4e);
   background: #ffffff;
   color: #1f8f4e;
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: transform 0.12s ease, background 0.15s ease;
 }
@@ -302,26 +291,26 @@
 }
 
 .actionButton {
-  min-width: 140px;
-  padding: 12px 18px;
-  border-radius: 14px;
+  min-width: 120px;
+  padding: 10px 14px;
+  border-radius: 12px;
   border: 1.5px solid color-mix(in srgb, var(--primario) 55%, #1f8f4e);
   background: #1f8f4e;
   color: #ffffff;
   font-weight: 800;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
 .actionButtonSecondary {
-  min-width: 140px;
-  padding: 12px 18px;
-  border-radius: 14px;
+  min-width: 120px;
+  padding: 10px 14px;
+  border-radius: 12px;
   border: 1px solid #c5d4cb;
   background: #f5f8f6;
   color: #3a5246;
   font-weight: 750;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
@@ -339,9 +328,9 @@
   width: min(100%, 420px);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 22px;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
   border: 1px solid #d7e6dc;
   background: #ffffff;
 }
@@ -350,7 +339,8 @@
   margin: 0;
   color: #1c2b22;
   font-weight: 650;
-  line-height: 1.4;
+  line-height: 1.35;
+  font-size: 0.92rem;
 }
 
 .cameraError {
@@ -362,22 +352,23 @@
 .cameraVideo {
   width: 100%;
   aspect-ratio: 3 / 4;
+  max-height: 42vh;
   object-fit: cover;
-  border-radius: 16px;
+  border-radius: 14px;
   background: #0d1a12;
 }
 
 .cameraActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
 }
 
 @keyframes statusIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -388,5 +379,13 @@
 @media (prefers-reduced-motion: reduce) {
   .speech {
     animation: none;
+  }
+}
+
+@media (min-height: 780px) {
+  .stage {
+    --pet-frame-max: 160px;
+    --stage-gap: 8px;
+    --care-min-height: 52px;
   }
 }

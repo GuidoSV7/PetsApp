@@ -30,7 +30,7 @@ export function Cat3DViewer({
       aria-label={`${PET_NAME}. Arrastrá para girar, tocá para ronronear.`}
     >
       <Canvas
-        camera={{ position: [0, 0.55, 2.6], fov: 35 }}
+        camera={{ position: [0, 0.28, 3.15], fov: 30 }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true }}
       >
@@ -44,9 +44,9 @@ export function Cat3DViewer({
           onPetInteract={onPetInteract}
         />
         <ContactShadows
-          position={[0, -0.55, 0]}
-          opacity={0.22}
-          scale={4}
+          position={[0, -0.62, 0]}
+          opacity={0.2}
+          scale={3.2}
           blur={2.4}
           far={2}
           color="#1c2b22"
@@ -54,8 +54,9 @@ export function Cat3DViewer({
         <OrbitControls
           enablePan={false}
           enableZoom={false}
-          minPolarAngle={Math.PI / 3.2}
-          maxPolarAngle={Math.PI / 1.85}
+          target={[0, 0.05, 0]}
+          minPolarAngle={Math.PI / 3.4}
+          maxPolarAngle={Math.PI / 1.9}
           rotateSpeed={0.85}
           dampingFactor={0.08}
           enableDamping

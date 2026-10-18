@@ -125,6 +125,9 @@ describe("PetHomeStage", () => {
       expect(screen.getByRole("img", { name: PET_NAME })).toBeTruthy();
     });
     expect(screen.queryByText("PetsApp")).toBeNull();
+    const stage = screen.getByLabelText(`Escenario de ${PET_NAME}`);
+    expect(stage.getAttribute("data-layout")).toBe("compact");
+    expect(stage.style.getPropertyValue("--pet-frame-max")).toBe("140px");
     expect(
       screen.getByLabelText(`Monedas: ${STARTING_COINS}`),
     ).toBeTruthy();

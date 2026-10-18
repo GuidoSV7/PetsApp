@@ -7,7 +7,7 @@ export default function HomeHeader() {
     <header className={estilosHome.header}>
       <div className={estilosHome.headerInner}>
         <div className={estilosHome.marca} aria-label="PetsApp">
-          <BrandMark size={36} />
+          <BrandMark size={28} />
           <div className={estilosHome.tituloMarca}>PetsApp</div>
         </div>
       </div>

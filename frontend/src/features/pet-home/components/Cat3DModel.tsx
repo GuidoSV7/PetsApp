@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Group } from "three";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import { CAT_MODEL_SCALE } from "@/features/pet-home/pet-layout";
 
 type Props = {
   colors: PetCoatColors;
@@ -44,21 +45,21 @@ export function Cat3DModel({
     if (!orbiting) {
       group.current.rotation.y = Math.sin(t * 0.45) * 0.35;
     }
-    const bob = Math.sin(t * 1.6) * 0.06;
+    const bob = Math.sin(t * 1.6) * 0.03;
     if (bounce.current > 0) {
       bounce.current = Math.max(0, bounce.current - delta * 2.4);
     }
-    const hop = Math.sin(bounce.current * Math.PI) * 0.18;
-    const squash = 1 + Math.sin(bounce.current * Math.PI) * 0.08;
-    group.current.position.y = -0.15 + bob + hop;
-    group.current.scale.setScalar(1.05 * squash);
+    const hop = Math.sin(bounce.current * Math.PI) * 0.1;
+    const squash = 1 + Math.sin(bounce.current * Math.PI) * 0.05;
+    group.current.position.y = -0.22 + bob + hop;
+    group.current.scale.setScalar(CAT_MODEL_SCALE * squash);
   });
 
   return (
     <group
       ref={group}
-      position={[0, -0.15, 0]}
-      scale={1.05}
+      position={[0, -0.22, 0]}
+      scale={CAT_MODEL_SCALE}
       onClick={(event) => {
         event.stopPropagation();
         onPetInteract?.();
