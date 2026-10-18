@@ -73,6 +73,7 @@ See `.env.example`. Summary:
 - `CLIENT_SECRET`
 - `CORS_ORIGIN`, `CORS_ENABLED`
 - `NODE_ENV`, `PROD`, `PORT`, `TRUST_PROXY`
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` (only for `npm run seed:admin`)
 
 ## Scripts
 
@@ -86,7 +87,28 @@ npm run db:generate    # drizzle-kit generate (offline)
 npm run db:check       # drizzle-kit check (offline)
 npm run db:migrate     # drizzle-kit migrate (needs DATABASE_URL)
 npm run db:migrate:prod # node dist/db/migrate.js: applies drizzle/ to DATABASE_URL (container start)
+npm run seed:admin     # node dist/db/seed-admin.js: idempotent first super_admin (needs build + DATABASE_URL)
 ```
+
+### Seed the first super_admin (no UI)
+
+There is no public way to create a `super_admin`. After migrations, build once
+and run the seed script with the three admin env vars:
+
+```bash
+npm run build
+ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='at-least-8' ADMIN_NAME='Your Name' \
+  npm run seed:admin
+```
+
+- Uses `DrizzleUserRepository` and the same bcrypt cost as login/register.
+- If `ADMIN_EMAIL` already exists, the script logs and exits `0` without changing
+  the row (idempotent).
+- Password must be at least 8 characters. Email is stored lower-cased.
+
+In Dokploy, exec into the backend container (after deploy) with those three
+variables set (or exported for the one-shot command) and run
+`node dist/db/seed-admin.js` (or `npm run seed:admin`).
 
 The Drizzle repository specs run against an in-memory PostgreSQL (pglite)
 with the real migrations from `drizzle/`, so the full test suite needs no
