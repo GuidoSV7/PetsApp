@@ -51,8 +51,8 @@ describe("cat-anatomy", () => {
     const body = getCatPart("body")!;
     expect(body.kind === "capsule" || body.kind === "sphere").toBe(true);
     if (body.kind === "sphere") {
-      const [, sy, sz] = body.scale;
-      expect(Math.max(sy, sz)).toBeGreaterThan(1);
+      const scale = body.scale ?? [1, 1, 1];
+      expect(Math.max(scale[1], scale[2])).toBeGreaterThan(1);
     }
     if (body.kind === "capsule") {
       expect(body.args[1]).toBeGreaterThan(body.args[0]);
@@ -69,7 +69,7 @@ describe("cat-anatomy", () => {
     const pupil = getCatPart("pupilL")!;
     expect(pupil.role).toBe("pupil");
     expect(["box", "capsule", "cylinder"]).toContain(pupil.kind);
-    const [, sy] = pupil.scale;
-    expect(sy).toBeGreaterThan(pupil.scale[0]);
+    const scale = pupil.scale ?? [1, 1, 1];
+    expect(scale[1]).toBeGreaterThan(scale[0]);
   });
 });

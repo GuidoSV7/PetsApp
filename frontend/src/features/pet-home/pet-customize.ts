@@ -1,6 +1,5 @@
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
-import type { MoodLabel } from "@/features/pet-home/pet-stats";
 
 export type CoatPreset = {
   id: string;
@@ -43,5 +42,3 @@ export function moodCaption(mood: string): string {
 export function isCoatPresetId(id: string): boolean {
   return COAT_PRESETS.some((preset) => preset.id === id);
 }
-
-export type { MoodLabel };
