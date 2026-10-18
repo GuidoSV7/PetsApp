@@ -1,0 +1,184 @@
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 12px 0 8px;
+  min-height: min(72vh, 640px);
+  justify-content: center;
+}
+
+.brand {
+  margin: 0;
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--primario);
+  text-shadow:
+    0 0 22px color-mix(in srgb, var(--primario) 40%, transparent),
+    0 0 2px color-mix(in srgb, var(--primario) 50%, transparent);
+}
+
+.tagline {
+  margin: 0;
+  max-width: 28rem;
+  color: rgba(236, 245, 255, 0.72);
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.petFrame {
+  position: relative;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin: 8px 0 4px;
+}
+
+.glow {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--primario) 28%, transparent) 0%,
+    color-mix(in srgb, #ffb347 12%, transparent) 42%,
+    transparent 70%
+  );
+  filter: blur(4px);
+  animation: glowPulse 3.6s ease-in-out infinite;
+}
+
+.catBob {
+  position: relative;
+  z-index: 1;
+  width: 86%;
+  animation: catBob 2.8s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+
+.catSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.catShadow {
+  fill: rgba(0, 0, 0, 0.35);
+}
+
+.catBody {
+  fill: #f2d5b8;
+}
+
+.catEar {
+  fill: #e8c4a0;
+}
+
+.catEye {
+  fill: #1a3a2a;
+}
+
+.catPupil {
+  fill: #7dffa8;
+}
+
+.catNose {
+  fill: #e0899a;
+}
+
+.catMouth,
+.catWhisker {
+  stroke: #8a6a55;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.catTail {
+  fill: #e8c4a0;
+}
+
+.status {
+  margin: 4px 0 0;
+  min-height: 1.5em;
+  color: rgba(236, 245, 255, 0.88);
+  font-weight: 700;
+  font-size: 1.05rem;
+  animation: statusIn 0.35s ease-out;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.actionButton {
+  min-width: 140px;
+  padding: 14px 22px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--primario) 55%, transparent);
+  background: color-mix(in srgb, var(--primario) 16%, transparent);
+  color: var(--primario);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    filter 0.15s ease,
+    background 0.15s ease;
+}
+
+.actionButton:hover {
+  filter: brightness(1.08);
+  background: color-mix(in srgb, var(--primario) 24%, transparent);
+}
+
+.actionButton:active {
+  transform: scale(0.96);
+}
+
+@keyframes catBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes statusIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catBob,
+  .glow,
+  .status {
+    animation: none;
+  }
+}
