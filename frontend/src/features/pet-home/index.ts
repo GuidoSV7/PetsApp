@@ -1,5 +1,10 @@
 export { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 export {
+  CAT_ANATOMY,
+  CAT_MATERIAL_ROLES,
+  getCatPart,
+} from "@/features/pet-home/cat-anatomy";
+export {
   coatColorsFromFile,
   loadImageDataFromFile,
 } from "@/features/pet-home/coat-from-image";

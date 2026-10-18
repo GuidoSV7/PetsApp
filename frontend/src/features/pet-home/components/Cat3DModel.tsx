@@ -3,6 +3,11 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Group } from "three";
+import {
+  CAT_ANATOMY,
+  type CatMaterialRole,
+  type CatPart,
+} from "@/features/pet-home/cat-anatomy";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import { CAT_MODEL_SCALE } from "@/features/pet-home/pet-layout";
 
@@ -17,7 +22,50 @@ type Props = {
   onPetInteract?: () => void;
 };
 
-/** Stylized procedural cat; materials follow the coat palette. */
+type RolePalette = Record<
+  CatMaterialRole,
+  { color: string; roughness: number; metalness: number; emissive?: string; emissiveIntensity?: number }
+>;
+
+function paletteFromCoat(colors: PetCoatColors): RolePalette {
+  return {
+    primary: { color: colors.primary, roughness: 0.88, metalness: 0.02 },
+    secondary: { color: colors.secondary, roughness: 0.9, metalness: 0.01 },
+    accent: { color: colors.accent, roughness: 0.55, metalness: 0.05 },
+    eye: { color: "#1c1c1c", roughness: 0.25, metalness: 0.15 },
+    pupil: {
+      color: "#8dffb2",
+      roughness: 0.2,
+      metalness: 0.05,
+      emissive: "#5fd98f",
+      emissiveIntensity: 0.28,
+    },
+    whisker: { color: "#f3efe8", roughness: 0.45, metalness: 0.05 },
+  };
+}
+
+function PartGeometry({ part }: { part: CatPart }) {
+  if (part.kind === "sphere") {
+    const [radius, w = 24, h = 20] = part.args;
+    return <sphereGeometry args={[radius, w, h]} />;
+  }
+  if (part.kind === "cone") {
+    const [radius, height, radial = 5] = part.args;
+    return <coneGeometry args={[radius, height, radial]} />;
+  }
+  if (part.kind === "capsule") {
+    const [radius, length, cap = 4, radial = 10] = part.args;
+    return <capsuleGeometry args={[radius, length, cap, radial]} />;
+  }
+  if (part.kind === "box") {
+    const [w, h, d] = part.args;
+    return <boxGeometry args={[w, h, d]} />;
+  }
+  const [rTop, rBottom, height, radial = 6] = part.args;
+  return <cylinderGeometry args={[rTop, rBottom, height, radial]} />;
+}
+
+/** Feline procedural cat; materials follow the coat palette. */
 export function Cat3DModel({
   colors,
   orbiting = false,
@@ -27,16 +75,11 @@ export function Cat3DModel({
 }: Props) {
   const group = useRef<Group>(null);
   const bounce = useRef(0);
-  const materials = useMemo(
-    () => ({
-      primary: colors.primary,
-      secondary: colors.secondary,
-      accent: colors.accent,
-      eye: "#1a1a1a",
-      pupil: "#7dffa8",
-    }),
-    [colors.accent, colors.primary, colors.secondary],
-  );
+  const palette = useMemo(() => paletteFromCoat(colors), [
+    colors.accent,
+    colors.primary,
+    colors.secondary,
+  ]);
 
   useEffect(() => {
     if (reactPulse > 0) bounce.current = 1;
@@ -76,97 +119,32 @@ export function Cat3DModel({
         document.body.style.cursor = "auto";
       }}
     >
-      {/* body */}
-      <mesh castShadow position={[0, 0.15, 0]} scale={[1.05, 0.75, 0.7]}>
-        <sphereGeometry args={[0.55, 32, 32]} />
-        <meshStandardMaterial color={materials.primary} roughness={0.7} />
-      </mesh>
-      {/* belly */}
-      <mesh position={[0, 0.05, 0.28]} scale={[0.7, 0.55, 0.35]}>
-        <sphereGeometry args={[0.45, 24, 24]} />
-        <meshStandardMaterial color={materials.secondary} roughness={0.75} />
-      </mesh>
-      {/* head */}
-      <mesh castShadow position={[0, 0.72, 0.18]}>
-        <sphereGeometry args={[0.38, 32, 32]} />
-        <meshStandardMaterial color={materials.primary} roughness={0.65} />
-      </mesh>
-      {/* muzzle */}
-      <mesh position={[0, 0.58, 0.48]} scale={[0.55, 0.4, 0.35]}>
-        <sphereGeometry args={[0.22, 20, 20]} />
-        <meshStandardMaterial color={materials.secondary} roughness={0.7} />
-      </mesh>
-      {/* ears */}
-      <mesh position={[-0.22, 1.02, 0.12]} rotation={[0.15, 0, -0.35]}>
-        <coneGeometry args={[0.14, 0.28, 4]} />
-        <meshStandardMaterial color={materials.primary} roughness={0.7} />
-      </mesh>
-      <mesh position={[-0.22, 0.98, 0.14]} rotation={[0.15, 0, -0.35]} scale={0.55}>
-        <coneGeometry args={[0.14, 0.28, 4]} />
-        <meshStandardMaterial color={materials.secondary} roughness={0.7} />
-      </mesh>
-      <mesh position={[0.22, 1.02, 0.12]} rotation={[0.15, 0, 0.35]}>
-        <coneGeometry args={[0.14, 0.28, 4]} />
-        <meshStandardMaterial color={materials.primary} roughness={0.7} />
-      </mesh>
-      <mesh position={[0.22, 0.98, 0.14]} rotation={[0.15, 0, 0.35]} scale={0.55}>
-        <coneGeometry args={[0.14, 0.28, 4]} />
-        <meshStandardMaterial color={materials.secondary} roughness={0.7} />
-      </mesh>
-      {/* eyes */}
-      <mesh position={[-0.12, 0.78, 0.48]}>
-        <sphereGeometry args={[0.07, 16, 16]} />
-        <meshStandardMaterial color={materials.eye} roughness={0.3} />
-      </mesh>
-      <mesh position={[0.12, 0.78, 0.48]}>
-        <sphereGeometry args={[0.07, 16, 16]} />
-        <meshStandardMaterial color={materials.eye} roughness={0.3} />
-      </mesh>
-      <mesh position={[-0.11, 0.79, 0.54]}>
-        <sphereGeometry args={[0.025, 12, 12]} />
-        <meshStandardMaterial
-          color={materials.pupil}
-          emissive={materials.pupil}
-          emissiveIntensity={0.35}
-        />
-      </mesh>
-      <mesh position={[0.13, 0.79, 0.54]}>
-        <sphereGeometry args={[0.025, 12, 12]} />
-        <meshStandardMaterial
-          color={materials.pupil}
-          emissive={materials.pupil}
-          emissiveIntensity={0.35}
-        />
-      </mesh>
-      {/* nose */}
-      <mesh position={[0, 0.62, 0.58]} rotation={[Math.PI / 2, 0, 0]}>
-        <coneGeometry args={[0.045, 0.06, 3]} />
-        <meshStandardMaterial color={materials.accent} roughness={0.45} />
-      </mesh>
-      {/* tail */}
-      <mesh
-        castShadow
-        position={[0.55, 0.35, -0.15]}
-        rotation={[0.4, 0.6, 0.8]}
-        scale={[0.18, 0.18, 0.9]}
-      >
-        <capsuleGeometry args={[0.35, 1.2, 4, 12]} />
-        <meshStandardMaterial color={materials.primary} roughness={0.7} />
-      </mesh>
-      {/* paws */}
-      {(
-        [
-          [-0.28, -0.28, 0.28],
-          [0.28, -0.28, 0.28],
-          [-0.32, -0.22, -0.2],
-          [0.32, -0.22, -0.2],
-        ] as const
-      ).map((pos, index) => (
-        <mesh key={index} position={[...pos]}>
-          <sphereGeometry args={[0.12, 16, 16]} />
-          <meshStandardMaterial color={materials.primary} roughness={0.75} />
-        </mesh>
-      ))}
+      {CAT_ANATOMY.map((part) => {
+        const mat = palette[part.role];
+        const castShadow =
+          part.role === "primary" &&
+          (part.id === "body" ||
+            part.id === "head" ||
+            part.id.startsWith("tail"));
+        return (
+          <mesh
+            key={part.id}
+            castShadow={castShadow}
+            position={[...part.position]}
+            rotation={part.rotation ? [...part.rotation] : undefined}
+            scale={part.scale ? [...part.scale] : undefined}
+          >
+            <PartGeometry part={part} />
+            <meshStandardMaterial
+              color={mat.color}
+              roughness={mat.roughness}
+              metalness={mat.metalness}
+              emissive={mat.emissive}
+              emissiveIntensity={mat.emissiveIntensity ?? 0}
+            />
+          </mesh>
+        );
+      })}
     </group>
   );
 }

@@ -16,7 +16,7 @@ type Props = {
   onPetInteract?: () => void;
 };
 
-/** WebGL stage for the procedural 3D cat (client-only). */
+/** WebGL stage for the procedural feline Michi (client-only). */
 export function Cat3DViewer({
   colors,
   yawBias = 0,
@@ -32,13 +32,22 @@ export function Cat3DViewer({
       aria-label={`${PET_NAME}. Arrastrá para girar, tocá para ronronear.`}
     >
       <Canvas
-        camera={{ position: [0, 0.28, 3.15], fov: 30 }}
+        camera={{ position: [0, 0.42, 3.05], fov: 28 }}
         dpr={[1, 1.75]}
         gl={{ antialias: true, alpha: true }}
       >
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[3, 4, 2]} intensity={1.1} />
-        <directionalLight position={[-2, 1.5, -2]} intensity={0.45} />
+        <ambientLight intensity={0.72} />
+        <directionalLight
+          position={[2.8, 4.2, 2.2]}
+          intensity={1.25}
+          color="#fff6e8"
+        />
+        <directionalLight
+          position={[-2.4, 1.8, -1.6]}
+          intensity={0.4}
+          color="#d7e8ff"
+        />
+        <directionalLight position={[0, 1.2, 3]} intensity={0.35} />
         <Cat3DModel
           colors={colors}
           orbiting={orbiting}
@@ -48,18 +57,18 @@ export function Cat3DViewer({
         />
         <ContactShadows
           position={[0, -0.62, 0]}
-          opacity={0.2}
-          scale={3.2}
-          blur={2.4}
-          far={2}
+          opacity={0.28}
+          scale={3.4}
+          blur={2.6}
+          far={2.2}
           color="#1c2b22"
         />
         <OrbitControls
           enablePan={false}
           enableZoom={false}
-          target={[0, 0.05, 0]}
-          minPolarAngle={Math.PI / 3.4}
-          maxPolarAngle={Math.PI / 1.9}
+          target={[0, 0.18, 0.05]}
+          minPolarAngle={Math.PI / 3.5}
+          maxPolarAngle={Math.PI / 1.85}
           rotateSpeed={0.85}
           dampingFactor={0.08}
           enableDamping
