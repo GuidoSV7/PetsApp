@@ -1,0 +1,107 @@
+.page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, #e8f7ee 0%, transparent 55%),
+    #dceee3;
+  color: #143022;
+}
+
+.card {
+  width: min(100%, 400px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 24px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, #143022 8%, transparent);
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(20, 48, 34, 0.1);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #5a7a66;
+  line-height: 1.35;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.field input {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #c5cec8;
+  font: inherit;
+  color: #143022;
+}
+
+.field input:focus {
+  outline: 2px solid color-mix(in srgb, #2fbf6b 45%, transparent);
+  border-color: #2fbf6b;
+}
+
+.submit {
+  min-height: 46px;
+  margin-top: 4px;
+  border: none;
+  border-radius: 12px;
+  background: #143022;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.error {
+  margin: 0;
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.homeLink {
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1f8f4e;
+}
