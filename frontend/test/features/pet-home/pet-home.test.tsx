@@ -173,6 +173,10 @@ describe("PetHomeStage (API-backed)", () => {
     expect(screen.queryByText("Energía")).toBeNull();
     expect(screen.queryByText("Higiene")).toBeNull();
     expect(screen.queryByText(/%$/)).toBeNull();
+    expect(
+      document.querySelector('[data-purpose="pet-profile-card"]'),
+    ).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Personalizar$/i })).toBeTruthy();
 
     const stage = screen.getByLabelText(`Escenario de ${PET_NAME}`);
     expect(stage.getAttribute("data-hunger-low")).toBe("false");

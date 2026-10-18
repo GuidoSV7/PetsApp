@@ -2,10 +2,13 @@
 
 export const PET_LAYOUT_MODE = "compact" as const;
 
+/** Full-bleed cozy room art behind the play home. */
+export const PET_ROOM_BG = "/imagenes/pet-room-bg.png";
+
 export const PET_LAYOUT = {
-  petFrameMaxPx: 240,
-  stageGapPx: 8,
-  careMinHeightPx: 64,
+  petFrameMaxPx: 280,
+  stageGapPx: 10,
+  careMinHeightPx: 72,
 } as const;
 
 export function petLayoutCssVars(

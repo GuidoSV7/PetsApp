@@ -24,6 +24,7 @@ export {
   CAT_MODEL_SCALE,
   PET_LAYOUT,
   PET_LAYOUT_MODE,
+  PET_ROOM_BG,
   petLayoutCssVars,
 } from "@/features/pet-home/pet-layout";
 export {

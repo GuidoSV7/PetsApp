@@ -78,6 +78,7 @@ describe("HomePage auth gate", () => {
       expect(screen.getByLabelText("Escenario de Michi")).toBeTruthy(),
     );
     expect(screen.queryByLabelText("Iniciar sesión")).toBeNull();
+    expect(document.querySelector('[data-home-theme="room"]')).toBeTruthy();
     expect(
       screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
     ).toBeTruthy();

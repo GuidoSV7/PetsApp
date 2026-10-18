@@ -71,7 +71,10 @@ export function PollarHomePage() {
   }
 
   return (
-    <div className={estilosHome.contenedor}>
+    <div
+      className={`${estilosHome.contenedor} ${estilosHome.contenedorPlay}`}
+      data-home-theme="room"
+    >
       <HomeHeader
         coins={coins ?? undefined}
         userName={userName}

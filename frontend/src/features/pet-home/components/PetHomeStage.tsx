@@ -198,7 +198,17 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       style={petLayoutCssVars() as CSSProperties}
     >
       <div className={styles.stageCard}>
-        <div className={styles.stageMeta}>
+        <div
+          className={styles.profileCard}
+          data-purpose="pet-profile-card"
+        >
+          <span
+            className={styles.profileAvatar}
+            style={{
+              background: `linear-gradient(145deg, ${coat.secondary}, ${coat.primary})`,
+            }}
+            aria-hidden="true"
+          />
           <div className={styles.stageMetaMain}>
             <div className={styles.stageIdentity}>
               <PetNameEditor

@@ -134,7 +134,10 @@ function NestHomePage() {
   }
 
   return (
-    <div className={estilosHome.contenedor}>
+    <div
+      className={`${estilosHome.contenedor} ${estilosHome.contenedorPlay}`}
+      data-home-theme="room"
+    >
       <HomeHeader
         coins={coins ?? undefined}
         userName={session.user.name}

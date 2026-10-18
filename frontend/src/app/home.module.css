@@ -15,6 +15,30 @@
     ),
     #e7f5ec;
 }
+
+/** Authenticated play shell: full-bleed cozy room. */
+.contenedorPlay {
+  background-color: #c8dfd0;
+  background-image: url("/imagenes/pet-room-bg.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.contenedorPlay .header {
+  background: transparent;
+  border-bottom: none;
+}
+
+.contenedorPlay .headerInner {
+  padding: 10px 14px 4px;
+}
+
+.contenedorPlay .main {
+  padding: 4px 12px 14px;
+  max-width: 480px;
+}
+
 .header {
   position: relative;
   z-index: 10;
@@ -62,17 +86,25 @@
   filter: brightness(1.06);
 }
 .botonSalir {
-  padding: 6px 12px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, #1c2b22 12%, transparent);
-  background: #fff;
-  color: #1c2b22;
-  font-weight: 700;
-  font-size: 0.78rem;
+  border: 1px solid color-mix(in srgb, #143022 10%, transparent);
+  background: color-mix(in srgb, #143022 82%, #0a1a12);
+  color: #fff;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.18);
 }
 .botonSalir:hover {
-  background: #f3faf5;
+  filter: brightness(1.08);
+}
+.botonSalirIcon {
+  display: block;
+  width: 18px;
+  height: 18px;
 }
 .gate {
   display: flex;
