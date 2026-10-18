@@ -19,9 +19,19 @@ import {
 } from "@/stores/auth-session";
 import { asPetsAppApiError } from "@/lib/errors";
 import type { AuthModalMode } from "@/features/auth/types/auth.types";
+import { isPollarConfigured } from "@/features/pollar/pollar-config";
+import { PollarHomePage } from "@/features/pollar/PollarHomePage";
 
-/** Home: login gate, then virtual pet stage for signed-in users. */
+/** Home: Pollar gate when configured; Nest Google/email fallback otherwise. */
 export default function HomePage() {
+  if (isPollarConfigured()) {
+    return <PollarHomePage />;
+  }
+  return <NestHomePage />;
+}
+
+/** Legacy Nest session gate (no Freighter). */
+function NestHomePage() {
   const [session, setSession] = useState<PetsAppSessionData | null>(null);
   const [ready, setReady] = useState(false);
   const [coins, setCoins] = useState<number | null>(null);

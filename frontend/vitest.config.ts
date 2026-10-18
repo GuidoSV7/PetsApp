@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "node",
     include: ["test/**/*.{test,spec}.{ts,tsx}"],
     passWithNoTests: false,
+    css: true,
   },
   resolve: {
     alias: {
@@ -13,3 +14,4 @@ export default defineConfig({
     },
   },
 });
+
