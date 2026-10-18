@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Delete,
+  HttpCode,
+  Post,
   Put,
   UploadedFile,
   UseGuards,
@@ -25,23 +27,44 @@ type UploadedModel = {
   mimetype: string;
 };
 
+const multerOpts = {
+  storage: memoryStorage(),
+  limits: { fileSize: MAX_GLOBAL_PET_MODEL_BYTES },
+};
+
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('admin/pet-model')
 export class AdminPetModelController {
   constructor(private readonly models: GlobalPetModelService) {}
 
-  @Put()
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(),
-      limits: { fileSize: MAX_GLOBAL_PET_MODEL_BYTES },
-    }),
-  )
-  upsert(
+  /** Primary upsert — multer-native POST (preferred over PUT behind proxies). */
+  @Post()
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file', multerOpts))
+  create(
     @Body() body: UpsertGlobalPetModelDto,
     @UploadedFile() file?: UploadedModel,
   ) {
+    return this.upsert(body, file);
+  }
+
+  /** Alias kept for older clients. */
+  @Put()
+  @UseInterceptors(FileInterceptor('file', multerOpts))
+  replace(
+    @Body() body: UpsertGlobalPetModelDto,
+    @UploadedFile() file?: UploadedModel,
+  ) {
+    return this.upsert(body, file);
+  }
+
+  @Delete()
+  clear() {
+    return this.models.clearModel();
+  }
+
+  private upsert(body: UpsertGlobalPetModelDto, file?: UploadedModel) {
     return this.models.saveModel({
       modelScale: body.modelScale,
       file: file
@@ -52,10 +75,5 @@ export class AdminPetModelController {
           }
         : undefined,
     });
-  }
-
-  @Delete()
-  clear() {
-    return this.models.clearModel();
   }
 }

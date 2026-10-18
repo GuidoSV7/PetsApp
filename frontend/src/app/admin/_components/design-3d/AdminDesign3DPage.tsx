@@ -44,6 +44,23 @@ function formatNum(value: number, digits = 2) {
   return value.toFixed(digits);
 }
 
+function formatAdminModelError(err: unknown, fallback: string): string {
+  const status =
+    typeof err === "object" &&
+    err !== null &&
+    "codigoEstado" in err &&
+    typeof (err as { codigoEstado?: unknown }).codigoEstado === "number"
+      ? (err as { codigoEstado: number }).codigoEstado
+      : undefined;
+  if (status === 404) {
+    return "No se encontró /admin/pet-model (404). Redeployá el frontend (BFF) o el backend con el modelo global.";
+  }
+  if (status === 401) {
+    return "Sesión admin inválida. Entrá de nuevo en /login: hace falta JWT Nest (seed ADMIN_* = admin@petsapp.io), no solo la sesión local.";
+  }
+  return err instanceof Error ? err.message : fallback;
+}
+
 /** Admin: upload .glb, tune scale, preview, confirm for every user. */
 export function AdminDesign3DPage() {
   const [draft, setDraft] = useState<CatDesignTunables>(() => loadCatDesign());
@@ -140,9 +157,7 @@ export function AdminDesign3DPage() {
       notifyCatModelChanged();
       setMessage("Cambio confirmado para todos los usuarios");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "No se pudo confirmar el cambio.",
-      );
+      setError(formatAdminModelError(err, "No se pudo confirmar el cambio."));
     } finally {
       setBusy(false);
     }
@@ -163,9 +178,7 @@ export function AdminDesign3DPage() {
       setPendingUrl(null);
       setMessage("Diseño restablecido");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "No se pudo restablecer.",
-      );
+      setError(formatAdminModelError(err, "No se pudo restablecer."));
     } finally {
       setBusy(false);
     }

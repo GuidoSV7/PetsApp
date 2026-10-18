@@ -37,17 +37,22 @@ export async function uploadGlobalPetModel(input: {
   const form = new FormData();
   form.append("modelScale", String(input.modelScale));
   if (input.file) form.append("file", input.file, input.file.name);
-  const { data } = await api.put<GlobalPetModelMeta>("/admin/pet-model", form, {
-    transformRequest: [
-      (body, headers) => {
-        // Drop the axios default application/json so the browser sets multipart boundary.
-        if (headers && typeof headers === "object") {
-          delete (headers as Record<string, unknown>)["Content-Type"];
-        }
-        return body;
-      },
-    ],
-  });
+  // POST is the multer-native verb; PUT alias remains on the API for older clients.
+  const { data } = await api.post<GlobalPetModelMeta>(
+    "/admin/pet-model",
+    form,
+    {
+      transformRequest: [
+        (body, headers) => {
+          // Drop the axios default application/json so the browser sets multipart boundary.
+          if (headers && typeof headers === "object") {
+            delete (headers as Record<string, unknown>)["Content-Type"];
+          }
+          return body;
+        },
+      ],
+    },
+  );
   return data;
 }
 
