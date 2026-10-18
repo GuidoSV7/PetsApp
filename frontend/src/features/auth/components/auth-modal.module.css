@@ -401,6 +401,22 @@
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
 }
 
+.freighterSoon {
+  color: #5a6a68;
+}
+
+.freighterReady {
+  cursor: pointer;
+  border-color: color-mix(in srgb, #2fbf6b 35%, #c5cec8);
+  background: linear-gradient(180deg, #f7fbf8 0%, #eaf6ef 100%);
+  color: #143022;
+}
+
+.freighterReady:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .googleSoonIcon {
   display: grid;
   place-items: center;
@@ -409,10 +425,29 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.85);
   opacity: 0.85;
+  color: #3a5246;
 }
 
 .googleSoonLabel {
   letter-spacing: -0.01em;
+}
+
+.soonBadge {
+  margin-left: 2px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(20, 48, 34, 0.08);
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: #5a7a66;
+}
+
+.authStack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
 .error {

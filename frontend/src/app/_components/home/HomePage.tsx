@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import estilosHome from "../../home.module.css";
 import HomeHeader from "./HomeHeader";
 import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
+import { FreighterSignInButton } from "@/features/auth/components/FreighterSignInButton";
 import { GoogleSignInButton } from "@/features/auth/components/GoogleSignInButton";
 import AuthDemoModal from "@/features/auth/components/AuthDemoModal";
 import BrandMark from "@/components/ui/BrandMark";
+import estilosAuth from "@/features/auth/components/auth-modal.module.css";
 import {
   signInWithGoogle,
   signOutPetsAppUser,
@@ -30,7 +32,7 @@ export default function HomePage() {
   return <NestHomePage />;
 }
 
-/** Legacy Nest session gate (no Freighter). */
+/** Nest session gate: Google + Freighter (Freighter needs Pollar key to go live). */
 function NestHomePage() {
   const [session, setSession] = useState<PetsAppSessionData | null>(null);
   const [ready, setReady] = useState(false);
@@ -94,13 +96,16 @@ function NestHomePage() {
               <BrandMark size={48} />
               <h1 className={estilosHome.gateTitle}>PetsApp</h1>
               <p className={estilosHome.gateHint}>
-                Iniciá sesión para ver y cuidar a Michi.
+                Iniciá sesión con Google, Freighter o email para cuidar a Michi.
               </p>
             </div>
-            <GoogleSignInButton
-              onCredential={(token) => void onGoogleCredential(token)}
-              disabled={busy}
-            />
+            <div className={estilosAuth.authStack}>
+              <GoogleSignInButton
+                onCredential={(token) => void onGoogleCredential(token)}
+                disabled={busy}
+              />
+              <FreighterSignInButton disabled={busy} />
+            </div>
             {authError ? (
               <p className={estilosHome.gateError} role="alert">
                 {authError}

@@ -55,8 +55,9 @@ describe("HomePage auth gate", () => {
     await waitFor(() =>
       expect(screen.getByLabelText("Iniciar sesión")).toBeTruthy(),
     );
-    expect(screen.getByText(/Iniciá sesión para ver y cuidar/i)).toBeTruthy();
+    expect(screen.getByText(/Iniciá sesión con Google, Freighter/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /Google/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Freighter/i })).toBeTruthy();
     expect(screen.queryByLabelText("Escenario de Michi")).toBeNull();
   });
 
