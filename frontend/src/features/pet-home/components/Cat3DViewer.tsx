@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
+import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import { PET_NAME } from "@/features/pet-home/pet-status";
@@ -14,6 +15,8 @@ type Props = {
   /** Bump from parent to replay the happy bounce. */
   reactPulse?: number;
   onPetInteract?: () => void;
+  /** Admin / preview override; home loads persisted tunables when omitted. */
+  design?: CatDesignTunables;
 };
 
 /** WebGL stage for the procedural feline Michi (client-only). */
@@ -22,6 +25,7 @@ export function Cat3DViewer({
   yawBias = 0,
   reactPulse = 0,
   onPetInteract,
+  design,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
 
@@ -54,6 +58,7 @@ export function Cat3DViewer({
           yawBias={yawBias}
           reactPulse={reactPulse}
           onPetInteract={onPetInteract}
+          design={design}
         />
         <ContactShadows
           position={[0, -0.62, 0]}

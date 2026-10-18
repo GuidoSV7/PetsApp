@@ -24,6 +24,8 @@ type AdminNavItem = {
 const adminNavItems: AdminNavItem[] = [
   { href: "/admin", label: "Panel", iconSrc: "/iconos/icon-dashboard.svg", isDashboard: true },
   { href: "/admin/customers", label: "Usuarios", iconSrc: "/iconos/icon-usuarios.svg" },
+  { href: "/admin/settings", label: "Configuración", iconSrc: "/iconos/icon-settings.svg" },
+  { href: "/admin/design-3d", label: "Diseño 3D", iconSrc: "/iconos/icon-3d.svg" },
 ];
 
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
