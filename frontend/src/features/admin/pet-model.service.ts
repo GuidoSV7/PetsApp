@@ -42,6 +42,8 @@ export async function uploadGlobalPetModel(input: {
     "/admin/pet-model",
     form,
     {
+      // GLBs can be several MB; do not use the default 30s JSON timeout.
+      timeout: 120_000,
       transformRequest: [
         (body, headers) => {
           // Drop the axios default application/json so the browser sets multipart boundary.

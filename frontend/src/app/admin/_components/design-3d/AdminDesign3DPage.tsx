@@ -56,7 +56,7 @@ function formatAdminModelError(err: unknown, fallback: string): string {
     return "No se encontró /admin/pet-model (404). Redeployá el frontend (BFF) o el backend con el modelo global.";
   }
   if (status === 401) {
-    return "Sesión admin inválida. Entrá de nuevo en /login: hace falta JWT Nest (seed ADMIN_* = admin@petsapp.io), no solo la sesión local.";
+    return "Sesión admin inválida. Cerrá sesión y entrá de nuevo en /login.";
   }
   return err instanceof Error ? err.message : fallback;
 }
