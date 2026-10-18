@@ -1,0 +1,33 @@
+---
+description: Entry point for the PetsApp frontend agent (Next.js 16).
+alwaysApply: true
+---
+
+# AGENTS.md — Frontend (PetsApp)
+
+Entry point for UI work in `frontend/`.
+
+## Stack
+
+- **Next.js 16** (App Router), React 19, TypeScript
+- HTTP via `src/lib/axios.ts` and `petsappPublicClientUrl()` → `/petsapp-api`
+  or `NEXT_PUBLIC_PETSAPP_API_URL`
+- Session helpers in `src/stores/auth-session.ts`
+- Tests: **Vitest** (+ jsdom where needed)
+
+## Conventions
+
+- Keep scope minimal; no redesign unless asked.
+- UI copy may be Spanish; identifiers and comments in English.
+- Admin area: roles `admin` and `super_admin` only; members use `/account`.
+- Prefer existing CSS modules and layout patterns under `src/app/`.
+
+## Skills
+
+Operational skills live under `.cursor/skills/` (for example `nextjs` when
+present). Do not treat `.claude/` as the skill root for this app.
+
+## Commits
+
+Never add `Co-authored-by` for Claude or Cursor, nor "Generated with Claude
+Code". Conventional Commits.

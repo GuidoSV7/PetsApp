@@ -2,7 +2,7 @@
 
 ## Intent
 
-The WIP renamed auth helpers and session roles to match NestJS, but the admin UI, API client, and Vitest suite still assume the old Solana-era contract (`fullName`, `merchant`, `walletAddress`, `isActive`, `toggle-active`). Bring the Next.js frontend to the deployed backend contract with minimal UI change so it compiles, tests green, builds in Docker, and works behind `/petsapp-api`.
+The WIP renamed auth helpers and session roles to match NestJS, but the admin UI, API client, and Vitest suite still assume the old PetsApp-era contract (`fullName`, `merchant`, `walletAddress`, `isActive`, `toggle-active`). Bring the Next.js frontend to the deployed backend contract with minimal UI change so it compiles, tests green, builds in Docker, and works behind `/petsapp-api`.
 
 ## Scope
 
@@ -19,7 +19,7 @@ The WIP renamed auth helpers and session roles to match NestJS, but the admin UI
 
 - Visual redesign, new admin features, role assignment UI beyond what PATCH allows.
 - Backend changes.
-- Wallet / Solana remnants.
+- Wallet / PetsApp remnants.
 
 ## Success
 

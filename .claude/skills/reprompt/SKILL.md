@@ -44,7 +44,7 @@ proceed directly.
 ### 5. Act
 
 Show the sharpened spec briefly, then execute on it (or hand off to the right
-stellar-build skill — e.g. `find-stellar-idea`, `nicole-pm`, `tyler-architect`).
+PetsApp skill — e.g. `find-stellar-idea`, `nicole-pm`, `tyler-architect`).
 Don't make the user re-approve unless a clarifying answer is still pending.
 
 ## Notes
@@ -52,5 +52,5 @@ Don't make the user re-approve unless a clarifying answer is still pending.
 - This is the manual lever. The automatic version runs every turn via the
   `UserPromptSubmit` hook and needs no invocation; turn it off with
   `STELLAR_BUILD_NO_REPROMPT=1`.
-- The more you use stellar-build, the better both get: `/optimize-skills`
+- The more you use PetsApp, the better both get: `/optimize-skills`
   refreshes `~/.stellar/profile.md` from your traces, which feeds these rewrites.

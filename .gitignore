@@ -1,34 +1,55 @@
-# Local / tooling
+# Dependencies
 node_modules/
+
+# Builds
 dist/
 build/
 .next/
+coverage/
+
+# Environment variables
 .env
 .env.*
 !.env.example
+!.env.template
+# Plain "env" files hold the same secrets
+env
+*.env
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
 .DS_Store
+Thumbs.db
 
-# AI runtime (local)
-.atl/
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Agent / local tooling (not repo state)
 .engram/
-.codegraph/
 .opencode/
+.atl/
+.codex/
+.codegraph/
 
-# .NET
+# Workspace-local Cursor overlays (root `.cursor/` is tracked)
+backend/.cursor/
+frontend/.cursor/
+contract/.cursor/
+
+# .NET leftovers (if any)
 **/bin/
 **/obj/
 *.user
 *.suo
 
-# Cursor / agents locales (existen en disco, NO versionar)
-.cursor/
-backend/.cursor/
-frontend/.cursor/
-contract/.cursor/
-AGENTS.md
-backend/AGENTS.md
-frontend/AGENTS.md
-contract/AGENTS.md
-docs/
+# TypeScript incremental build info
 *.tsbuildinfo

@@ -3,8 +3,8 @@
 # Workflow customization surface for prd.
 #
 # Override files (not edited here):
-#   {project-root}/.stellar-build/custom/prd.toml         (team)
-#   {project-root}/.stellar-build/custom/prd.user.toml    (personal)
+#   {project-root}/.PetsApp/custom/prd.toml         (team)
+#   {project-root}/.PetsApp/custom/prd.user.toml    (personal)
 
 [workflow]
 
@@ -72,7 +72,7 @@ run_folder_pattern = "prd-{project_name}-{date}"
 #
 # Examples:
 #   "skill:review-edge-case-hunter"
-#   "file:{project-root}/.stellar-build/style-guides/company-voice.md"
+#   "file:{project-root}/.PetsApp/style-guides/company-voice.md"
 #   "Convert all dates to ISO 8601 format."
 #
 # Suggested order (broader passes first, narrower last):

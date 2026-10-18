@@ -1,0 +1,43 @@
+---
+description: Entry point for the PetsApp backend agent (NestJS 12 ESM + Drizzle + Vitest).
+alwaysApply: true
+---
+
+# AGENTS.md — Backend (PetsApp)
+
+Entry point for backend work. Prefer ports and adapters: services depend on
+repository ports (`Symbol` tokens), never on Drizzle types directly.
+
+## Stack
+
+- **NestJS 12** + TypeScript (ESM, `"type": "module"`)
+- **Drizzle ORM** on **PostgreSQL** (`pg`); repository specs also run on **pglite**
+- Auth: JWT in body + HttpOnly session cookie (`petsapp_session` /
+  `__Host-petsapp_session`), CSRF Origin checks, roles
+  `admin` | `super_admin` | `member`
+- DTOs with `class-validator` + global validation
+- Tests: **Vitest** (unit + in-process e2e); lint: **oxlint** (`npm run lint`)
+
+## Skill routing
+
+| Task | Skill / doc |
+| --- | --- |
+| Modules, controllers, guards, DI | `.cursor/skills/nestjs/SKILL.md` when present; otherwise match existing `src/**` modules |
+| Persistence, migrations, repositories | `.cursor/skills/drizzle-orm/SKILL.md` when present; see `src/db/`, `src/**/infrastructure/` |
+| Auth, roles, DTOs, OWASP | `.cursor/skills/backend-security-rules/SKILL.md` / `owasp-top10` when present |
+| Logging | `Logger` from `@nestjs/common` or `src/logging/`; never log passwords, tokens, or full bodies |
+| Tests | Vitest configs in `backend/`; prefer in-memory / pglite over a live database |
+
+## Base rules
+
+- Controllers stay thin: DTO + guards + service call.
+- Map expected business failures to the right HTTP status; do not return 500
+  for known domain errors.
+- Every `@Injectable()` service that mutates state should log success/rejection
+  without secrets.
+- Seed the first `super_admin` with `npm run seed:admin` (see `backend/README.md`).
+
+## Commits
+
+Never add `Co-authored-by` for Claude or Cursor, nor "Generated with Claude
+Code". Conventional Commits.

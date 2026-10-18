@@ -1,3 +1,3 @@
-# Skills operativas: solo `.cursor/skills/` (Stellar en `.cursor/skills/stellar/`).
-# `.claude/` puede existir en el repo; el agente no la usa.
-# Commits: nunca agregar `Co-authored-by` de Claude ni de Cursor, ni "Generated with Claude Code", en commits o PRs. Conventional Commits.
+# Operational skills: `.cursor/skills/` only.
+# `.claude/` may exist in the repo; the agent does not use it as the skill root.
+# Commits: never add `Co-authored-by` for Claude or Cursor, nor "Generated with Claude Code", in commits or PRs. Conventional Commits.

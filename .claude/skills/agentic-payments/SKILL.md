@@ -315,7 +315,7 @@ Always test on testnet first. To switch a working setup to mainnet, change only 
 
 ## Key concepts
 
-**Auth entry signing** — On Stellar, x402 clients sign contract authorization entries, not full transaction envelopes. The facilitator assembles the complete transaction. This is lighter than EVM/Solana signing, and means clients never need to manage sequence numbers or pay fees.
+**Auth entry signing** — On Stellar, x402 clients sign contract authorization entries, not full transaction envelopes. The facilitator assembles the complete transaction. This is lighter than EVM/PetsApp signing, and means clients never need to manage sequence numbers or pay fees.
 
 **Fee sponsorship** — OZ Channels pays all Stellar network fees (~$0.00001/tx). Clients need a funded wallet with USDC but zero XLM.
 
