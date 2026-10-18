@@ -11,8 +11,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { AuthService } from './auth.service.js';
+import { AuthService, type SessionResult } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
+import { RegisterDto } from './dto/register.dto.js';
 import { VerifyPasswordDto } from './dto/verify-password.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { AuthOriginGuard } from './guards/auth-origin.guard.js';
@@ -52,7 +53,26 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.login(loginDto);
+    return this.respondWithSession(res, await this.authService.login(loginDto));
+  }
+
+  /** Public sign-up: same throttle, origin check, cookie and body as login. */
+  @Post('register')
+  @Public()
+  @UseGuards(AuthOriginGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.respondWithSession(
+      res,
+      await this.authService.register(registerDto),
+    );
+  }
+
+  /** Body `{ user, token }` plus the HttpOnly session cookie. */
+  private respondWithSession(res: Response, result: SessionResult) {
     setSessionCookie(res, result.token, {
       secure: this.secureCookie(),
       maxAgeMs: this.cookieLifetimeMs(result.token),

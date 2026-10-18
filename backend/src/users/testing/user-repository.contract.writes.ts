@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { pgErrorCode } from '../../database/pg-error.util.js';
 import { UserRole } from '../enums/user-role.enum.js';
 import type { UserRepository } from '../ports/user-repository.port.js';
 import { MISSING_ID, pause, userData } from './user-repository.fixtures.js';
@@ -67,10 +68,17 @@ export function userWritesContract(repo: () => UserRepository): void {
       expect(created).not.toHaveProperty('nope');
     });
 
-    it('rejects a duplicate email but accepts one that differs in case', async () => {
+    it('rejects a duplicate email with unique_violation (23505) but accepts one that differs in case', async () => {
       await repo().create(userData());
 
-      await expect(repo().create(userData())).rejects.toThrow();
+      const error = await repo()
+        .create(userData())
+        .then(
+          () => undefined,
+          (e: unknown) => e,
+        );
+      expect(error).toBeInstanceOf(Error);
+      expect(pgErrorCode(error)).toBe('23505');
       await expect(
         repo().create(userData({ email: 'ADA@example.com' })),
       ).resolves.toMatchObject({ email: 'ADA@example.com' });

@@ -17,6 +17,9 @@ import type {
   UserRow,
 } from '../ports/user-repository.port.js';
 
+/** Postgres SQLSTATE for a unique index violation. */
+const UNIQUE_VIOLATION = '23505';
+
 const COLUMNS = [
   'email',
   'password',
@@ -143,10 +146,12 @@ export class InMemoryUserRepository implements UserRepository {
     }
   }
 
+  /** Same SQLSTATE as Postgres (23505), so `pgErrorCode` reads the fake alike. */
   private assertEmailFree(email: string, ownId?: string): void {
     if (this.rows.some((r) => r.email === email && r.id !== ownId)) {
-      throw new Error(
-        'duplicate key value violates unique constraint on "email"',
+      throw Object.assign(
+        new Error('duplicate key value violates unique constraint on "email"'),
+        { code: UNIQUE_VIOLATION },
       );
     }
   }

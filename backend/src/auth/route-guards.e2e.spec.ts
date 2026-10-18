@@ -148,11 +148,26 @@ describe('route guards (real modules, stubbed persistence)', () => {
     });
   });
 
+  const REGISTER = { email: 'a@b.c', password: 'longenough', name: 'A' };
+
   it('serves the @Public session routes without credentials from the allowed Origin', async () => {
     await call('post', '/auth/login', { email: 'a@b.c', password: 'x' })
       .set('Origin', ORIGIN)
       .expect(201);
+    await call('post', '/auth/register', REGISTER)
+      .set('Origin', ORIGIN)
+      .expect(201);
     await call('post', '/auth/logout').set('Origin', ORIGIN).expect(204);
+  });
+
+  it('refuses the @Public session routes from a foreign Origin (login CSRF)', async () => {
+    const foreign = 'https://evil.example.com';
+    await call('post', '/auth/login', { email: 'a@b.c', password: 'x' })
+      .set('Origin', foreign)
+      .expect(403);
+    await call('post', '/auth/register', REGISTER)
+      .set('Origin', foreign)
+      .expect(403);
   });
 
   describe('X-Client-Secret', () => {

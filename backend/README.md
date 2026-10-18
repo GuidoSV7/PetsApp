@@ -26,6 +26,7 @@ adapters, contracts, fixtures).
 | --- | --- | --- |
 | `GET` | `/` | public liveness probe |
 | `POST` | `/auth/login` | public, origin-checked, 10 req/min per IP |
+| `POST` | `/auth/register` | public, origin-checked, 10 req/min per IP |
 | `POST` | `/auth/logout` | public, origin-checked |
 | `GET` | `/auth/profile` | authenticated |
 | `POST` | `/auth/change-password` | authenticated |
@@ -38,6 +39,23 @@ adapters, contracts, fixtures).
 | `GET` | `/admin/roles` | admin |
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
+
+### Public registration
+
+`POST /auth/register` creates a `member` account and signs it in: the answer
+is exactly the login answer (`{ user: { id, name, email, role, roles,
+country }, token }` plus the HttpOnly session cookie).
+
+```json
+{ "email": "ana@example.com", "password": "at-least-8", "name": "Ana", "country": "BO" }
+```
+
+- `email` is stored lower-cased and trimmed; a taken email answers `409`.
+- `password` must have at least 8 characters (same rule as
+  `/auth/change-password`); it is stored as a bcrypt hash.
+- `country` is optional, ISO 3166-1 alpha-2, stored upper-cased.
+- The role cannot be chosen: every sign-up is a `member`. Admins are promoted
+  by a super admin through `PUT /admin/users/:id/roles`.
 
 Authentication accepted by the global guard, in order: `Authorization: Bearer
 <jwt>`, the session cookie (`petsapp_session`, or `__Host-petsapp_session` in
@@ -67,6 +85,7 @@ npm run lint           # oxlint
 npm run db:generate    # drizzle-kit generate (offline)
 npm run db:check       # drizzle-kit check (offline)
 npm run db:migrate     # drizzle-kit migrate (needs DATABASE_URL)
+npm run db:migrate:prod # node dist/db/migrate.js: applies drizzle/ to DATABASE_URL (container start)
 ```
 
 The Drizzle repository specs run against an in-memory PostgreSQL (pglite)

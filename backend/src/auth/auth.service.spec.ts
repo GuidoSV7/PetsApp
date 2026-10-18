@@ -134,6 +134,7 @@ describe('AuthController route surface', () => {
       'login',
       'logout',
       'profile',
+      'register',
       'verify-password',
     ]);
   });
