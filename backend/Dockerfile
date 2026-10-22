@@ -1,6 +1,6 @@
 # PetsApp backend (NestJS 12, ESM). Build context: backend/
 # Dokploy: buildType=dockerfile, dockerfile=backend/Dockerfile, context=backend
-FROM node:24-alpine AS deps
+FROM node:24.22.1-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY . .
 RUN npm run build && test -f dist/main.js && test -f dist/db/migrate.js
 
-FROM node:24-alpine AS runner
+FROM node:24.22.1-alpine AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 

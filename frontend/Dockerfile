@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1
-ARG NODE_VERSION=22.21.1
+ARG NODE_VERSION=24.22.1
 FROM node:${NODE_VERSION}-slim AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
