@@ -17,6 +17,7 @@ Operational skills live under `.cursor/skills/`. The agent does not use `.claude
 - Backend work: read `.cursor/rules/backend-agent.mdc` first.
 - Frontend work: read `.cursor/rules/frontend-agent.mdc` first.
 - Deploy / Dokploy: [DEPLOY.md](./DEPLOY.md).
+- Tests: while iterating, run only the affected specs by path; run full suites only before commit or push. When a suite is slow, or to speed up tests (isolation/pools, PGlite snapshots, Postgres templates, Playwright reuse), read `.claude/skills/test-speed/SKILL.md` first. This skill is versioned under `.claude/`; a local copy may also exist under `.cursor/skills/`.
 
 ## Commits and PRs
 
