@@ -25,3 +25,17 @@ Never add `Co-authored-by` for Claude or Cursor (including
 `Co-authored-by: Cursor`), and never add "Generated with Claude Code", in
 commits or pull requests. See `.cursor/rules/no-coauthored-by.mdc`. Use
 Conventional Commits.
+
+## Agent VPS environment (Paseo agents)
+
+When running on the agent VPS (`srv1976750`, inside the sandbox), these tools exist. Full rules are in the agent's global instructions.
+- **Test Postgres** (`127.0.0.1:55432`, full write, throwaway): one DB per run.
+  - Migrated clone: `URL=$(pgtest-db clone <project> <schema-source> -- <migrate cmd>)`.
+  - Empty DB: `pgtest-db create <prefix>`.
+  - Always `pgtest-db drop "$URL"` when done.
+- **Test Redis**: `REDIS_URL=$(redistest start <project>)`, a private instance per run; then `redistest stop "$REDIS_URL"`.
+- **Production, read-only.** Never write, migrate or run tests against prod.
+  - Postgres: `grep '^\[' ~/.pg_service.conf`, then `psql "service=<name>"`.
+  - Redis: `~/.redis_services`, then `redis-cli -u …` (`SCAN`, never `KEYS *`).
+  - On an auth error, run `agent-ro-refresh` once and retry.
+- **Ports.** 3000/3001 are host services (Dokploy); use any other free port, e.g. 3002-3112. Run fixed-port E2E under `exclusive e2e-<project> -- …`, and full suites under `heavy -- …`.
