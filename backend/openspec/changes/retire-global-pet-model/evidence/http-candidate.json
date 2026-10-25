@@ -1,0 +1,392 @@
+[
+  {
+    "method": "get",
+    "path": "/pet/model",
+    "status": 404,
+    "body": {
+      "message": "Cannot GET /pet/model",
+      "error": "Not Found",
+      "statusCode": 404
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/model/file",
+    "status": 404,
+    "body": {
+      "message": "Cannot GET /pet/model/file",
+      "error": "Not Found",
+      "statusCode": 404
+    }
+  },
+  {
+    "method": "post",
+    "path": "/admin/pet-model",
+    "status": 404,
+    "body": {
+      "message": "Cannot POST /admin/pet-model",
+      "error": "Not Found",
+      "statusCode": 404
+    }
+  },
+  {
+    "method": "put",
+    "path": "/admin/pet-model",
+    "status": 404,
+    "body": {
+      "message": "Cannot PUT /admin/pet-model",
+      "error": "Not Found",
+      "statusCode": 404
+    }
+  },
+  {
+    "method": "delete",
+    "path": "/admin/pet-model",
+    "status": 404,
+    "body": {
+      "message": "Cannot DELETE /admin/pet-model",
+      "error": "Not Found",
+      "statusCode": 404
+    }
+  },
+  {
+    "method": "get",
+    "path": "/retirement-nonexistent-control",
+    "status": 404,
+    "body": {
+      "message": "Cannot GET /retirement-nonexistent-control",
+      "error": "Not Found",
+      "statusCode": 404
+    }
+  },
+  {
+    "method": "get",
+    "path": "/users/me",
+    "status": 401,
+    "body": {
+      "message": "Authentication required: a JWT or a valid X-Client-Secret header",
+      "error": "Unauthorized",
+      "statusCode": 401
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 200,
+    "body": {
+      "coins": 5,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "idle",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 200,
+    "body": {
+      "coins": 5,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "idle",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 400,
+    "body": {
+      "message": "X-Pet-Guest-Key must be a valid UUID",
+      "error": "Bad Request",
+      "statusCode": 400
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 200,
+    "body": {
+      "coins": 5,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "idle",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/actions/feed",
+    "status": 201,
+    "body": {
+      "coins": 0,
+      "needs": {
+        "hunger": 90,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "fed",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/actions/feed",
+    "status": 201,
+    "body": {
+      "coins": 0,
+      "needs": {
+        "hunger": 90,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "broke",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/actions/unknown",
+    "status": 400,
+    "body": {
+      "message": "Unknown care action: unknown",
+      "error": "Bad Request",
+      "statusCode": 400
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 200,
+    "body": {
+      "coins": 0,
+      "needs": {
+        "hunger": 90,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "broke",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/coat",
+    "status": 201,
+    "body": {
+      "coins": 5,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#aabbcc",
+        "secondary": "#ddeeff",
+        "accent": "#123456"
+      },
+      "statusKey": "coated",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/coat",
+    "status": 400,
+    "body": {
+      "message": [
+        "primary must match /^#[0-9a-fA-F]{6}$/ regular expression"
+      ],
+      "error": "Bad Request",
+      "statusCode": 400
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 200,
+    "body": {
+      "coins": 5,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#aabbcc",
+        "secondary": "#ddeeff",
+        "accent": "#123456"
+      },
+      "statusKey": "coated",
+      "name": "Michi",
+      "renameCount": 0,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/name",
+    "status": 201,
+    "body": {
+      "coins": 5,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "renamed",
+      "name": "Luna",
+      "renameCount": 1,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/name",
+    "status": 201,
+    "body": {
+      "coins": 0,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "renamed",
+      "name": "Sol",
+      "renameCount": 2,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/name",
+    "status": 201,
+    "body": {
+      "coins": 0,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "broke",
+      "name": "Sol",
+      "renameCount": 2,
+      "mood": "Feliz"
+    }
+  },
+  {
+    "method": "post",
+    "path": "/pet/name",
+    "status": 400,
+    "body": {
+      "message": [
+        "name must be longer than or equal to 1 characters"
+      ],
+      "error": "Bad Request",
+      "statusCode": 400
+    }
+  },
+  {
+    "method": "get",
+    "path": "/pet/state",
+    "status": 200,
+    "body": {
+      "coins": 0,
+      "needs": {
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8"
+      },
+      "statusKey": "broke",
+      "name": "Sol",
+      "renameCount": 2,
+      "mood": "Feliz"
+    }
+  }
+]

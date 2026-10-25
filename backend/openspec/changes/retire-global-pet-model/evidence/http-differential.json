@@ -1,0 +1,7 @@
+{
+  "baseline": "ae77894d39a019a45857477f473be93465aecdc6",
+  "unchanged_public_responses": 18,
+  "requested_changed_responses": 5,
+  "baseline_copy_filter": "keeps|creates|preserves",
+  "result": "PASS"
+}
