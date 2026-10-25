@@ -9,11 +9,12 @@ export default defineConfig({
     root: './',
     include: ['**/*.spec.ts'],
     env: { TZ: 'UTC' },
-    // pglite boot + migrations is slow when many workers start at once.
+    globalSetup: ['./src/testing/postgres.global-setup.ts'],
+    // Allow isolated database setup on the shared test cluster.
     testTimeout: 120_000,
     hookTimeout: 120_000,
     pool: 'forks',
-    // Each worker can hold a pglite WASM heap; keep the fan-out bounded.
-    maxWorkers: 4,
+    // Bound CPU and database concurrency on shared runners.
+    maxWorkers: 2,
   },
 });

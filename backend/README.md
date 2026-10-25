@@ -14,7 +14,7 @@ and roles/permissions on PostgreSQL through Drizzle ORM.
 | `src/db` | Drizzle schema (`users`, `roles`, `user_roles`) and inferred row types. |
 | `src/config` | CORS policy, trust-proxy and cookie-parser setup, env parsing helpers. |
 | `src/logging` | Structured log helpers (`traceWrite`). |
-| `src/testing` | Postgres column semantics for in-memory fakes and the pglite harness. |
+| `src/testing` | Postgres column semantics for in-memory fakes and the isolated PostgreSQL test harness. |
 
 Each feature module keeps a ports-and-adapters layout: `ports/` (interfaces
 and DI tokens), `infrastructure/` (Drizzle adapters), `testing/` (in-memory
@@ -80,7 +80,7 @@ See `.env.example`. Summary:
 ```bash
 npm run start:dev      # watch mode
 npm run build          # nest build (tsc)
-npm test               # vitest unit + in-process e2e specs (no database needed)
+npm test               # Vitest; database specs require TEST_DATABASE_URL
 npm run test:e2e       # boots AppModule (test/*.e2e-spec.ts)
 npm run lint           # oxlint
 npm run db:generate    # drizzle-kit generate (offline)
@@ -110,6 +110,94 @@ In Dokploy, exec into the backend container (after deploy) with those three
 variables set (or exported for the one-shot command) and run
 `node dist/db/seed-admin.js` (or `npm run seed:admin`).
 
-The Drizzle repository specs run against an in-memory PostgreSQL (pglite)
-with the real migrations from `drizzle/`, so the full test suite needs no
-running database.
+## Database tests
+
+Database specs require `TEST_DATABASE_URL`: an explicitly disposable test-run
+database on a PostgreSQL cluster whose role can CREATE DATABASE. The helper never
+uses `DATABASE_URL` or loads production credentials. Without the variable, pure
+unit tests still run, but requesting a database fixture fails clearly.
+
+Vitest globalSetup migrates one fresh template using the production Drizzle
+node-postgres migrator and existing `drizzle/` files. Each fixture/file clones it.
+afterAll closes/drops individual clones; global teardown drops leftover run clones,
+unmarks and drops the template. There is no persistent template cache. Never use
+a production URL. Keep tests within a file sequential because they share TRUNCATE.
+
+### Shared VPS
+
+Use its existing cluster on 127.0.0.1:55432, not a Docker replacement:
+
+```bash
+(
+  RUN_URL="$(pgtest-db create petsapp_tests)" || exit
+  cleanup() {
+    status=$?
+    trap - EXIT
+    pgtest-db drop "$RUN_URL"
+    exit "$status"
+  }
+  trap cleanup EXIT
+  TEST_DATABASE_URL="$RUN_URL" heavy -- npm test -- --maxWorkers=2
+)
+```
+
+For a focused check, replace the test command with e.g.
+`npm test -- src/testing/postgres.spec.ts --maxWorkers=2`. Keep the anchor cleanup.
+The helper creates/migrates the template itself; do not add a shell-migrated cache.
+The currently verified VPS server is PostgreSQL16.15; CI/local examples use18,
+matching the reported production major. Passing locally on16 is not18 coverage.
+
+### Developer machine / Docker (not the VPS)
+
+Start your own disposable PostgreSQL18 instance; port55432 must be free locally.
+This example requires PostgreSQL client tools (`createdb`, `dropdb`):
+
+```bash
+docker run --detach --rm --name agent-petsapp-tests --label agent=1 \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
+  -p 127.0.0.1:55432:5432 postgres:18
+docker exec agent-petsapp-tests pg_isready -U postgres
+# Wait for readiness before creating the anchor.
+(
+  ADMIN_URL='postgresql://postgres:postgres@127.0.0.1:55432/postgres'
+  RUN_NAME="petsapp_local_$(date +%s)_$RANDOM"
+  createdb --maintenance-db="$ADMIN_URL" "$RUN_NAME" || exit
+  cleanup() {
+    status=$?
+    trap - EXIT
+    dropdb --maintenance-db="$ADMIN_URL" "$RUN_NAME"
+    exit "$status"
+  }
+  trap cleanup EXIT
+  TEST_DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:55432/$RUN_NAME" \
+    npm test -- --maxWorkers=2
+)
+docker stop agent-petsapp-tests
+```
+
+These are synthetic local credentials, not production values. Stop only the test
+container you created, including after failures; never run this launch command
+on the VPS or stop a preexisting service. CI provides its own PostgreSQL18 service
+and a unique unit-test anchor, without changing E2E or job-wide DATABASE_URL.
+
+Without CREATEDB, do not silently run parallel files on one mutable database.
+Alternative deployment strategy: externally provision one migrated run database
+(`pgtest-db clone` on the VPS), run files with `--no-file-parallelism`, and
+dispose it in an outer wrapper. That alternate helper mode is not implemented.
+
+### Interrupted runs
+
+Normal success and assertion failures execute global teardown. SIGKILL/host loss
+can bypass it: logs identify `petsapp_test_<run-id>` namespaces and generated
+clone/template names. Verify that the exact owning run is no longer active,
+inspect only its names in pg_database, and remove only its known databases.
+A leftover template must first be unmarked with IS_TEMPLATE false using test
+administration before exact-name removal (`pgtest-db drop <owned-name>` on VPS).
+Never broad-prefix delete, prune shared templates, or terminate unrelated sessions.
+
+Pure PostgreSQL-semantic fakes remain unit-test helpers; they are not an embedded
+database engine. Historical OpenSpec records and optional-peer metadata in Drizzle
+may retain old dependency names without representing installed/active use.
+
+E2E follow-up: `test/app.e2e-spec.ts` has a localhost:5432 production-named URL
+fallback. It and the E2E configuration/command are intentionally unchanged here.

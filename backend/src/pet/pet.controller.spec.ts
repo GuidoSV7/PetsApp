@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { DRIZZLE } from '../database/database.tokens.js';
-import { createTestDb, type TestDb } from '../testing/pglite.js';
+import { createTestDb, type TestDb } from '../testing/postgres.js';
 import { DrizzlePetRepository } from './infrastructure/drizzle-pet.repository.js';
 import { PET_REPOSITORY } from './ports/pet-repository.port.js';
 import { PetController } from './pet.controller.js';
@@ -24,7 +24,7 @@ describe('PetController (drizzle)', () => {
   });
 
   beforeEach(async () => {
-    await testDb.client.exec('TRUNCATE pet_states RESTART IDENTITY CASCADE');
+    await testDb.client.query('TRUNCATE pet_states RESTART IDENTITY CASCADE');
     const module = await Test.createTestingModule({
       controllers: [PetController],
       providers: [

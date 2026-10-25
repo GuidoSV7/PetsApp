@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { pgErrorCode } from '../../database/pg-error.util.js';
-import { createTestDb, type TestDb } from '../../testing/pglite.js';
+import { createTestDb, type TestDb } from '../../testing/postgres.js';
 import { userRepositoryContract } from '../testing/user-repository.contract.js';
 import { userData } from '../testing/user-repository.fixtures.js';
 import { DrizzleUserRepository } from './drizzle-user.repository.js';
 
-describe('DrizzleUserRepository (pglite)', () => {
+describe('DrizzleUserRepository (PostgreSQL)', () => {
   let testDb: TestDb;
 
   beforeAll(async () => {
@@ -16,7 +16,7 @@ describe('DrizzleUserRepository (pglite)', () => {
   });
 
   const fresh = async () => {
-    await testDb.client.exec('TRUNCATE users RESTART IDENTITY CASCADE');
+    await testDb.client.query('TRUNCATE users RESTART IDENTITY CASCADE');
     return new DrizzleUserRepository(testDb.db);
   };
 

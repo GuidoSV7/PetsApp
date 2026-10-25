@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createTestDb, type TestDb } from '../../testing/pglite.js';
+import { createTestDb, type TestDb } from '../../testing/postgres.js';
 import { INITIAL_NEEDS, STARTING_COINS, initialSnapshot } from '../pet-rules.js';
 import { DrizzlePetRepository } from './drizzle-pet.repository.js';
 
 const GUEST = '22222222-2222-4222-8222-222222222222';
 
-describe('DrizzlePetRepository (pglite)', () => {
+describe('DrizzlePetRepository (PostgreSQL)', () => {
   let testDb: TestDb;
 
   beforeAll(async () => {
@@ -17,7 +17,7 @@ describe('DrizzlePetRepository (pglite)', () => {
   });
 
   const fresh = async () => {
-    await testDb.client.exec('TRUNCATE pet_states RESTART IDENTITY CASCADE');
+    await testDb.client.query('TRUNCATE pet_states RESTART IDENTITY CASCADE');
     return new DrizzlePetRepository(testDb.db);
   };
 
