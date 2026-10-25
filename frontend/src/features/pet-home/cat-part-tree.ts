@@ -1,4 +1,6 @@
+import { Euler, Vector3 } from "three";
 import type { CatPart } from "@/features/pet-home/cat-anatomy";
+import type { CatIdleDelta } from "@/features/pet-home/cat-idle-motion";
 
 type Vec3 = readonly [number, number, number];
 
@@ -27,6 +29,26 @@ export function buildCatPartTree(base: readonly CatPart[]): CatPartNode[] {
     else roots.push(node);
   }
   return roots;
+}
+
+/** Compose from unpivoted CURRENT base, never from the previous mesh pose. */
+export function resolveCatPartPose(node: CatPartNode, resolved = node.part, delta: CatIdleDelta = {}) {
+  const base = resolveCatPartTransform(node, resolved);
+  const rotation: Vec3 = [
+    base.rotation[0] + (delta.rotation?.[0] ?? 0),
+    base.rotation[1] + (delta.rotation?.[1] ?? 0),
+    base.rotation[2] + (delta.rotation?.[2] ?? 0),
+  ];
+  const scale: Vec3 = [base.scale[0], base.scale[1] * (delta.scaleY ?? 1), base.scale[2]];
+  const hinge = ["earL", "earR", "tailMid", "tailTip"].includes(node.part.id);
+  const pivot = new Vector3(0, hinge ? -node.part.args[1] / 2 * scale[1] : 0, 0);
+  const correction = pivot.clone().sub(pivot.applyEuler(new Euler(...rotation)));
+  const position: Vec3 = [
+    base.position[0] + (delta.position?.[0] ?? 0) + correction.x,
+    base.position[1] + (delta.position?.[1] ?? 0) + correction.y,
+    base.position[2] + (delta.position?.[2] ?? 0) + correction.z,
+  ];
+  return { position, rotation, scale };
 }
 
 /** Add only this part's own delta; parent runtime motion is inherited by Three. */

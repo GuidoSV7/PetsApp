@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { CAT_ANATOMY, type CatPart } from "@/features/pet-home/cat-anatomy";
-import { buildCatPartTree, resolveCatPartTransform, type CatPartNode } from "@/features/pet-home/cat-part-tree";
+import { buildCatPartTree, resolveCatPartTransform, resolveCatPartPose, type CatPartNode } from "@/features/pet-home/cat-part-tree";
 
 function flatten(nodes: readonly CatPartNode[]): CatPartNode[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
@@ -11,6 +11,34 @@ const box = (id: string, position: [number, number, number], parent?: string): C
 });
 
 describe("base-relative part tree", () => {
+  it("keeps the tail joint registered for different nonzero absolute angles", () => {
+    const mid = buildCatPartTree(CAT_ANATOMY).find((n) => n.part.id === "tailMid")!;
+    const tip = mid.children[0];
+    const a = resolveCatPartPose(mid, { ...mid.part, rotation: [0, 0, .25] });
+    const b = resolveCatPartPose(tip, { ...tip.part, rotation: [0, 0, -.4] });
+    const matrix = (p: typeof a) => new Matrix4().compose(new Vector3(...p.position),
+      new Quaternion().setFromEuler(new Euler(...p.rotation)), new Vector3(...p.scale));
+    const midWorld = matrix(a), tipWorld = midWorld.clone().multiply(matrix(b));
+    const upper = new Vector3(0, mid.part.args[1] / 2, 0).applyMatrix4(midWorld);
+    const lower = new Vector3(0, -tip.part.args[1] / 2, 0).applyMatrix4(tipWorld);
+    expect(upper.distanceTo(lower)).toBeLessThan(1e-12);
+  });
+  it("preserves zero-rotation identity while scaled, and hinges full XYZ rotation at the scaled base", () => {
+    const nodes = flatten(buildCatPartTree(CAT_ANATOMY));
+    for (const id of ["earL", "earR", "tailMid", "tailTip"]) {
+      const node = nodes.find((n) => n.part.id === id)!;
+      const resolved: CatPart = { ...node.part, scale: [1.6, 1.3, .7] };
+      expect(resolveCatPartPose(node, resolved)).toEqual(resolveCatPartTransform(node, resolved));
+      const rotated: CatPart = { ...resolved, rotation: [.55, .13, id === "earR" ? -.1375 : .1375] };
+      const pose = resolveCatPartPose(node, rotated, { rotation: [.25, 0, 0] });
+      const matrix = new Matrix4().compose(new Vector3(...pose.position),
+        new Quaternion().setFromEuler(new Euler(...pose.rotation)), new Vector3(...pose.scale));
+      const actual = new Vector3(0, -node.part.args[1] / 2, 0).applyMatrix4(matrix);
+      const expected = new Vector3(...node.localPosition).add(new Vector3(0, -node.part.args[1] / 2 * 1.3, 0));
+      expect(actual.distanceTo(expected), id).toBeLessThan(1e-12);
+      expect(pose.rotation).toEqual([.8, .13, rotated.rotation![2]]);
+    }
+  });
   it("has existing acyclic parents and reconstructs every base position exactly once", () => {
     const nodes = flatten(buildCatPartTree(CAT_ANATOMY));
     expect(nodes).toHaveLength(33);

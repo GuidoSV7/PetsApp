@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { CAT_ANATOMY } from "@/features/pet-home/cat-anatomy";
-import { buildCatPartTree, resolveCatPartTransform, type CatPartNode } from "@/features/pet-home/cat-part-tree";
+import { buildCatPartTree, resolveCatPartPose, type CatPartNode } from "@/features/pet-home/cat-part-tree";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
 import { resolveCatAnatomy } from "@/features/admin/resolve-cat-design";
 import { applyNeedVisualsToAnatomy, needVisualCues } from "@/features/pet-home/need-visuals";
@@ -62,6 +62,26 @@ const cases = [100, 0].flatMap((need) => [1, 0.6, 1.6].flatMap((earSize) =>
   [1, 0.1].flatMap((blink) => [0, 0.25].map((tic) => ({ need, earSize, blink, tic })))));
 
 describe("composed voxel contacts", () => {
+  it.each(["earL", "earR"])("contains ALL four %s base vertices in the head at max need droop+tic", (id) => {
+    const resolved = applyNeedVisualsToAnatomy(resolveCatAnatomy(CAT_ANATOMY, defaultCatDesign()),
+      needVisualCues({ hunger: 0, fun: 0, energy: 0, hygiene: 0 }));
+    const worlds = new Map<string, Matrix4>();
+    const visit = (node: CatPartNode, parent = new Matrix4()) => {
+      const pose = resolveCatPartPose(node, resolved.find((p) => p.id === node.part.id)!,
+        node.part.id === id ? { rotation: [.25, 0, 0] } : undefined);
+      const world = parent.clone().multiply(new Matrix4().compose(new Vector3(...pose.position),
+        new Quaternion().setFromEuler(new Euler(...pose.rotation)), new Vector3(...pose.scale)));
+      worlds.set(node.part.id, world); node.children.forEach((c) => visit(c, world));
+    };
+    buildCatPartTree(CAT_ANATOMY).forEach((n) => visit(n));
+    const relative = worlds.get("head")!.clone().invert().multiply(worlds.get(id)!);
+    const [w, h, d] = CAT_ANATOMY.find((p) => p.id === id)!.args;
+    const head = CAT_ANATOMY.find((p) => p.id === "head")!.args;
+    for (const x of [-1, 1]) for (const z of [-1, 1]) {
+      const vertex = new Vector3(x * w / 2, -h / 2, z * d / 2).applyMatrix4(relative);
+      head.forEach((size, axis) => expect(Math.abs(vertex.getComponent(axis)), id).toBeLessThanOrEqual(size / 2 + EPS));
+    }
+  });
   it.each(cases)("needs=$need earSize=$earSize blink=$blink tic=$tic", ({ need, earSize, blink, tic }) => {
     const needs = { hunger: need, fun: need, energy: need, hygiene: need };
     const resolved = applyNeedVisualsToAnatomy(resolveCatAnatomy(CAT_ANATOMY,
@@ -78,7 +98,7 @@ describe("composed voxel contacts", () => {
     });
     const worlds = new Map<string, Matrix4>();
     const visit = (node: CatPartNode, parent = new Matrix4()) => {
-      const t = resolveCatPartTransform(node, resolved.find((p) => p.id === node.part.id)!);
+      const t = resolveCatPartPose(node, resolved.find((p) => p.id === node.part.id)!);
       const matrix = parent.clone().multiply(new Matrix4().compose(new Vector3(...t.position),
         new Quaternion().setFromEuler(new Euler(...t.rotation)), new Vector3(...t.scale)));
       worlds.set(node.part.id, matrix); node.children.forEach((child) => visit(child, matrix));
