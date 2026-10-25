@@ -54,7 +54,7 @@ describe("needVisualCues", () => {
     const parts = applyNeedVisualsToAnatomy(CAT_ANATOMY, cues);
     const body = parts.find((p) => p.id === "body")!;
     const baseBody = getCatPart("body")!;
-    expect(body.scale![0]).toBeLessThan(baseBody.scale![0]);
+    expect(body.scale![0]).toBeLessThan((baseBody.scale ?? [1, 1, 1])[0]);
 
     const ear = parts.find((p) => p.id === "earL")!;
     const baseEar = getCatPart("earL")!;
@@ -69,5 +69,34 @@ describe("needVisualCues", () => {
       DEFAULT_GREY_COAT.primary.toLowerCase(),
     );
     expect(describeNeedVisuals(cues)).toMatch(/hambre/i);
+  });
+});
+
+
+describe("hierarchical need transform ownership", () => {
+  const cues = needVisualCues({ hunger: 0, fun: 0, energy: 0, hygiene: 0 });
+  it.each(["chest", "earInnerL", "earInnerR"])("does not transform child %s independently", (id) => {
+    const base = getCatPart(id)!;
+    const result = applyNeedVisualsToAnatomy(CAT_ANATOMY, cues).find((p) => p.id === id)!;
+    expect(result).toEqual(base);
+  });
+  it("preserves the existing worst-needs cue formulas and parent effects", () => {
+    expect(cues).toEqual({ hungerLow: true, funLow: true, energyLow: true, hygieneLow: true,
+      bodySlim: 0.78, earDroop: 0.55, headDroop: -0.08, idleAmp: 0.25,
+      idleSpeed: 1 - 0.55, pupilScale: 0.65, dirtMix: 0.55 });
+    const result = applyNeedVisualsToAnatomy(CAT_ANATOMY, cues);
+    for (const id of ["body", "head", "earL", "earR", "pupilL", "pupilR"]) {
+      const base = getCatPart(id)!;
+      const part = result.find((p) => p.id === id)!;
+      if (id === "head") expect(part.position[1]).toBeCloseTo(base.position[1] - 0.08);
+      else if (id.startsWith("ear")) {
+        expect(part.rotation).toEqual([(base.rotation?.[0] ?? 0) + 0.55, base.rotation?.[1] ?? 0,
+          (base.rotation?.[2] ?? 0) + (id === "earL" ? 1 : -1) * 0.55 * 0.25]);
+      } else {
+        const scale = base.scale ?? [1, 1, 1];
+        expect(part.scale).toEqual(id === "body" ? [scale[0] * 0.78, scale[1], scale[2] * 0.78]
+          : scale.map((v) => v * 0.65));
+      }
+    }
   });
 });

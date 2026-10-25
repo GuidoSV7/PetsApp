@@ -1,0 +1,274 @@
+{
+  "baseline": "20ce4c4bf157862d7b79b40108e3ba512ec07614",
+  "needInputs": [
+    0,
+    44,
+    45,
+    80,
+    100
+  ],
+  "unchanged": [
+    "cue formulas",
+    "description",
+    "coat dirt",
+    "all other part-own transforms",
+    "admin resolver",
+    "model scale",
+    "input immutability",
+    "actualModel palette control"
+  ],
+  "onlyRequestedDifferences": [
+    "chest own slimming removed",
+    "inner-ear own droop removed"
+  ],
+  "result": "PASS",
+  "method": "Full semantic JSON outputs compared before compacting redundant captures; hashes below cover every preserved result, not requested child-own changes.",
+  "fixture": {
+    "ids": [
+      "body",
+      "chest",
+      "head",
+      "earL",
+      "earR",
+      "earInnerL",
+      "earInnerR",
+      "pupilL",
+      "pupilR",
+      "pawFL"
+    ],
+    "kind": "box",
+    "role": "primary",
+    "position": [
+      1,
+      2,
+      3
+    ],
+    "args": [
+      1,
+      2,
+      3
+    ],
+    "scale": [
+      0.9,
+      0.8,
+      0.7
+    ],
+    "rotation": [
+      0.1,
+      0.2,
+      0.3
+    ],
+    "coat": {
+      "primary": "#8a8a8e",
+      "secondary": "#b4b4b8",
+      "accent": "#c9a0a8"
+    },
+    "design": {
+      "modelScale": 0.78,
+      "headHeight": 0.1,
+      "earSize": 1.6,
+      "bodyDepth": 1.25
+    }
+  },
+  "cases": [
+    {
+      "needInput": 0,
+      "preservedBaselineSHA256": "27ff6554f9ee45763b7872cc873005c8caa91ba353ef0a838032359bd5c534f9",
+      "preservedCandidateSHA256": "27ff6554f9ee45763b7872cc873005c8caa91ba353ef0a838032359bd5c534f9",
+      "requestedDifferences": [
+        {
+          "id": "chest",
+          "before": {
+            "scale": [
+              0.7020000000000001,
+              0.8,
+              0.5459999999999999
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          },
+          "after": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          }
+        },
+        {
+          "id": "earInnerL",
+          "before": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.65,
+              0.2,
+              0.4375
+            ]
+          },
+          "after": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          }
+        },
+        {
+          "id": "earInnerR",
+          "before": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.65,
+              0.2,
+              0.16249999999999998
+            ]
+          },
+          "after": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          }
+        }
+      ],
+      "inputUnchanged": true
+    },
+    {
+      "needInput": 44,
+      "preservedBaselineSHA256": "fdc409b579ae9b3e69f6a2e2c5e155b5d02ee949a453be6b25be82c630473ecd",
+      "preservedCandidateSHA256": "fdc409b579ae9b3e69f6a2e2c5e155b5d02ee949a453be6b25be82c630473ecd",
+      "requestedDifferences": [
+        {
+          "id": "chest",
+          "before": {
+            "scale": [
+              0.8956,
+              0.8,
+              0.6965777777777777
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          },
+          "after": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          }
+        },
+        {
+          "id": "earInnerL",
+          "before": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.11222222222222222,
+              0.2,
+              0.3030555555555555
+            ]
+          },
+          "after": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          }
+        },
+        {
+          "id": "earInnerR",
+          "before": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.11222222222222222,
+              0.2,
+              0.29694444444444446
+            ]
+          },
+          "after": {
+            "scale": [
+              0.9,
+              0.8,
+              0.7
+            ],
+            "rotation": [
+              0.1,
+              0.2,
+              0.3
+            ]
+          }
+        }
+      ],
+      "inputUnchanged": true
+    },
+    {
+      "needInput": 45,
+      "preservedBaselineSHA256": "27cece04f7fe198d39fc693dd7ec0b9656fea3af7d78420f3d08488beeeb70fe",
+      "preservedCandidateSHA256": "27cece04f7fe198d39fc693dd7ec0b9656fea3af7d78420f3d08488beeeb70fe",
+      "requestedDifferences": [],
+      "inputUnchanged": true
+    },
+    {
+      "needInput": 80,
+      "preservedBaselineSHA256": "f8e03c503a41f09df2a138260d9f59332697a7310644de8d7ae84593669487bf",
+      "preservedCandidateSHA256": "f8e03c503a41f09df2a138260d9f59332697a7310644de8d7ae84593669487bf",
+      "requestedDifferences": [],
+      "inputUnchanged": true
+    },
+    {
+      "needInput": 100,
+      "preservedBaselineSHA256": "3140b5ea7b8ed86bfdec41a632eee9815a8d130caaac8dc9b043b799981f322c",
+      "preservedCandidateSHA256": "3140b5ea7b8ed86bfdec41a632eee9815a8d130caaac8dc9b043b799981f322c",
+      "requestedDifferences": [],
+      "inputUnchanged": true
+    }
+  ]
+}

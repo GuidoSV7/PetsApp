@@ -17,6 +17,7 @@ import {
   type CatMaterialRole,
   type CatPart,
 } from "@/features/pet-home/cat-anatomy";
+import { buildCatPartTree, resolveCatPartTransform, type CatPartNode } from "@/features/pet-home/cat-part-tree";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import {
   applyNeedDirtToCoat,
@@ -66,24 +67,7 @@ function paletteFromCoat(colors: PetCoatColors): RolePalette {
 }
 
 function PartGeometry({ part }: { part: CatPart }) {
-  if (part.kind === "sphere") {
-    const [radius, w = 24, h = 20] = part.args;
-    return <sphereGeometry args={[radius, w, h]} />;
-  }
-  if (part.kind === "cone") {
-    const [radius, height, radial = 5] = part.args;
-    return <coneGeometry args={[radius, height, radial]} />;
-  }
-  if (part.kind === "capsule") {
-    const [radius, length, cap = 4, radial = 10] = part.args;
-    return <capsuleGeometry args={[radius, length, cap, radial]} />;
-  }
-  if (part.kind === "box") {
-    const [w, h, d] = part.args;
-    return <boxGeometry args={[w, h, d]} />;
-  }
-  const [rTop, rBottom, height, radial = 6] = part.args;
-  return <cylinderGeometry args={[rTop, rBottom, height, radial]} />;
+  return <boxGeometry args={[...part.args]} />;
 }
 
 /** Feline procedural cat; materials follow the coat palette. */
@@ -121,6 +105,8 @@ export function Cat3DModel({
       tunables.modelScale,
     ],
   );
+  const tree = useMemo(() => buildCatPartTree(CAT_ANATOMY), []);
+  const resolvedById = useMemo(() => new Map(anatomy.map((part) => [part.id, part])), [anatomy]);
   const coatForNeeds = useMemo(
     () => applyNeedDirtToCoat(colors, cues),
     [colors.accent, colors.primary, colors.secondary, cues],
@@ -166,6 +152,23 @@ export function Cat3DModel({
     group.current.scale.setScalar(modelScale * squash);
   });
 
+  const renderPart = (node: CatPartNode): React.ReactNode => {
+    const part = resolvedById.get(node.part.id)!;
+    const transform = resolveCatPartTransform(node, part);
+    const mat = palette[part.role];
+    const castShadow = part.role === "primary" &&
+      (part.id === "body" || part.id === "head" || part.id.startsWith("tail"));
+    return (
+      <mesh key={part.id} name={part.id} castShadow={castShadow}
+        position={[...transform.position]} rotation={[...transform.rotation]} scale={[...transform.scale]}>
+        <PartGeometry part={part} />
+        <meshStandardMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness}
+          emissive={mat.emissive} emissiveIntensity={mat.emissiveIntensity ?? 0} />
+        {node.children.map(renderPart)}
+      </mesh>
+    );
+  };
+
   return (
     <group
       ref={group}
@@ -182,32 +185,7 @@ export function Cat3DModel({
         document.body.style.cursor = "auto";
       }}
     >
-      {anatomy.map((part) => {
-        const mat = palette[part.role];
-        const castShadow =
-          part.role === "primary" &&
-          (part.id === "body" ||
-            part.id === "head" ||
-            part.id.startsWith("tail"));
-        return (
-          <mesh
-            key={part.id}
-            castShadow={castShadow}
-            position={[...part.position]}
-            rotation={part.rotation ? [...part.rotation] : undefined}
-            scale={part.scale ? [...part.scale] : undefined}
-          >
-            <PartGeometry part={part} />
-            <meshStandardMaterial
-              color={mat.color}
-              roughness={mat.roughness}
-              metalness={mat.metalness}
-              emissive={mat.emissive}
-              emissiveIntensity={mat.emissiveIntensity ?? 0}
-            />
-          </mesh>
-        );
-      })}
+      {tree.map(renderPart)}
     </group>
   );
 }

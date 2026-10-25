@@ -13,7 +13,7 @@ export type NeedVisualCues = {
   funLow: boolean;
   energyLow: boolean;
   hygieneLow: boolean;
-  /** Multiplier on body/chest horizontal scale when hungry. */
+  /** Multiplier on body horizontal scale; chest inherits through the part tree. */
   bodySlim: number;
   /** Extra ear pitch (radians) when bored. */
   earDroop: number;
@@ -65,7 +65,7 @@ export function applyNeedVisualsToAnatomy(
   cues: NeedVisualCues,
 ): CatPart[] {
   return parts.map((part) => {
-    if (part.id === "body" || part.id === "chest") {
+    if (part.id === "body") {
       const scale = part.scale ?? ([1, 1, 1] as const);
       return {
         ...part,
@@ -86,12 +86,7 @@ export function applyNeedVisualsToAnatomy(
         ] as const,
       };
     }
-    if (
-      part.id === "earL" ||
-      part.id === "earR" ||
-      part.id === "earInnerL" ||
-      part.id === "earInnerR"
-    ) {
+    if (part.id === "earL" || part.id === "earR") {
       const base = part.rotation ?? ([0, 0, 0] as const);
       const sign = part.id.endsWith("L") ? 1 : -1;
       return {
