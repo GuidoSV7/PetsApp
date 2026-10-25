@@ -3,14 +3,8 @@
 import { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
-import {
-  defaultCatDesign,
-  loadCatDesign,
-  type CatDesignTunables,
-} from "@/features/admin/cat-design-settings";
-import { resolveModelScale } from "@/features/admin/resolve-cat-design";
+import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
-import { GlbPetModel } from "@/features/pet-home/components/GlbPetModel";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import {
   describeNeedVisuals,
@@ -29,14 +23,12 @@ type Props = {
   /** Bump from parent to replay the happy bounce. */
   reactPulse?: number;
   onPetInteract?: () => void;
-  /** Admin / preview override; home loads persisted tunables when omitted. */
+  /** Admin preview override; home supplies explicit defaults. */
   design?: CatDesignTunables;
   needs?: PetNeeds;
-  /** When set, renders a custom GLB/GLTF instead of the procedural cat. */
-  modelUrl?: string | null;
 };
 
-/** WebGL stage for procedural Michi or an admin-confirmed GLB. */
+/** WebGL stage for the procedural Michi. */
 export function Cat3DViewer({
   colors,
   yawBias = 0,
@@ -44,15 +36,11 @@ export function Cat3DViewer({
   onPetInteract,
   design,
   needs = PREVIEW_PET_NEEDS,
-  modelUrl = null,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
-  const tunables = design ?? (typeof window === "undefined" ? defaultCatDesign() : loadCatDesign());
-  const modelScale = resolveModelScale(tunables);
   const needHint = describeNeedVisuals(needVisualCues(needs));
   const ariaLabel = [
     `${PET_NAME}. Arrastrá para girar, tocá para ronronear.`,
-    modelUrl ? "Modelo personalizado." : null,
     needHint,
   ]
     .filter(Boolean)
@@ -78,23 +66,15 @@ export function Cat3DViewer({
         />
         <directionalLight position={[0, 1.2, 3]} intensity={0.35} />
         <Suspense fallback={null}>
-          {modelUrl ? (
-            <GlbPetModel
-              url={modelUrl}
-              scale={modelScale}
-              onPetInteract={onPetInteract}
-            />
-          ) : (
-            <Cat3DModel
-              colors={colors}
-              orbiting={orbiting}
-              yawBias={yawBias}
-              reactPulse={reactPulse}
-              onPetInteract={onPetInteract}
-              design={design}
-              needs={needs}
-            />
-          )}
+          <Cat3DModel
+            colors={colors}
+            orbiting={orbiting}
+            yawBias={yawBias}
+            reactPulse={reactPulse}
+            onPetInteract={onPetInteract}
+            design={design}
+            needs={needs}
+          />
         </Suspense>
         <ContactShadows
           position={[0, -0.62, 0]}

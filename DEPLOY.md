@@ -54,7 +54,6 @@ asks for both). Changing them requires a rebuild.
 | `NEXT_PUBLIC_PETSAPP_API_URL`  | build           | `https://<frontend-host>/petsapp-api` |
 | `NEXT_PUBLIC_SITE_URL`         | build           | `https://<frontend-host>` |
 | `PETSAPP_API_INTERNAL_URL`     | runtime         | `http://petsapp-backend-jaa6ki:3000` |
-| `PET_MODEL_DIR`                | runtime         | `/data/pet-model` | Optional volume for the shared admin GLB (BFF routes under `/petsapp-api/pet/model`). |
 
 The browser talks only to the same-origin proxy
 `/petsapp-api/*` (`frontend/src/app/petsapp-api/[...path]/route.ts`), which

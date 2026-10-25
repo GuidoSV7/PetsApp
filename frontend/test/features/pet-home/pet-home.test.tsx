@@ -28,6 +28,14 @@ import {
   stubRename,
 } from "./pet-api-stub";
 
+import { CAT_DESIGN_STORAGE_KEY, clearCatDesign, defaultCatDesign, saveCatDesign, type CatDesignTunables } from "@/features/admin/cat-design-settings";
+
+const { modelRequest } = vi.hoisted(() => ({ modelRequest: vi.fn() }));
+vi.mock("@/lib/axios", () => ({
+  default: { get: modelRequest, post: modelRequest, put: modelRequest, delete: modelRequest },
+  getPetsAppBaseUrl: () => "http://api.test",
+}));
+
 const playPurr = vi.fn();
 const stopPurr = vi.fn();
 
@@ -49,18 +57,6 @@ vi.mock("@/features/pet-home/api/pet.service", () => ({
     return structuredClone(serverState);
   }),
   getOrCreateGuestKey: () => "11111111-1111-4111-8111-111111111111",
-}));
-
-vi.mock("@/features/admin/pet-model.service", () => ({
-  fetchGlobalPetModel: vi.fn(async () => ({
-    kind: "procedural",
-    modelScale: 0.78,
-    fileName: null,
-    mimeType: null,
-    updatedAt: "2026-01-01T00:00:00.000Z",
-    fileUrl: null,
-  })),
-  resolvePetModelFileUrl: () => null,
 }));
 
 vi.mock("@/features/pet-home/pet-purr", () => ({
@@ -95,12 +91,14 @@ vi.mock("@/features/pet-home/components/Cat3DViewer", () => ({
   Cat3DViewer: ({
     colors,
     onPetInteract,
+    design,
   }: {
     colors: { primary: string };
+    design?: CatDesignTunables;
     onPetInteract?: () => void;
   }) => (
     <div>
-      <div role="img" aria-label={PET_NAME} data-primary={colors.primary} />
+      <div role="img" aria-label={PET_NAME} data-primary={colors.primary} data-design={JSON.stringify(design)} />
       <button type="button" onClick={() => onPetInteract?.()}>
         Tocar gato
       </button>
@@ -147,6 +145,9 @@ vi.mock("@/features/pet-home/components/CameraCoatCapture", () => ({
 import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 
 beforeEach(() => {
+  clearCatDesign();
+  modelRequest.mockReset();
+  modelRequest.mockResolvedValue({ data: { kind: "glb", modelScale: 2.1, fileUrl: "/pet/model/file", updatedAt: "legacy" } });
   serverState = createApiPetState();
   latestCoins = null;
   playPurr.mockClear();
@@ -155,6 +156,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  clearCatDesign();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
@@ -173,6 +176,55 @@ async function ready() {
 }
 
 describe("PetHomeStage (API-backed)", () => {
+  it("never requests global model metadata, files or admin mutations", async () => {
+    const fetchRequest = vi.fn();
+    vi.stubGlobal("fetch", fetchRequest);
+    await ready();
+    fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
+    await waitFor(() => expect(screen.getByText(PET_STATUS.fed)).toBeTruthy());
+    const requestedPaths = [
+      ...modelRequest.mock.calls,
+      ...fetchRequest.mock.calls,
+    ].map(([input]) => new URL(String(input), "http://api.test").pathname.replace(/^\/petsapp-api/, ""));
+    for (const endpoint of ["/pet/model", "/pet/model/file", "/admin/pet-model"]) {
+      expect(requestedPaths, `Forbidden model endpoint: ${endpoint}`).not.toContain(endpoint);
+    }
+    expect(modelRequest).not.toHaveBeenCalled();
+    expect(fetchRequest).not.toHaveBeenCalled();
+    expect(latestCoins).toBe(API_STARTING_COINS - API_FEED_COST);
+  });
+
+  it("keeps explicit defaults despite local tuning and differing global metadata without model requests", async () => {
+    // Match defaults on mount so baseline failures identify the later refresh,
+    // rather than stopping before the post-mount storage scenario is exercised.
+    modelRequest.mockResolvedValueOnce({ data: { kind: "procedural", modelScale: defaultCatDesign().modelScale, fileUrl: null } });
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    const subscribe = vi.spyOn(window, "addEventListener");
+    saveCatDesign({ modelScale: 1.4, bodyDepth: 1.5, headHeight: 0.2, earSize: 1.5 });
+    await ready();
+    const design = () => JSON.parse(screen.getByRole("img", { name: PET_NAME }).getAttribute("data-design")!);
+    expect(design()).toEqual(defaultCatDesign());
+    await act(async () => {
+      const oldValue = localStorage.getItem(CAT_DESIGN_STORAGE_KEY);
+      saveCatDesign({ modelScale: 2, bodyDepth: 0.8, headHeight: -0.1, earSize: 0.7 });
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: CAT_DESIGN_STORAGE_KEY,
+        oldValue,
+        newValue: localStorage.getItem(CAT_DESIGN_STORAGE_KEY),
+        storageArea: localStorage,
+      }));
+      window.dispatchEvent(new Event("petsapp:cat-model-changed"));
+    });
+    expect(design()).toEqual(defaultCatDesign());
+    fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
+    await waitFor(() => expect(screen.getByText(PET_STATUS.fed)).toBeTruthy());
+    expect(latestCoins).toBe(API_STARTING_COINS - API_FEED_COST);
+    expect(modelRequest).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(subscribe.mock.calls.some(([event]) => event === "petsapp:cat-model-changed")).toBe(false);
+    subscribe.mockRestore();
+  });
   it("hydrates chrome from the pet API before enabling care", async () => {
     await ready();
     expect(screen.queryByText("PetsApp")).toBeNull();

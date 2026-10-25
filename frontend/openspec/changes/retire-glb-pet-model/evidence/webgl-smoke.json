@@ -1,0 +1,73 @@
+{
+  "requestedArgs": [
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader"
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "apiRequests": [
+    {
+      "method": "GET",
+      "pathname": "/petsapp-api/pet/state"
+    }
+  ],
+  "externalRequests": [],
+  "port": 3002,
+  "url": "http://127.0.0.1:3002/",
+  "playwrightVersion": "1.63.0",
+  "chromiumVersion": "153.0.8010.12",
+  "httpStatus": 200,
+  "canvasCount": 1,
+  "webgl": {
+    "contexts": [
+      {
+        "type": "webgl2",
+        "created": true,
+        "attributes": {
+          "alpha": true,
+          "antialias": true,
+          "depth": true,
+          "desynchronized": false,
+          "failIfMajorPerformanceCaveat": false,
+          "powerPreference": "high-performance",
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "stencil": false,
+          "xrCompatible": false
+        },
+        "width": 280,
+        "height": 280,
+        "draws": 497
+      }
+    ],
+    "sample": {
+      "context": "webgl2",
+      "width": 280,
+      "height": 280,
+      "totalPixels": 78400,
+      "firstPixel": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "differentPixels": 12242,
+      "nonzeroAlphaPixels": 12242,
+      "distinctColorsAtLeast": 256,
+      "contextLost": false,
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "canvasConnected": true
+    },
+    "readErrors": []
+  },
+  "canvasScreenshot": "/tmp/petsapp-webgl-smoke.CDagwc/canvas.png",
+  "screenshot": "/tmp/petsapp-webgl-smoke.CDagwc/home.png",
+  "title": "PetsApp — Tu app para el cuidado de mascotas",
+  "passed": true,
+  "serverExit": {
+    "code": 143,
+    "signal": null
+  },
+  "serverStopped": true
+}
