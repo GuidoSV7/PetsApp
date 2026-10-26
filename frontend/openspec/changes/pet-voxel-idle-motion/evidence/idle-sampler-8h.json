@@ -1,0 +1,75 @@
+{
+  "method": "VPS Node direct pure sampler, elapsed=28800+n/60 seconds, seed123;100warmups+7batches×200calls/profile; all4energy/funprofiles, normal motion. Threshold uses worst-profile median batch mean; all raw batches reported.",
+  "node": "v24.22.1",
+  "cpu": "AMD EPYC 9354P 32-Core Processor",
+  "elapsedSeconds": 28800,
+  "profiles": [
+    {
+      "energyLow": false,
+      "funLow": false,
+      "batchMeanMs": [
+        0.19412791499999998,
+        0.15144442000000014,
+        0.12575728499999997,
+        0.10947007499999999,
+        0.10304569500000013,
+        0.1003452949999999,
+        0.10280239499999994
+      ],
+      "medianPerFrameMs": 0.10947007499999999,
+      "maximumBatchMeanMs": 0.19412791499999998,
+      "checksum": 3000
+    },
+    {
+      "energyLow": false,
+      "funLow": true,
+      "batchMeanMs": [
+        0.08627023500000007,
+        0.07790845500000017,
+        0.08659333000000004,
+        0.07782220499999994,
+        0.08084709500000002,
+        0.077549305,
+        0.07388491499999987
+      ],
+      "medianPerFrameMs": 0.07790845500000017,
+      "maximumBatchMeanMs": 0.08659333000000004,
+      "checksum": 3000
+    },
+    {
+      "energyLow": true,
+      "funLow": false,
+      "batchMeanMs": [
+        0.19489436000000013,
+        0.18617773499999998,
+        0.14100304499999994,
+        0.14668068500000003,
+        0.1341549649999996,
+        0.19678155500000002,
+        0.15696501000000013
+      ],
+      "medianPerFrameMs": 0.15696501000000013,
+      "maximumBatchMeanMs": 0.19678155500000002,
+      "checksum": 3294
+    },
+    {
+      "energyLow": true,
+      "funLow": true,
+      "batchMeanMs": [
+        0.10196509500000048,
+        0.10983542,
+        0.11033108000000028,
+        0.15272516499999994,
+        0.14499549,
+        0.12713167999999997,
+        0.11736691000000007
+      ],
+      "medianPerFrameMs": 0.11736691000000007,
+      "maximumBatchMeanMs": 0.15272516499999994,
+      "checksum": 3294
+    }
+  ],
+  "worstMedianMs": 0.15696501000000013,
+  "thresholdMs": 0.5,
+  "cacheRequired": false
+}

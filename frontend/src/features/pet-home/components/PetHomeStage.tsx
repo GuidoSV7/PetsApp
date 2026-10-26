@@ -18,16 +18,7 @@ import {
   type PetCoatColors,
 } from "@/features/pet-home/extract-coat-colors";
 import { moodCaption } from "@/features/pet-home/pet-customize";
-import {
-  defaultCatDesign,
-  normalizeCatDesign,
-  type CatDesignTunables,
-} from "@/features/admin/cat-design-settings";
-import { CAT_MODEL_CHANGED_EVENT } from "@/features/admin/cat-model-asset";
-import {
-  fetchGlobalPetModel,
-  resolvePetModelFileUrl,
-} from "@/features/admin/pet-model.service";
+import { defaultCatDesign } from "@/features/admin/cat-design-settings";
 import {
   PET_LAYOUT_MODE,
   petLayoutCssVars,
@@ -94,10 +85,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
-  const [modelUrl, setModelUrl] = useState<string | null>(null);
-  const [catDesign, setCatDesign] = useState<CatDesignTunables>(() =>
-    defaultCatDesign(),
-  );
+  const [catDesign] = useState(defaultCatDesign);
   const purrRef = useRef(createPurrPlayer());
   const onCoinsChangeRef = useRef(onCoinsChange);
   onCoinsChangeRef.current = onCoinsChange;
@@ -107,30 +95,6 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   useEffect(() => {
     const player = purrRef.current;
     return () => player.stop();
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    const refreshModel = () => {
-      void fetchGlobalPetModel()
-        .then((meta) => {
-          if (cancelled) return;
-          setModelUrl(resolvePetModelFileUrl(meta));
-          setCatDesign((prev) =>
-            normalizeCatDesign({ ...prev, modelScale: meta.modelScale }),
-          );
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setModelUrl(null);
-        });
-    };
-    refreshModel();
-    window.addEventListener(CAT_MODEL_CHANGED_EVENT, refreshModel);
-    return () => {
-      cancelled = true;
-      window.removeEventListener(CAT_MODEL_CHANGED_EVENT, refreshModel);
-    };
   }, []);
 
   useEffect(() => {
@@ -291,7 +255,6 @@ export function PetHomeStage({ onCoinsChange }: Props) {
               design={catDesign}
               reactPulse={reactPulse}
               needs={needs}
-              modelUrl={modelUrl}
               onPetInteract={() =>
                 void runAction("pet", { purr: true, bounce: true })
               }

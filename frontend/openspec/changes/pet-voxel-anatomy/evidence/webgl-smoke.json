@@ -1,0 +1,173 @@
+{
+  "method": "Real production Next/React/Three; synthetic API only; no scene or GL mock",
+  "scenarios": [
+    {
+      "name": "home-normal",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/petsapp-api/pet/state",
+          "fixture": true
+        },
+        {
+          "method": "POST",
+          "path": "/petsapp-api/pet/actions/pet",
+          "fixture": true
+        }
+      ],
+      "status": 200,
+      "lowFlags": [
+        "false",
+        "false",
+        "false",
+        "false"
+      ],
+      "graphics": [
+        {
+          "context": "webgl2",
+          "width": 280,
+          "height": 280,
+          "sampled": true,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "preserveDrawingBuffer": false,
+          "different": 23116,
+          "nonzeroAlpha": 23116,
+          "colorsAtLeast": 312,
+          "contextLost": false,
+          "error": 0
+        }
+      ],
+      "canvasCount": 1,
+      "screenshot": "home-normal-chromium.png",
+      "realTapPetCalls": 1,
+      "audio": [
+        {
+          "state": "running",
+          "sampleRate": 44100
+        },
+        {
+          "state": "suspended",
+          "sampleRate": 44100
+        },
+        {
+          "state": "running",
+          "sampleRate": 44100
+        },
+        {
+          "state": "running",
+          "sampleRate": 44100
+        }
+      ]
+    },
+    {
+      "name": "home-needs-zero",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [
+        {
+          "method": "GET",
+          "path": "/petsapp-api/pet/state",
+          "fixture": true
+        }
+      ],
+      "status": 200,
+      "lowFlags": [
+        "true",
+        "true",
+        "true",
+        "true"
+      ],
+      "graphics": [
+        {
+          "context": "webgl2",
+          "width": 280,
+          "height": 280,
+          "sampled": true,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "preserveDrawingBuffer": false,
+          "different": 20361,
+          "nonzeroAlpha": 20361,
+          "colorsAtLeast": 260,
+          "contextLost": false,
+          "error": 0
+        }
+      ],
+      "canvasCount": 1,
+      "screenshot": "home-needs-zero-chromium.png"
+    },
+    {
+      "name": "admin-defaults",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [],
+      "status": 200,
+      "sliders": [
+        {
+          "id": "cat-model-scale",
+          "value": "0.78",
+          "min": "0.2",
+          "max": "2.5",
+          "step": "0.01"
+        },
+        {
+          "id": "cat-body-depth",
+          "value": "1",
+          "min": "0.7",
+          "max": "1.6",
+          "step": "0.01"
+        },
+        {
+          "id": "cat-head-height",
+          "value": "0",
+          "min": "-0.15",
+          "max": "0.25",
+          "step": "0.01"
+        },
+        {
+          "id": "cat-ear-size",
+          "value": "1",
+          "min": "0.6",
+          "max": "1.6",
+          "step": "0.01"
+        }
+      ],
+      "graphics": [
+        {
+          "context": "webgl2",
+          "width": 492,
+          "height": 150,
+          "sampled": true,
+          "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "preserveDrawingBuffer": false,
+          "different": 6674,
+          "nonzeroAlpha": 6674,
+          "colorsAtLeast": 266,
+          "contextLost": false,
+          "error": 0
+        }
+      ],
+      "canvasCount": 1,
+      "screenshot": "admin-defaults-chromium.png"
+    }
+  ],
+  "cleanup": {
+    "browserClosed": true,
+    "serverStopped": true,
+    "portClosed": true
+  },
+  "origin": "http://127.0.0.1:45275",
+  "playwright": "1.63.0",
+  "chromium": "153.0.8010.12",
+  "result": "PASS"
+}

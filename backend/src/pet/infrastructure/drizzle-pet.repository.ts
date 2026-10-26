@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import type { DrizzleDb } from '../../database/database.module.js';
 import { DRIZZLE } from '../../database/database.tokens.js';
 import { petStates } from '../../db/schema.js';
+import { normalizeCoatPattern } from '../pet-rules.js';
 import type {
   PetRepository,
   PetStateRow,
@@ -26,6 +27,7 @@ function toRow(row: Row): PetStateRow {
       primary: row.coatPrimary,
       secondary: row.coatSecondary,
       accent: row.coatAccent,
+      pattern: normalizeCoatPattern(row.coatPattern),
     },
     statusKey: row.statusKey,
     name: row.name,
@@ -61,6 +63,7 @@ export class DrizzlePetRepository implements PetRepository {
         coatPrimary: data.coat.primary,
         coatSecondary: data.coat.secondary,
         coatAccent: data.coat.accent,
+        coatPattern: data.coat.pattern,
         statusKey: data.statusKey,
         name: data.name,
         renameCount: data.renameCount,
@@ -81,6 +84,7 @@ export class DrizzlePetRepository implements PetRepository {
         coatPrimary: data.coat.primary,
         coatSecondary: data.coat.secondary,
         coatAccent: data.coat.accent,
+        coatPattern: data.coat.pattern,
         statusKey: data.statusKey,
         name: data.name,
         renameCount: data.renameCount,

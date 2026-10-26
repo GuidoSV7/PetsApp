@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import type { Group } from "three";
+import type { Group, Mesh } from "three";
 import {
   defaultCatDesign,
   loadCatDesign,
@@ -17,6 +17,10 @@ import {
   type CatMaterialRole,
   type CatPart,
 } from "@/features/pet-home/cat-anatomy";
+import { buildCatPartTree, resolveCatPartPose, type CatPartNode } from "@/features/pet-home/cat-part-tree";
+import { applyCatIdleFrame } from "@/features/pet-home/cat-idle-frame";
+import { CAT_IDLE_PART_IDS } from "@/features/pet-home/cat-idle-motion";
+import { useReducedMotion } from "@/features/pet-home/use-reduced-motion";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import {
   applyNeedDirtToCoat,
@@ -66,24 +70,7 @@ function paletteFromCoat(colors: PetCoatColors): RolePalette {
 }
 
 function PartGeometry({ part }: { part: CatPart }) {
-  if (part.kind === "sphere") {
-    const [radius, w = 24, h = 20] = part.args;
-    return <sphereGeometry args={[radius, w, h]} />;
-  }
-  if (part.kind === "cone") {
-    const [radius, height, radial = 5] = part.args;
-    return <coneGeometry args={[radius, height, radial]} />;
-  }
-  if (part.kind === "capsule") {
-    const [radius, length, cap = 4, radial = 10] = part.args;
-    return <capsuleGeometry args={[radius, length, cap, radial]} />;
-  }
-  if (part.kind === "box") {
-    const [w, h, d] = part.args;
-    return <boxGeometry args={[w, h, d]} />;
-  }
-  const [rTop, rBottom, height, radial = 6] = part.args;
-  return <cylinderGeometry args={[rTop, rBottom, height, radial]} />;
+  return <boxGeometry args={[...part.args]} />;
 }
 
 /** Feline procedural cat; materials follow the coat palette. */
@@ -98,6 +85,13 @@ export function Cat3DModel({
 }: Props) {
   const group = useRef<Group>(null);
   const bounce = useRef(0);
+  const meshes = useRef(new Map<string, Mesh>());
+  const seed = useRef<number | null>(null);
+  const origin = useRef<number | null>(null);
+  if (seed.current === null) {
+    seed.current = typeof window === "undefined" ? 0 : crypto.getRandomValues(new Uint32Array(1))[0];
+  }
+  const reducedMotion = useReducedMotion();
   const [storedDesign, setStoredDesign] = useState<CatDesignTunables>(() =>
     typeof window === "undefined" ? defaultCatDesign() : loadCatDesign(),
   );
@@ -121,6 +115,17 @@ export function Cat3DModel({
       tunables.modelScale,
     ],
   );
+  const tree = useMemo(() => buildCatPartTree(CAT_ANATOMY), []);
+  const nodesById = useMemo(() => {
+    const nodes = new Map<string, CatPartNode>();
+    const visit = (node: CatPartNode) => {
+      nodes.set(node.part.id, node);
+      node.children.forEach(visit);
+    };
+    tree.forEach(visit);
+    return nodes;
+  }, [tree]);
+  const resolvedById = useMemo(() => new Map(anatomy.map((part) => [part.id, part])), [anatomy]);
   const coatForNeeds = useMemo(
     () => applyNeedDirtToCoat(colors, cues),
     [colors.accent, colors.primary, colors.secondary, cues],
@@ -148,23 +153,35 @@ export function Cat3DModel({
   }, [reactPulse]);
 
   useFrame((state, delta) => {
-    if (!group.current) return;
-    const t = state.clock.getElapsedTime() * cues.idleSpeed;
-    if (!orbiting) {
-      group.current.rotation.y =
-        yawBias + Math.sin(t * 0.45) * 0.22 * cues.idleAmp;
-    } else {
-      group.current.rotation.y = yawBias;
-    }
-    const bob = Math.sin(t * 1.6) * 0.03 * cues.idleAmp;
-    if (bounce.current > 0) {
-      bounce.current = Math.max(0, bounce.current - delta * 2.4);
-    }
-    const hop = Math.sin(bounce.current * Math.PI) * 0.1;
-    const squash = 1 + Math.sin(bounce.current * Math.PI) * 0.05;
-    group.current.position.y = -0.22 + bob + hop;
-    group.current.scale.setScalar(modelScale * squash);
+    const now = state.clock.getElapsedTime();
+    origin.current ??= now;
+    bounce.current = applyCatIdleFrame({
+      root: group.current, meshes: meshes.current, nodes: nodesById, resolved: resolvedById,
+      elapsedSeconds: now - origin.current, deltaSeconds: delta,
+      cues, seed: seed.current!, reducedMotion, orbiting, yawBias, modelScale, bounce: bounce.current,
+    });
   });
+
+  const renderPart = (node: CatPartNode): React.ReactNode => {
+    const part = resolvedById.get(node.part.id)!;
+    const transform = resolveCatPartPose(node, part);
+    const mat = palette[part.role];
+    const castShadow = part.role === "primary" &&
+      (part.id === "body" || part.id === "head" || part.id.startsWith("tail"));
+    return (
+      <mesh key={part.id} name={part.id} castShadow={castShadow}
+        ref={CAT_IDLE_PART_IDS.some((id) => id === part.id) ? (mesh) => {
+          if (mesh) meshes.current.set(part.id, mesh);
+          else meshes.current.delete(part.id);
+        } : undefined}
+        position={[...transform.position]} rotation={[...transform.rotation]} scale={[...transform.scale]}>
+        <PartGeometry part={part} />
+        <meshStandardMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness}
+          emissive={mat.emissive} emissiveIntensity={mat.emissiveIntensity ?? 0} />
+        {node.children.map(renderPart)}
+      </mesh>
+    );
+  };
 
   return (
     <group
@@ -182,32 +199,7 @@ export function Cat3DModel({
         document.body.style.cursor = "auto";
       }}
     >
-      {anatomy.map((part) => {
-        const mat = palette[part.role];
-        const castShadow =
-          part.role === "primary" &&
-          (part.id === "body" ||
-            part.id === "head" ||
-            part.id.startsWith("tail"));
-        return (
-          <mesh
-            key={part.id}
-            castShadow={castShadow}
-            position={[...part.position]}
-            rotation={part.rotation ? [...part.rotation] : undefined}
-            scale={part.scale ? [...part.scale] : undefined}
-          >
-            <PartGeometry part={part} />
-            <meshStandardMaterial
-              color={mat.color}
-              roughness={mat.roughness}
-              metalness={mat.metalness}
-              emissive={mat.emissive}
-              emissiveIntensity={mat.emissiveIntensity ?? 0}
-            />
-          </mesh>
-        );
-      })}
+      {tree.map(renderPart)}
     </group>
   );
 }

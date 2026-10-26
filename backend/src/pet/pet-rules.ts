@@ -17,10 +17,25 @@ export const INITIAL_NEEDS = {
   hygiene: 78,
 } as const;
 
+/** Persisted identifiers: append values only; never rename, remove or reorder. */
+export const COAT_PATTERNS = ['solid', 'tabby', 'tuxedo', 'calico', 'pointed'] as const;
+
+export type CoatPattern = (typeof COAT_PATTERNS)[number];
+
+export function isCoatPattern(value: unknown): value is CoatPattern {
+  return typeof value === 'string' && (COAT_PATTERNS as readonly string[]).includes(value);
+}
+
+/** Normalize stored values only; writes must validate instead of coercing. */
+export function normalizeCoatPattern(value: unknown): CoatPattern {
+  return isCoatPattern(value) ? value : 'solid';
+}
+
 export const DEFAULT_COAT = {
   primary: '#8a8a8e',
   secondary: '#b4b4b8',
   accent: '#c9a0a8',
+  pattern: 'solid',
 } as const;
 
 export type PetNeeds = {
@@ -34,7 +49,10 @@ export type PetCoat = {
   primary: string;
   secondary: string;
   accent: string;
+  pattern: CoatPattern;
 };
+
+export type PetCoatInput = Omit<PetCoat, 'pattern'> & { pattern?: CoatPattern };
 
 export type CareAction = 'feed' | 'play' | 'sleep' | 'bathe' | 'pet';
 
@@ -185,11 +203,14 @@ export function applyCare(
 
 export function applyCoat(
   snapshot: PetSnapshot,
-  coat: PetCoat,
+  coat: PetCoatInput,
 ): PetSnapshot {
   return {
     ...snapshot,
-    coat: { ...coat },
+    coat: {
+      ...coat,
+      pattern: coat.pattern === undefined ? snapshot.coat.pattern : coat.pattern,
+    },
     statusKey: 'coated',
   };
 }

@@ -20,6 +20,66 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Admin login and first super_admin
+
+`/login` uses the real Nest login. Only a successful response with the `admin`
+or `super_admin` role creates an admin session; a rejected request or network
+failure shows an error without a local fallback.
+
+To create the first `super_admin`, follow the existing
+[backend seed procedure](../backend/README.md#seed-the-first-super_admin-no-ui):
+
+1. From `backend/`, complete the documented database configuration and migrations
+   (`DATABASE_URL` and `npm run db:migrate`), then run `npm run build`.
+2. Supply `ADMIN_EMAIL`, `ADMIN_PASSWORD` and `ADMIN_NAME` through your secure
+   environment, using real credentials that are **never committed**.
+3. Run `npm run seed:admin` from `backend/`, then sign in at `/login`.
+
+The seed skips an existing email without changing its user, role or password.
+It is not a password-rotation command. If production was seeded with the retired
+public credentials, a human must separately review and rotate the affected
+super_admin password. Removing the browser shortcut does not rotate passwords;
+no production seed, credential change or deployment is performed by this change.
+
+### Authentication boundary
+
+The admin layout is a **client-only UI gate**: it reads localStorage and checks
+its role. It does not authenticate the token server-side or request
+`/auth/profile`, and localStorage can be forged. Nest authentication and role
+guards protect API data; the layout is not a data-security boundary. Nest login,
+session-cookie handling and roles remain unchanged.
+
+Known retired local sessions are treated as invalid through the shared session
+reader under either existing storage key, without deleting or rewriting their
+stored bytes. Real sessions retain their existing behavior.
+
+Follow-up, not implemented here: validate the layout session against
+`/auth/profile` instead of relying only on localStorage.
+
+## Voxel viewer FPS diagnostics
+
+The viewer starts at a client-device DPR ceiling and adapts its numeric Canvas
+DPR using drei PerformanceMonitor. On fallback it keeps the final selected
+quality for that mounted viewer; a reload begins a new session.
+
+Append `?pet3dStats=1` to the existing home or Diseño 3D URL (use
+`&pet3dStats=1` if it already has query parameters), then reload to show the
+existing drei FPS panel. It is absent by default, including production; only
+the exact value `1` enables it. Remove the parameter and reload to disable it.
+The local overlay does not intercept orbit/tap input and adds no dependency.
+
+For low-end Android and iPhone checks, record device/browser, viewport,
+battery/thermal conditions and reduced-motion preference. Observe startup and
+at least 30 seconds of settled foreground FPS, then orbit/tap and check the
+shadow. Repeat with reduced motion and the admin preview. FPS instrumentation
+adds overhead and is not GPU timing or proof of a specific bottleneck.
+Phone results must be recorded by the human tester, not inferred from server
+or software-rendered Chromium performance.
+
+Contact shadows use fixed resolution 256, selected by the human after paired
+512/256 captures looked equivalent. Other shadow settings stay unchanged;
+there are no live shadow tiers or factor thresholds.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

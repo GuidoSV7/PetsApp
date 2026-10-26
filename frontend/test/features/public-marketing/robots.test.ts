@@ -9,6 +9,7 @@ describe("robots", () => {
     const disallow = Array.isArray(result.rules)
       ? result.rules.flatMap((rule) => rule.disallow ?? [])
       : (result.rules?.disallow ?? []);
-    expect(disallow.some((path) => String(path).includes("admin"))).toBe(true);
+    const disallowedPaths = Array.isArray(disallow) ? disallow : [disallow];
+    expect(disallowedPaths.some((path) => String(path).includes("admin"))).toBe(true);
   });
 });

@@ -2,140 +2,102 @@
  * @vitest-environment jsdom
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { AdminDesign3DPage } from "@/app/admin/_components/design-3d/AdminDesign3DPage";
 import {
-  CAT_DESIGN_STORAGE_KEY,
   clearCatDesign,
+  defaultCatDesign,
+  loadCatDesign,
+  saveCatDesign,
+  type CatDesignTunables,
 } from "@/features/admin/cat-design-settings";
 
+const { request } = vi.hoisted(() => ({ request: vi.fn() }));
+vi.mock("@/lib/axios", () => ({
+  default: { get: request, post: request, put: request, delete: request },
+  getPetsAppBaseUrl: () => "http://api.test",
+}));
+
 vi.mock("next/dynamic", () => ({
-  default: () => () => <div role="img" aria-label="Vista previa de Michi" />,
+  default: () => ({ design }: { design: CatDesignTunables }) => (
+    <div role="img" aria-label="Vista previa de Michi" data-design={JSON.stringify(design)} />
+  ),
 }));
 
-const uploadGlobalPetModel = vi.fn();
-const clearGlobalPetModel = vi.fn();
-const fetchGlobalPetModel = vi.fn();
+const controls = [
+  { label: /Escala del modelo/i, key: "modelScale", value: 0.95, min: "0.2", max: "2.5" },
+  { label: /Profundidad del cuerpo/i, key: "bodyDepth", value: 1.3, min: "0.7", max: "1.6" },
+  { label: /Altura de la cabeza/i, key: "headHeight", value: 0.15, min: "-0.15", max: "0.25" },
+  { label: /Tamaño de orejas/i, key: "earSize", value: 1.4, min: "0.6", max: "1.6" },
+] as const;
+const previewDesign = () => JSON.parse(screen.getByRole("img", { name: /Vista previa de Michi/i }).getAttribute("data-design")!);
 
-vi.mock("@/features/admin/pet-model.service", () => ({
-  fetchGlobalPetModel: (...args: unknown[]) => fetchGlobalPetModel(...args),
-  uploadGlobalPetModel: (...args: unknown[]) => uploadGlobalPetModel(...args),
-  clearGlobalPetModel: (...args: unknown[]) => clearGlobalPetModel(...args),
-  resolvePetModelFileUrl: (meta: {
-    kind: string;
-    fileUrl: string | null;
-    updatedAt: string;
-  }) =>
-    meta.kind === "glb" && meta.fileUrl
-      ? `http://api.test${meta.fileUrl}?t=${meta.updatedAt}`
-      : null,
-}));
-
-vi.mock("@/features/admin/cat-model-asset", async () => {
-  const actual = await vi.importActual<
-    typeof import("@/features/admin/cat-model-asset")
-  >("@/features/admin/cat-model-asset");
-  return {
-    ...actual,
-    notifyCatModelChanged: vi.fn(),
-  };
+beforeEach(() => {
+  clearCatDesign();
+  request.mockReset();
+  request.mockResolvedValue({ data: { kind: "procedural", modelScale: 0.78, fileUrl: null } });
 });
+afterEach(() => { cleanup(); clearCatDesign(); vi.unstubAllGlobals(); });
 
 describe("AdminDesign3DPage", () => {
-  beforeEach(() => {
-    vi.stubGlobal("URL", {
-      ...URL,
-      createObjectURL: vi.fn(() => "blob:mock-glb"),
-      revokeObjectURL: vi.fn(),
-    });
-    fetchGlobalPetModel.mockResolvedValue({
-      kind: "procedural",
-      modelScale: 0.78,
-      fileName: null,
-      mimeType: null,
-      updatedAt: "2026-01-01T00:00:00.000Z",
-      fileUrl: null,
-    });
-    uploadGlobalPetModel.mockResolvedValue({
-      kind: "procedural",
-      modelScale: 0.95,
-      fileName: null,
-      mimeType: null,
-      updatedAt: "2026-01-01T00:00:00.000Z",
-      fileUrl: null,
-    });
-    clearGlobalPetModel.mockResolvedValue({
-      kind: "procedural",
-      modelScale: 0.78,
-      fileName: null,
-      mimeType: null,
-      updatedAt: "2026-01-01T00:00:00.000Z",
-      fileUrl: null,
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    clearCatDesign();
-    vi.unstubAllGlobals();
-    vi.clearAllMocks();
-  });
-
-  it("shows preview, scale, and confirms changes via the global API", async () => {
+  it("shows a browser-only procedural preview without global controls or requests", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
     render(<AdminDesign3DPage />);
-    expect(
-      screen.getByRole("heading", { name: /Diseño 3D/i }),
-    ).toBeTruthy();
+    await waitFor(() => expect(screen.getByRole("img", { name: /Vista previa de Michi/i })).toBeTruthy());
+    expect(screen.getByRole("heading", { name: /Diseño 3D/i })).toBeTruthy();
     expect(screen.getByRole("heading", { name: /Vista previa/i })).toBeTruthy();
-    expect(screen.getByLabelText(/Vista previa de Michi/i)).toBeTruthy();
-    expect(screen.getByLabelText(/Elegir modelo \.glb/i)).toBeTruthy();
-
-    const scale = screen.getByLabelText(/Escala del modelo/i);
-    fireEvent.change(scale, { target: { value: "0.95" } });
-    fireEvent.click(screen.getByRole("button", { name: /Confirmar cambio/i }));
-    await waitFor(() => {
-      expect(screen.getByText(/Cambio confirmado/i)).toBeTruthy();
-    });
-    expect(uploadGlobalPetModel).toHaveBeenCalledWith({
-      modelScale: 0.95,
-      file: null,
-    });
-    expect(window.localStorage.getItem(CAT_DESIGN_STORAGE_KEY)).toContain(
-      "0.95",
-    );
+    expect(screen.getAllByRole("slider")).toHaveLength(4);
+    expect(document.querySelector('input[type="file"]')).toBeNull();
+    expect(screen.queryByRole("button", { name: /Confirmar/i })).toBeNull();
+    expect(screen.getByText("Vista previa local. Los ajustes se guardan solo en este navegador y no cambian el gato del inicio.")).toBeTruthy();
+    expect(screen.queryByText(/para todos|publica para/i)).toBeNull();
+    expect(request).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("accepts a .glb file into the draft picker label", () => {
-    render(<AdminDesign3DPage />);
-    const input = screen.getByLabelText(/Elegir modelo \.glb/i);
-    const file = new File([new Uint8Array([1, 2, 3])], "nuevo-michi.glb", {
-      type: "model/gltf-binary",
-    });
-    fireEvent.change(input, { target: { files: [file] } });
-    expect(screen.getByText("nuevo-michi.glb")).toBeTruthy();
-    expect(screen.queryByLabelText(/Profundidad del cuerpo/i)).toBeNull();
+  it("persists each slider immediately, updates preview and retains values across remount", async () => {
+    let view = render(<AdminDesign3DPage />);
+    await waitFor(() => expect(previewDesign()).toEqual(defaultCatDesign()));
+    const expected = defaultCatDesign();
+    for (const control of controls) {
+      const slider = screen.getByLabelText(control.label) as HTMLInputElement;
+      expect(slider.min).toBe(control.min);
+      expect(slider.max).toBe(control.max);
+      expect(slider.step).toBe("0.01");
+      fireEvent.change(slider, { target: { value: String(control.value) } });
+      expected[control.key] = control.value;
+      expect(previewDesign()).toEqual(expected);
+      expect(loadCatDesign()).toEqual(expected);
+      view.unmount();
+      view = render(<AdminDesign3DPage />);
+      await waitFor(() => expect(previewDesign()).toEqual(expected));
+      expect((screen.getByLabelText(control.label) as HTMLInputElement).value).toBe(String(control.value));
+    }
+    expect(request).not.toHaveBeenCalled();
   });
 
-  it("restores defaults via the global API", async () => {
-    render(<AdminDesign3DPage />);
-    fireEvent.change(screen.getByLabelText(/Escala del modelo/i), {
-      target: { value: "1.1" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Confirmar cambio/i }));
-    await waitFor(() => {
-      expect(screen.getByText(/Cambio confirmado/i)).toBeTruthy();
-    });
+  it("resets preview, sliders and local saved values without publishing or deleting a model", async () => {
+    const unrelatedKey = "petsapp.retirement-test.unrelated";
+    const unrelatedValue = '{"legacyAsset":"keep-byte-for-byte"}';
+    localStorage.setItem(unrelatedKey, unrelatedValue);
+    saveCatDesign({ modelScale: 1.1, bodyDepth: 1.3, headHeight: 0.2, earSize: 1.4 });
+    const dispatch = vi.spyOn(window, "dispatchEvent");
+    const view = render(<AdminDesign3DPage />);
     fireEvent.click(screen.getByRole("button", { name: /Restablecer/i }));
-    await waitFor(() => {
-      expect(screen.getByText(/Diseño restablecido/i)).toBeTruthy();
-    });
-    expect(clearGlobalPetModel).toHaveBeenCalled();
-    expect(window.localStorage.getItem(CAT_DESIGN_STORAGE_KEY)).toBeNull();
+    await waitFor(() => expect(previewDesign()).toEqual(defaultCatDesign()));
+    expect(loadCatDesign()).toEqual(defaultCatDesign());
+    expect(screen.getByText(/Diseño restablecido/i)).toBeTruthy();
+    view.unmount();
+    render(<AdminDesign3DPage />);
+    expect(previewDesign()).toEqual(defaultCatDesign());
+    for (const control of controls) {
+      expect((screen.getByLabelText(control.label) as HTMLInputElement).value).toBe(String(defaultCatDesign()[control.key]));
+    }
+    expect(localStorage.getItem(unrelatedKey)).toBe(unrelatedValue);
+    localStorage.removeItem(unrelatedKey);
+    expect(request).not.toHaveBeenCalled();
+    expect(dispatch).not.toHaveBeenCalled();
+    dispatch.mockRestore();
   });
 });

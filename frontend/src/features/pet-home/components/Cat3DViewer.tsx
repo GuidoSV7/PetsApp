@@ -1,16 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
-import {
-  defaultCatDesign,
-  loadCatDesign,
-  type CatDesignTunables,
-} from "@/features/admin/cat-design-settings";
-import { resolveModelScale } from "@/features/admin/resolve-cat-design";
+import { ContactShadows, OrbitControls, PerformanceMonitor, Stats } from "@react-three/drei";
+import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-quality";
+import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
-import { GlbPetModel } from "@/features/pet-home/components/GlbPetModel";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import {
   describeNeedVisuals,
@@ -23,20 +18,20 @@ import {
 import { PET_NAME } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
 
+const performanceBounds = (): [number, number] => [45, 58];
+
 type Props = {
   colors: PetCoatColors;
   yawBias?: number;
   /** Bump from parent to replay the happy bounce. */
   reactPulse?: number;
   onPetInteract?: () => void;
-  /** Admin / preview override; home loads persisted tunables when omitted. */
+  /** Admin preview override; home supplies explicit defaults. */
   design?: CatDesignTunables;
   needs?: PetNeeds;
-  /** When set, renders a custom GLB/GLTF instead of the procedural cat. */
-  modelUrl?: string | null;
 };
 
-/** WebGL stage for procedural Michi or an admin-confirmed GLB. */
+/** WebGL stage for the procedural Michi. */
 export function Cat3DViewer({
   colors,
   yawBias = 0,
@@ -44,15 +39,37 @@ export function Cat3DViewer({
   onPetInteract,
   design,
   needs = PREVIEW_PET_NEEDS,
-  modelUrl = null,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
-  const tunables = design ?? (typeof window === "undefined" ? defaultCatDesign() : loadCatDesign());
-  const modelScale = resolveModelScale(tunables);
+  const [ceiling] = useState(() => typeof window === "undefined" ? 1 : maxDprForDevice({
+    deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+    hardwareConcurrency: navigator.hardwareConcurrency,
+    devicePixelRatio: window.devicePixelRatio,
+  }));
+  const [selectedDpr, setSelectedDpr] = useState(ceiling);
+  const [statsEnabled] = useState(() => typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("pet3dStats") === "1");
+  const [statsParent, setStatsParent] = useState<HTMLDivElement | null>(null);
+  const statsParentRef = useMemo(() => statsParent ? { current: statsParent } : undefined, [statsParent]);
+  const selectedDprRef = useRef(ceiling);
+  const frozen = useRef(false);
+  const applyFactor = useCallback((factor: number) => {
+    if (frozen.current) return;
+    const next = dprForFactor(factor, ceiling);
+    if (next !== selectedDprRef.current) {
+      selectedDprRef.current = next;
+      setSelectedDpr(next);
+    }
+  }, [ceiling]);
+  const onChange = useCallback(({ factor }: { factor: number }) => applyFactor(factor), [applyFactor]);
+  const onFallback = useCallback(({ factor }: { factor: number }) => {
+    if (frozen.current) return;
+    applyFactor(factor);
+    frozen.current = true;
+  }, [applyFactor]);
   const needHint = describeNeedVisuals(needVisualCues(needs));
   const ariaLabel = [
     `${PET_NAME}. Arrastrá para girar, tocá para ronronear.`,
-    modelUrl ? "Modelo personalizado." : null,
     needHint,
   ]
     .filter(Boolean)
@@ -60,11 +77,21 @@ export function Cat3DViewer({
 
   return (
     <div className={styles.canvasHost} role="img" aria-label={ariaLabel}>
+      {statsEnabled && <div ref={setStatsParent} aria-hidden="true" />}
       <Canvas
         camera={{ position: [0, 0.42, 3.05], fov: 28 }}
-        dpr={[1, 1.75]}
+        dpr={selectedDpr}
         gl={{ antialias: true, alpha: true }}
       >
+        <PerformanceMonitor
+          factor={1}
+          step={0.15}
+          bounds={performanceBounds}
+          flipflops={8}
+          onChange={onChange}
+          onFallback={onFallback}
+        />
+        {statsEnabled && statsParentRef && <Stats showPanel={0} parent={statsParentRef} className={styles.fpsOverlay} />}
         <ambientLight intensity={0.72} />
         <directionalLight
           position={[2.8, 4.2, 2.2]}
@@ -78,25 +105,18 @@ export function Cat3DViewer({
         />
         <directionalLight position={[0, 1.2, 3]} intensity={0.35} />
         <Suspense fallback={null}>
-          {modelUrl ? (
-            <GlbPetModel
-              url={modelUrl}
-              scale={modelScale}
-              onPetInteract={onPetInteract}
-            />
-          ) : (
-            <Cat3DModel
-              colors={colors}
-              orbiting={orbiting}
-              yawBias={yawBias}
-              reactPulse={reactPulse}
-              onPetInteract={onPetInteract}
-              design={design}
-              needs={needs}
-            />
-          )}
+          <Cat3DModel
+            colors={colors}
+            orbiting={orbiting}
+            yawBias={yawBias}
+            reactPulse={reactPulse}
+            onPetInteract={onPetInteract}
+            design={design}
+            needs={needs}
+          />
         </Suspense>
         <ContactShadows
+          resolution={256}
           position={[0, -0.62, 0]}
           opacity={0.28}
           scale={3.4}

@@ -64,6 +64,8 @@ export function getPetsAppSession(): PetsAppSessionData | null {
     if (!data?.token || !data?.user?.email || !isSessionRole(data.user.role)) {
       return null;
     }
+    // Tombstone for sessions created by the retired browser-local constructor.
+    if (data.user.id === "hardcoded-admin") return null;
     return data;
   } catch {
     return null;

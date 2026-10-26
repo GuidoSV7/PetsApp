@@ -1,0 +1,109 @@
+{
+  "method": "Real production Next server, disposable Chromium contexts, all API responses simulated in browser; outbound requests blocked. No production, seed, real credentials or camera probe.",
+  "scenarios": [
+    {
+      "name": "real-admin",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [
+        {
+          "method": "POST",
+          "path": "/petsapp-api/auth/login",
+          "hasAuthorization": false,
+          "fixture": true
+        }
+      ],
+      "screenshot": "real-admin-chromium.png",
+      "status": 200,
+      "exactNestSessionSaved": true,
+      "adminContentVisible": true,
+      "functionalPass": true,
+      "consoleClean": true,
+      "origin": "http://127.0.0.1:39217"
+    },
+    {
+      "name": "rejected-login",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+      ],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [
+        {
+          "method": "POST",
+          "path": "/petsapp-api/auth/login",
+          "hasAuthorization": false,
+          "fixture": true
+        }
+      ],
+      "screenshot": "rejected-login-chromium.png",
+      "status": 200,
+      "errorVisible": true,
+      "noSessionCreated": true,
+      "noAdminNavigation": true,
+      "pendingReset": true,
+      "functionalPass": true,
+      "consoleClean": false,
+      "origin": "http://127.0.0.1:41295"
+    },
+    {
+      "name": "legacy-primary",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [],
+      "screenshot": "legacy-primary-chromium.png",
+      "status": 200,
+      "redirect": "/",
+      "noAdminContent": true,
+      "storedBytesUnchanged": true,
+      "noLegacyBearerForwarded": true,
+      "functionalPass": true,
+      "consoleClean": true,
+      "origin": "http://127.0.0.1:39217"
+    },
+    {
+      "name": "legacy-alternate",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "externalRequests": [],
+      "api": [],
+      "screenshot": "legacy-alternate-chromium.png",
+      "status": 200,
+      "redirect": "/",
+      "noAdminContent": true,
+      "storedBytesUnchanged": true,
+      "noLegacyBearerForwarded": true,
+      "functionalPass": true,
+      "consoleClean": true,
+      "origin": "http://127.0.0.1:39217"
+    }
+  ],
+  "origin": "http://127.0.0.1:41295",
+  "browserVersion": "153.0.8010.12",
+  "earlierAttempt": {
+    "exit_code": 1,
+    "raw_report": ".git/agent-evidence/remove-hardcoded-admin-login-browser-first.json",
+    "affected_case": "rejected-login",
+    "failure": "locator.waitFor: Error: strict mode violation: getByRole('alert') resolved to 2 elements:\n    1) <p role=\"alert\" class=\"login-module__WEZH7G__error\">Browser fixture: login rejected</p> aka getByText('Browser fixture: login')\n    2) <div role=\"alert\" aria-live=\"assertive\" id=\"__next-route-announcer__\"></div> aka locator('[id=\"__next-route-announcer__\"]')\n\nCall log:\n  - waiting for getByRole('alert') to be visible\n",
+    "correction": "Scoped the alert locator to the simulated error text; Next route announcer also has role=alert. Re-ran only rejected-login. No application changes or console-error suppression.",
+    "origin": "http://127.0.0.1:39217",
+    "cleanup": {
+      "browserClosed": true,
+      "ownedServerStopped": true,
+      "serverLog": ".git/agent-evidence/remove-hardcoded-admin-login-browser-server.log"
+    }
+  },
+  "pass": false,
+  "error": "Browser acceptance incomplete; see recorded per-scenario failures/console errors\n\nfalse !== true\n",
+  "cleanup": {
+    "browserClosed": true,
+    "ownedServerStopped": true,
+    "serverLog": ".git/agent-evidence/remove-hardcoded-admin-login-browser-server.log"
+  }
+}

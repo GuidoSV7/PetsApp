@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import * as rules from './pet-rules.js';
 import {
   COIN_COSTS,
   DEFAULT_PET_NAME,
@@ -13,6 +14,69 @@ import {
 } from './pet-rules.js';
 
 describe('pet-rules', () => {
+  it('keeps the exact append-only coat pattern identifiers and order', () => {
+    expect(rules.COAT_PATTERNS).toEqual([
+      'solid',
+      'tabby',
+      'tuxedo',
+      'calico',
+      'pointed',
+    ]);
+  });
+
+  it('normalizes unknown stored patterns but retains every recognized pattern', () => {
+    expect(rules.normalizeCoatPattern).toBeTypeOf('function');
+    for (const pattern of ['solid', 'tabby', 'tuxedo', 'calico', 'pointed']) {
+      expect(rules.normalizeCoatPattern(pattern)).toBe(pattern);
+    }
+    expect(rules.normalizeCoatPattern('zebra')).toBe('solid');
+  });
+
+  it('starts with a solid pattern and the unchanged default palette', () => {
+    expect(initialSnapshot().coat).toEqual({
+      primary: '#8a8a8e',
+      secondary: '#b4b4b8',
+      accent: '#c9a0a8',
+      pattern: 'solid',
+    });
+  });
+
+  it('preserves the stored pattern when applyCoat receives only colors', () => {
+    const original = initialSnapshot();
+    const saved = {
+      ...original,
+      coat: { ...original.coat, pattern: 'tabby' as const },
+    };
+    const colors = {
+      primary: '#112233',
+      secondary: '#445566',
+      accent: '#778899',
+    };
+    expect(applyCoat(saved, colors)).toEqual({
+      ...saved,
+      coat: { ...colors, pattern: 'tabby' },
+      statusKey: 'coated',
+    });
+    expect(saved.coat.pattern).toBe('tabby');
+    expect(saved.statusKey).toBe('idle');
+  });
+
+  it('changes an explicitly supplied pattern without spending coins or altering needs', () => {
+    const saved = initialSnapshot();
+    const coat = {
+      primary: '#112233',
+      secondary: '#445566',
+      accent: '#778899',
+      pattern: 'calico' as const,
+    };
+    expect(applyCoat(saved, coat)).toEqual({
+      ...saved,
+      coat,
+      statusKey: 'coated',
+    });
+    expect(saved).toEqual(initialSnapshot());
+  });
+
   it('starts with frontend defaults', () => {
     const snap = initialSnapshot();
     expect(STARTING_COINS).toBe(5);

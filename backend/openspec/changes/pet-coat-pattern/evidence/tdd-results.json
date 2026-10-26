@@ -1,0 +1,648 @@
+{
+  "schema": "petsapp.pet-coat-tdd/v1",
+  "baseline": "d7d0fd29c06b33cbb8ccb427940d46fbcf2a602d",
+  "candidatePaths": [
+    "backend/README.md",
+    "backend/drizzle/0004_coat_pattern.sql",
+    "backend/drizzle/meta/_journal.json",
+    "backend/src/db/schema.ts",
+    "backend/src/pet/pet-rules.ts",
+    "backend/src/pet/pet-rules.spec.ts",
+    "backend/src/pet/pet.service.ts",
+    "backend/src/pet/pet.service.spec.ts",
+    "backend/src/pet/infrastructure/drizzle-pet.repository.ts",
+    "backend/src/pet/infrastructure/drizzle-pet.repository.spec.ts",
+    "backend/src/pet/dto/set-coat.dto.ts",
+    "backend/src/main.ts",
+    "backend/src/config/validation-pipe.ts",
+    "backend/src/pet/model-retirement.http.spec.ts",
+    "backend/src/pet/pet.controller.spec.ts",
+    "backend/src/pet/coat-pattern.http.spec.ts",
+    "backend/src/db/coat-pattern-migration.spec.ts",
+    "backend/openspec/changes/pet-coat-pattern/proposal.md",
+    "backend/openspec/changes/pet-coat-pattern/design.md",
+    "backend/openspec/changes/pet-coat-pattern/tasks.md",
+    "backend/openspec/changes/pet-coat-pattern/specs/coat-contract.md",
+    "backend/openspec/changes/pet-coat-pattern/specs/http-compatibility.md",
+    "backend/openspec/changes/pet-coat-pattern/specs/persistence-and-rollout.md",
+    "backend/openspec/changes/pet-coat-pattern/review.md",
+    "backend/openspec/changes/pet-coat-pattern/evidence/tdd-results.json",
+    "backend/openspec/changes/pet-coat-pattern/evidence/http-differential.json"
+  ],
+  "environment": {
+    "node": "v24.22.1",
+    "home": "/home/agent",
+    "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+    "vitest": "4.1.12",
+    "productionAccess": false
+  },
+  "runs": [
+    {
+      "label": "rules-red",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "rules-red",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/pet-rules.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 1,
+      "durationMs": 2578,
+      "tests": {
+        "total": 14,
+        "passed": 10,
+        "failed": 4,
+        "pending": 0,
+        "success": false
+      },
+      "failures": [
+        {
+          "test": "pet-rules keeps the exact append-only coat pattern identifiers and order",
+          "message": "AssertionError: expected undefined to deeply equal [ 'solid', 'tabby', 'tuxedo', …(2) ]"
+        },
+        {
+          "test": "pet-rules normalizes unknown stored patterns but retains every recognized pattern",
+          "message": "AssertionError: expected undefined to be type of 'function'"
+        },
+        {
+          "test": "pet-rules starts with a solid pattern and the unchanged default palette",
+          "message": "AssertionError: expected { primary: '#8a8a8e', …(2) } to deeply equal { primary: '#8a8a8e', …(3) }"
+        },
+        {
+          "test": "pet-rules preserves the stored pattern when applyCoat receives only colors",
+          "message": "AssertionError: expected { coins: 5, …(5) } to deeply equal { coins: 5, …(5) }"
+        }
+      ],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026050419_fc5b2d",
+      "namespaces": [
+        "petsapp_test_17d98fa9012b42f0b6691b4d249e6776"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-rules-red"
+    },
+    {
+      "label": "rules-green",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "rules-green",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/pet-rules.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 0,
+      "durationMs": 1920,
+      "tests": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026050514_099858",
+      "namespaces": [
+        "petsapp_test_5a30c86395104fbe80e368b784cd2f03"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-rules-green"
+    },
+    {
+      "label": "migration-red",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "migration-red",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/db/coat-pattern-migration.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 1,
+      "durationMs": 2816,
+      "tests": {
+        "total": 3,
+        "passed": 0,
+        "failed": 3,
+        "pending": 0,
+        "success": false
+      },
+      "failures": [
+        {
+          "test": "coat pattern migration appends a strictly later journal entry without changing the legacy prefix",
+          "message": "AssertionError: expected undefined to deeply equal { idx: 4, version: '7', …(3) }"
+        },
+        {
+          "test": "coat pattern migration starts 0004 with the exact local five-second timeout and statement breakpoint",
+          "message": "AssertionError: expected '' to be 'SET LOCAL lock_timeout = \\'5s\\';\\n-->…' // Object.is equality"
+        },
+        {
+          "test": "coat pattern migration upgrades real 0000–0003 rows without changing existing values and defaults new rows to solid",
+          "message": "AssertionError: expected [] to deeply equal [ { …(4) } ]"
+        }
+      ],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026050706_76691c",
+      "namespaces": [
+        "petsapp_test_e67caf81815348b49aa564b4b85944c1"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-migration-red"
+    },
+    {
+      "label": "migration-green",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "migration-green",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/db/coat-pattern-migration.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 0,
+      "durationMs": 2420,
+      "tests": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026050835_c51e57",
+      "namespaces": [
+        "petsapp_test_6345b0d46f8d43039246d4861058635b",
+        "petsapp_test_daddfeace2f04000885c9b18498bbd59"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-migration-green"
+    },
+    {
+      "label": "persistence-red",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "persistence-red",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/pet.service.spec.ts",
+        "src/pet/pet.controller.spec.ts",
+        "src/pet/infrastructure/drizzle-pet.repository.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 1,
+      "durationMs": 4841,
+      "tests": {
+        "total": 19,
+        "passed": 10,
+        "failed": 9,
+        "pending": 0,
+        "success": false
+      },
+      "failures": [
+        {
+          "test": "PetController (drizzle) creates, feeds, and reloads persisted state",
+          "message": "AssertionError: expected undefined to be 'solid' // Object.is equality"
+        },
+        {
+          "test": "PetService (drizzle) creates default state for a new guest",
+          "message": "AssertionError: expected undefined to be 'solid' // Object.is equality"
+        },
+        {
+          "test": "PetService (drizzle) persists calico and preserves it on a later colors-only save",
+          "message": "AssertionError: expected { coins: 5, …(6) } to deeply equal { coins: 5, …(6) }"
+        },
+        {
+          "test": "PetService (drizzle) rejects direct invalid pattern striped without mutating or creating rows",
+          "message": "Error: promise resolved \"{ coins: 5, …(6) }\" instead of rejecting"
+        },
+        {
+          "test": "PetService (drizzle) rejects direct invalid pattern null without mutating or creating rows",
+          "message": "Error: promise resolved \"{ coins: 5, …(6) }\" instead of rejecting"
+        },
+        {
+          "test": "PetService (drizzle) preserves a saved pattern through existing care and name updates",
+          "message": "AssertionError: expected undefined to be 'pointed' // Object.is equality"
+        },
+        {
+          "test": "DrizzlePetRepository (PostgreSQL) creates and reads a pet state row",
+          "message": "AssertionError: expected { primary: '#8a8a8e', …(2) } to deeply equal { primary: '#8a8a8e', …(3) }"
+        },
+        {
+          "test": "DrizzlePetRepository (PostgreSQL) round-trips explicit patterns on both create and update",
+          "message": "AssertionError: expected { primary: '#8a8a8e', …(2) } to deeply equal { primary: '#8a8a8e', …(3) }"
+        },
+        {
+          "test": "DrizzlePetRepository (PostgreSQL) reads a raw zebra value as solid without a repair write",
+          "message": "AssertionError: expected { primary: '#8a8a8e', …(2) } to deeply equal { primary: '#8a8a8e', …(3) }"
+        }
+      ],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026051018_939722",
+      "namespaces": [
+        "petsapp_test_6efc79c91fe64eaa946594a4151755a3"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-persistence-red"
+    },
+    {
+      "label": "persistence-green",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "persistence-green",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/pet.service.spec.ts",
+        "src/pet/pet.controller.spec.ts",
+        "src/pet/infrastructure/drizzle-pet.repository.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 0,
+      "durationMs": 4916,
+      "tests": {
+        "total": 19,
+        "passed": 19,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026051207_4d2d35",
+      "namespaces": [
+        "petsapp_test_30a22bbb50c34a37b9b581040e9aa0d2"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-persistence-green"
+    },
+    {
+      "label": "http-red",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "http-red",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/coat-pattern.http.spec.ts",
+        "src/pet/model-retirement.http.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 1,
+      "durationMs": 3474,
+      "tests": {
+        "total": 16,
+        "passed": 13,
+        "failed": 3,
+        "pending": 0,
+        "success": false
+      },
+      "failures": [
+        {
+          "test": "coat pattern through the real application and shared pipe persists calico through GET, colors-only saves, care and name updates",
+          "message": "AssertionError: expected 400 to be 201 // Object.is equality"
+        },
+        {
+          "test": "coat pattern through the real application and shared pipe rejects pattern striped without changing existing or creating missing state",
+          "message": "AssertionError: expected { …(3) } to deeply equal { …(3) }"
+        },
+        {
+          "test": "coat pattern through the real application and shared pipe rejects pattern null without changing existing or creating missing state",
+          "message": "AssertionError: expected { …(3) } to deeply equal { …(3) }"
+        }
+      ],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026051421_bb71a6",
+      "namespaces": [
+        "petsapp_test_5b07e46cb7034e59b378a52c0b38542e"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-http-red"
+    },
+    {
+      "label": "focused-green",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "focused-green",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet",
+        "src/db/coat-pattern-migration.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 0,
+      "durationMs": 6559,
+      "tests": {
+        "total": 52,
+        "passed": 52,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026051648_b3243c",
+      "namespaces": [
+        "petsapp_test_a90d4aa3a514443197bd05701f5cbd37",
+        "petsapp_test_057574a662b84a509320cc72b5fb5022"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-focused-green"
+    },
+    {
+      "label": "controls",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "controls",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/db/migrate-config.spec.ts",
+        "src/testing/postgres.spec.ts",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 0,
+      "durationMs": 3302,
+      "tests": {
+        "total": 16,
+        "passed": 16,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026051954_3f7360",
+      "namespaces": [
+        "petsapp_test_c54fbb23af6c45ba995b94fc51882f58"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-controls"
+    },
+    {
+      "label": "full",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "full",
+        "heavy",
+        "--",
+        "./node_modules/.bin/vitest",
+        "run",
+        "--maxWorkers=2"
+      ],
+      "exitCode": 0,
+      "durationMs": 25274,
+      "tests": {
+        "total": 478,
+        "passed": 478,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026051958_57bcae",
+      "namespaces": [
+        "petsapp_test_0e6d27dc37cf42919a99a766118685b7",
+        "petsapp_test_dafd93feb1ac48e29e80d5566cfef9bc"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-full"
+    },
+    {
+      "label": "http-baseline",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "http-baseline",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/coat-differential.probe.spec.ts",
+        "--maxWorkers=1"
+      ],
+      "exitCode": 0,
+      "durationMs": 4467,
+      "tests": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026052657_e7f20c",
+      "namespaces": [
+        "petsapp_test_7f4affa6e244430082f3b6c095a722d4"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-http-baseline"
+    },
+    {
+      "label": "http-candidate",
+      "command": [
+        "node",
+        "odd/evidence/pet-coat-check.cjs",
+        "http-candidate",
+        "./node_modules/.bin/vitest",
+        "run",
+        "src/pet/coat-differential.probe.spec.ts",
+        "--maxWorkers=1"
+      ],
+      "exitCode": 0,
+      "durationMs": 4364,
+      "tests": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "pending": 0,
+        "success": true
+      },
+      "failures": [],
+      "postgresVersion": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+      "node": "v24.22.1",
+      "home": "/home/agent",
+      "anchor": "petsapp_coat_1026052702_3d9359",
+      "namespaces": [
+        "petsapp_test_549bb8fbab464919aec6497d1ff2cecc"
+      ],
+      "remainingOwnedDatabases": [],
+      "anchorCleanupExitCode": 0,
+      "rawPrefix": ".git/agent-evidence/pet-coat-http-candidate"
+    }
+  ],
+  "full": {
+    "files": 44,
+    "tests": {
+      "total": 478,
+      "passed": 478,
+      "failed": 0,
+      "pending": 0,
+      "success": true
+    },
+    "upgradeProof": {
+      "postgres": {
+        "server_version": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)"
+      },
+      "oldMigration": 1792291000000,
+      "newMigration": 1792291000001,
+      "column": {
+        "data_type": "character varying",
+        "character_maximum_length": 16,
+        "is_nullable": "NO",
+        "column_default": "'solid'::character varying"
+      },
+      "before": {
+        "id": "6761f631-147c-463e-a552-5ca8b51b7e08",
+        "guest_key": "55555555-5555-4555-8555-555555555555",
+        "coins": 37,
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78,
+        "coat_primary": "#112233",
+        "coat_secondary": "#445566",
+        "coat_accent": "#778899",
+        "status_key": "coated",
+        "created_at": "2026-10-26T05:20:15.627Z",
+        "updated_at": "2026-10-26T05:20:15.627Z",
+        "name": "Legacy",
+        "rename_count": 2
+      },
+      "after": {
+        "id": "6761f631-147c-463e-a552-5ca8b51b7e08",
+        "guest_key": "55555555-5555-4555-8555-555555555555",
+        "coins": 37,
+        "hunger": 72,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78,
+        "coat_primary": "#112233",
+        "coat_secondary": "#445566",
+        "coat_accent": "#778899",
+        "status_key": "coated",
+        "created_at": "2026-10-26T05:20:15.627Z",
+        "updated_at": "2026-10-26T05:20:15.627Z",
+        "name": "Legacy",
+        "rename_count": 2,
+        "coat_pattern": "solid"
+      },
+      "freshPattern": "solid",
+      "freshCoins": 5,
+      "lockTimeoutAfter": {
+        "lock_timeout": "0"
+      },
+      "namespace": "petsapp_test_dafd93feb1ac48e29e80d5566cfef9bc"
+    }
+  },
+  "lint": {
+    "command": "npm run lint",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  "build": {
+    "command": "heavy -- npm run build",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  "protectedFileSha256": {
+    "backend/drizzle/0000_init.sql": "8b22184e133af39f3098c519f24a362a852072f492d00d1743b32e2188e847ee",
+    "backend/drizzle/0001_pet_states.sql": "27ca68e3243303a6261616553cb08e75bb02bce4eea7aae0e355e3884cc5b9e5",
+    "backend/drizzle/0002_pet_name.sql": "a90c8672cfa037b991cb6a86bf081084eb26c237f5b0494b34a9a6dd9f168d91",
+    "backend/drizzle/0003_starting_coins_5.sql": "7c58729eba0dffe24aeb7d987891e299b4f8f77d646fe16beca33c4ab4a3bbfe",
+    "backend/drizzle/meta/0000_snapshot.json": "cd48c08126b2e245db335607e42746201874f6b14b9a9c3b53cf3c3cae487b03",
+    "backend/Dockerfile": "b55aa212b0ec49b6ecea4cadd26b0afb9111b0f526794066ae1372bf5b092449",
+    "backend/src/pet/pet.controller.ts": "b94a2da27ea1d77036acc208890d006e271d95f6699231f1f02dd0eda6765bec",
+    "backend/src/pet/ports/pet-repository.port.ts": "44c58b54708d6ff1312cd27fb39b98f998411d7850f1bfdec746891273026a39",
+    "backend/src/config/http-setup.ts": "fed6ee99d41988d40f487d2e880e460f36f79d075dc1aef2ad83befc5cfb49ee",
+    "backend/src/testing/postgres.ts": "af17722b85316065c06d83f404dd1085e2f9cf04d06502008106e11cde8e4d14",
+    "backend/src/testing/postgres-lifecycle.ts": "12c96a8a96a45537c0f272e2afc6d1a3520f47d12f6fc6fc7b13c498c4fdd6a2",
+    "backend/src/testing/postgres.global-setup.ts": "4665ecea980032d00376f05f16343e249afa647ffbedac8aa52ef9168130958c",
+    "backend/vitest.config.ts": "39d58bebeab3562df1360375c96e305d0c438acb78cb380a65276d958b79ee8f",
+    "backend/package.json": "81ac07fef992990407e0ceb0a435a58158df28642a91ef4e726c1fb9e931d39a"
+  },
+  "sourceAndTestSha256": {
+    "backend/src/db/schema.ts": "65750c53dbc9bd429322949c33f9bd41b961ee60d4ed05ba79ec27c51ad8a86b",
+    "backend/src/pet/pet-rules.ts": "e8440a183a19db6c001438ea921b5f39c63df00760e6af54fb5875a15ca74e83",
+    "backend/src/pet/pet-rules.spec.ts": "96aac74beb5820444da8b047dd8411c81e44b87abd9efb14edc8732c703d6e21",
+    "backend/src/pet/pet.service.ts": "df26f944dd056a5a467018ce64642129997d2792be527c59ae1361aef3b65333",
+    "backend/src/pet/pet.service.spec.ts": "2ee45496608bcd13c9a06dc88e207d54cc255b0c21d6d8fb7c8c801576ea9e3f",
+    "backend/src/pet/infrastructure/drizzle-pet.repository.ts": "6da59eabba204275ab7b240b6f42979470e06c51cc87e4901bbf0fd5f057fc01",
+    "backend/src/pet/infrastructure/drizzle-pet.repository.spec.ts": "6c19e2fd3a6d459b77e14fcc85980859ac70adc5b0bc100f4527474519f71a15",
+    "backend/src/pet/dto/set-coat.dto.ts": "b358945d76b83073cfc447731f2bc4e93f327d0dabc0e954c920604b4ea2469a",
+    "backend/src/main.ts": "a9cece528704823f2dee880f36c378b17117d57eae74b9565390832198dfb52c",
+    "backend/src/config/validation-pipe.ts": "117439df5ed92a9b2e13734f8f2b60b207b3ab1aff31c31fd6f6ac504d35e198",
+    "backend/src/pet/model-retirement.http.spec.ts": "9fecb44d5dfc45f458367b1821f5d8f8dd6f2f90901137dce3c9960c55a04651",
+    "backend/src/pet/pet.controller.spec.ts": "77b977d1482ab4b27e317abe8de0ef46e3298d6379c53457f96cbb62af05c6d5",
+    "backend/src/pet/coat-pattern.http.spec.ts": "d19c94246e1e11c9ac787d82c1bbcecc31b2d70719d52b1ea8929054c3e829a1",
+    "backend/src/db/coat-pattern-migration.spec.ts": "23e023d6963d457fd0c56e5c1aa2704cf50263204ecaac813484951048b396e2"
+  },
+  "evidenceCaveats": [
+    "Explicit-pattern pure helper test was preservation-only; omission was RED.",
+    "Factory extraction preserves behavior; 11 old HTTP controls already passed during HTTP RED.",
+    "New HTTP initial-solid and raw-zebra cases were GREEN-only integration checks after repository RED.",
+    "Assertion/matcher RED only; no missing module/column query/config errors counted.",
+    "Opt-in raw upgrade trace added after RED for proof/namespace extraction without assertion changes.",
+    "Auxiliary bounded-read JSON extraction failed once; structured projection corrected it without rerunning tests.",
+    "One rejected exact-text tracker edit made no writes; reread then corrected."
+  ],
+  "independentVerifier": {
+    "status": "UNEXECUTED / NOT APPROVED",
+    "candidateSpecificHumanDecision": "Prompt2: profile isolates HOME contrary to VPS rules; do not run or label approved."
+  },
+  "nativeReview": {
+    "status": "NOT STARTED at this immutable checkpoint",
+    "mode": "ON",
+    "candidateScope": "all26declaredpaths, including untracked docs/evidence",
+    "consent": "fresh candidate consent required; no prior frontend authority transfer",
+    "onBlock": "stop and report; no reset/recovery"
+  },
+  "delivery": {
+    "commits": 0,
+    "push": false,
+    "merge": false,
+    "deploy": false
+  }
+}

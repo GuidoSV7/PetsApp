@@ -1,0 +1,76 @@
+{
+  "baseline": "6bde6001f94bb891c2156b0bae5574b3223c0901",
+  "cases": 10,
+  "partsPerCase": 33,
+  "unchanged": "All330old-helper poses, all need cues/descriptions/modelScale,33mesh names/parents/geometries/materials/ownrotations/scales per case; all positions except8 explicitly requested low-need ear hinge positions.",
+  "expectedChanges": [
+    {
+      "need": 0,
+      "custom": false,
+      "id": "earL",
+      "field": "position",
+      "before": "-0.18,0.30000000000000004,-0.06",
+      "after": "-0.1923360427044347,0.2860030371308737,-0.013402141709329587"
+    },
+    {
+      "need": 0,
+      "custom": false,
+      "id": "earR",
+      "field": "position",
+      "before": "0.18,0.30000000000000004,-0.06",
+      "after": "0.1923360427044347,0.2860030371308737,-0.013402141709329587"
+    },
+    {
+      "need": 0,
+      "custom": true,
+      "id": "earL",
+      "field": "position",
+      "before": "-0.18,0.30000000000000004,-0.06",
+      "after": "-0.1997376683270955,0.27760485940939794,0.014556573265072648"
+    },
+    {
+      "need": 0,
+      "custom": true,
+      "id": "earR",
+      "field": "position",
+      "before": "0.18,0.30000000000000004,-0.06",
+      "after": "0.1997376683270955,0.27760485940939794,0.014556573265072648"
+    },
+    {
+      "need": 44,
+      "custom": false,
+      "id": "earL",
+      "field": "position",
+      "before": "-0.18,0.30000000000000004,-0.06",
+      "after": "-0.18027499957208096,0.2999928577542777,-0.058900032521525744"
+    },
+    {
+      "need": 44,
+      "custom": false,
+      "id": "earR",
+      "field": "position",
+      "before": "0.18,0.30000000000000004,-0.06",
+      "after": "0.18027499957208096,0.2999928577542777,-0.058900032521525744"
+    },
+    {
+      "need": 44,
+      "custom": true,
+      "id": "earL",
+      "field": "position",
+      "before": "-0.18,0.30000000000000004,-0.06",
+      "after": "-0.18043999931532953,0.2999885724068443,-0.058240052034441187"
+    },
+    {
+      "need": 44,
+      "custom": true,
+      "id": "earR",
+      "field": "position",
+      "before": "0.18,0.30000000000000004,-0.06",
+      "after": "0.18043999931532953,0.2999885724068443,-0.058240052034441187"
+    }
+  ],
+  "rawBaselineSha256": "ed18ddf84a2d7e8007c3945b6b7a2f87ca7a51b9e3798c88318cb811bade3df4",
+  "rawCandidateSha256": "06236ecd5874d1226568aa9487bbf1a51f501ab9c27f69be58a2df7257a985b4",
+  "status": "PASS",
+  "isolation": "Owned git archive/symlinked node_modules, direct runner, original HOME/cache, no package manager or production."
+}

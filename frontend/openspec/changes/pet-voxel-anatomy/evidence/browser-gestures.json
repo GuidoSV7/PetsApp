@@ -1,0 +1,20 @@
+{
+  "method": "Additional S9 scenarios only: actual OrbitControls camera uniform and care/coin refresh; synthetic API, no scene/GL mock",
+  "api": [
+    {
+      "method": "GET",
+      "path": "/petsapp-api/pet/state",
+      "fixture": true
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "cleanup": {
+    "browserClosed": true,
+    "serverStopped": true,
+    "portClosed": true
+  },
+  "origin": "http://127.0.0.1:42977",
+  "result": "FAIL",
+  "failure": "page.waitForFunction: Timeout 15000ms exceeded.\n    at /home/agent/repos/PetsApp/.voxel-gestures.hAXUsB/smoke.cjs:62:16"
+}

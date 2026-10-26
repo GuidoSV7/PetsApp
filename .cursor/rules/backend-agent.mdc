@@ -11,7 +11,7 @@ repository ports (`Symbol` tokens), never on Drizzle types directly.
 ## Stack
 
 - **NestJS 12** + TypeScript (ESM, `"type": "module"`)
-- **Drizzle ORM** on **PostgreSQL** (`pg`); repository specs also run on **pglite**
+- **Drizzle ORM** on **PostgreSQL** (`pg`); database specs use isolated real PostgreSQL via **TEST_DATABASE_URL**
 - Auth: JWT in body + HttpOnly session cookie (`petsapp_session` /
   `__Host-petsapp_session`), CSRF Origin checks, roles
   `admin` | `super_admin` | `member`
@@ -26,7 +26,7 @@ repository ports (`Symbol` tokens), never on Drizzle types directly.
 | Persistence, migrations, repositories | `.cursor/skills/drizzle-orm/SKILL.md` when present; see `src/db/`, `src/**/infrastructure/` |
 | Auth, roles, DTOs, OWASP | `.cursor/skills/backend-security-rules/SKILL.md` / `owasp-top10` when present |
 | Logging | `Logger` from `@nestjs/common` or `src/logging/`; never log passwords, tokens, or full bodies |
-| Tests | Vitest configs in `backend/`; prefer in-memory / pglite over a live database |
+| Tests | Vitest configs in `backend/`; use isolated PostgreSQL for database specs; retain in-memory repository fakes for pure unit contracts |
 
 ## Base rules
 

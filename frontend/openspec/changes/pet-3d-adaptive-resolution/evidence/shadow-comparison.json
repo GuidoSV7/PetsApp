@@ -1,0 +1,142 @@
+{
+  "baseline": "6643f8964364051625d4ba71c8a2126eb4a945a3",
+  "purpose": "Human shadow comparison only; not final adaptive/browser/FPS verification.",
+  "browser": "153.0.8010.12",
+  "renderer": "Chromium SwiftShader",
+  "server": "Owned isolated baseline Next dev --webpack fixture; no production requests",
+  "fixtureViewerSha256": "895e526f069499ba13208306c899594d4d6e80936f4d9ea9fd7706db3b9b48fa",
+  "fixtureViewerArchive": ".git/agent-evidence/pet-adaptive-shadow-fixture-viewer.tsx",
+  "protocol": "Original canvas screenshots, no retouching. Same mounted model/camera and DPR within each pair; fixture-only clock.getElapsedTime fixed at0. API state mocked normal80/zero0; current adaptive implementation is not installed in this baseline fixture.",
+  "cases": [
+    {
+      "name": "normal",
+      "needs": {
+        "hunger": 80,
+        "fun": 80,
+        "energy": 80,
+        "hygiene": 80
+      },
+      "viewport": [
+        390,
+        844
+      ],
+      "deviceScaleFactor": 2,
+      "canvas": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ],
+        "css": [
+          280,
+          280
+        ],
+        "webgl": true,
+        "contextLost": false,
+        "glError": 0
+      },
+      "frozenElapsed": 0,
+      "same33CatInstancesAndWorldTransforms": true,
+      "sameCamera": true,
+      "captures": [
+        {
+          "resolution": 512,
+          "path": "shadow-home-normal-512.png",
+          "sha256": "fa29404c266e5b6419ed0b36fad96d80a664f598afca3cb7e8b31240cf265cf6"
+        },
+        {
+          "resolution": 256,
+          "path": "shadow-home-normal-256.png",
+          "sha256": "3c3af15bcf338f9e17a37f2c2c72f807272b3f0b02dd9a19038f7ab638a1640c"
+        }
+      ],
+      "metrics": {
+        "width": 560,
+        "height": 562,
+        "uniqueColors512": 80934,
+        "changedPixels": 6736,
+        "maxChannelDelta": 2,
+        "interpretation": "Pixel differences are not a human visual-equivalence verdict."
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "mockedApiRequests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        }
+      ]
+    },
+    {
+      "name": "zero",
+      "needs": {
+        "hunger": 0,
+        "fun": 0,
+        "energy": 0,
+        "hygiene": 0
+      },
+      "viewport": [
+        390,
+        844
+      ],
+      "deviceScaleFactor": 2,
+      "canvas": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ],
+        "css": [
+          280,
+          280
+        ],
+        "webgl": true,
+        "contextLost": false,
+        "glError": 0
+      },
+      "frozenElapsed": 0,
+      "same33CatInstancesAndWorldTransforms": true,
+      "sameCamera": true,
+      "captures": [
+        {
+          "resolution": 512,
+          "path": "shadow-home-zero-512.png",
+          "sha256": "c73f2cbd5ebad95f0f03e5e2921457f0fbf3b5a01d5ec7814314629ded785a65"
+        },
+        {
+          "resolution": 256,
+          "path": "shadow-home-zero-256.png",
+          "sha256": "7c80ce5376b890fcb97c5d648f33b9ecb92ff8d7425f728ab28937a1737b8f2e"
+        }
+      ],
+      "metrics": {
+        "width": 560,
+        "height": 562,
+        "uniqueColors512": 82491,
+        "changedPixels": 6730,
+        "maxChannelDelta": 3,
+        "interpretation": "Pixel differences are not a human visual-equivalence verdict."
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "mockedApiRequests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        }
+      ]
+    }
+  ],
+  "humanDecision": "PENDING — mandatory stop; no production shadow policy implemented",
+  "cleanup": "Owned browser/server/context/temp copy cleanup required in finally; command exit0 means cleanup completed."
+}

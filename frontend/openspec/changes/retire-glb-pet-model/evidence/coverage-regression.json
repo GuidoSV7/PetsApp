@@ -1,0 +1,47 @@
+{
+  "baselineCommit": "47e08e413c926a178067d400876b806fd1678cb6",
+  "method": "Candidate tests copied into a git archive of baseline; existing frontend node_modules symlinked, HOME unchanged; no package manager or network.",
+  "initialBaselineRun": {
+    "command": "node_modules/.bin/vitest run test/features/pet-home/pet-home.test.tsx test/features/admin/admin-design-3d-page.test.tsx test/lib/retired-pet-model-contracts.test.ts test/lib/pet-model-proxy-retirement.test.ts --maxWorkers=2 --reporter=dot",
+    "exitCode": 1,
+    "failed": 9,
+    "passed": 15
+  },
+  "targetedFinalHomeCommand": "node_modules/.bin/vitest run test/features/pet-home/pet-home.test.tsx -t 'never requests global model|keeps explicit defaults' --maxWorkers=2 --reporter=dot",
+  "finalBaselineHomeRun": {
+    "exitCode": 1,
+    "failed": 2,
+    "filtered": 13,
+    "S6": "Forbidden model endpoint: /pet/model: expected [ '/pet/model' ] to not include '/pet/model'",
+    "S7": "Initial defaults assertion passes; after keyed StorageEvent and legacy refresh, expected modelScale0.78 but received2.1 at post-mount assertion."
+  },
+  "finalCandidateHomeRun": {
+    "exitCode": 0,
+    "passed": 2,
+    "filtered": 13
+  },
+  "candidateFocusedAndRegression": {
+    "exitCode": 0,
+    "files": 10,
+    "passed": 37,
+    "note": "Before final S7 fixture refinement; final full suite below includes it."
+  },
+  "finalFullSuite": {
+    "command": "heavy -- node_modules/.bin/vitest run --maxWorkers=2 --reporter=dot",
+    "exitCode": 0,
+    "files": 40,
+    "passed": 119
+  },
+  "typecheck": {
+    "command": "node_modules/.bin/tsc --noEmit --incremental false",
+    "exitCode": 2,
+    "diagnosticCount": 4,
+    "files": [
+      "test/features/public-marketing/robots.test.ts",
+      "test/features/public-marketing/share-metadata.test.ts"
+    ],
+    "preexisting": true,
+    "humanAccepted": "Prompt 4; fix separately, do not modify here"
+  },
+  "productionSourceChangedDuringCoverageFollowup": false
+}

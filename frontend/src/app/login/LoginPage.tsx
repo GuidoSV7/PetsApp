@@ -6,17 +6,13 @@ import { useEffect, useState, type FormEvent } from "react";
 import BrandMark from "@/components/ui/BrandMark";
 import { signInPetsAppUser } from "@/features/auth/api/auth.service";
 import {
-  buildHardcodedAdminSession,
-  isHardcodedAdminLogin,
-} from "@/features/auth/hardcoded-admin";
-import {
   getPetsAppSession,
   isAdminRole,
   savePetsAppSession,
 } from "@/stores/auth-session";
 import estilos from "./login.module.css";
 
-/** Admin entry: prefers Nest login so JWT works for global model upload. */
+/** Admin entry: only a successful Nest login with an allowed role saves a session. */
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -36,31 +32,25 @@ export default function LoginPage() {
     setError(null);
     setBusy(true);
     try {
-      if (!isHardcodedAdminLogin(email, password)) {
-        setError("Correo o contraseña incorrectos.");
+      const respuesta = await signInPetsAppUser(email, password);
+      if (!isAdminRole(respuesta.user.role)) {
+        setError("Esta cuenta no tiene acceso de administración.");
         return;
       }
-      try {
-        const respuesta = await signInPetsAppUser(email, password);
-        if (!isAdminRole(respuesta.user.role)) {
-          setError("Esta cuenta no tiene acceso de administración.");
-          return;
-        }
-        savePetsAppSession({
-          token: respuesta.token,
-          user: {
-            id: respuesta.user.id,
-            name: respuesta.user.name,
-            email: respuesta.user.email,
-            role: respuesta.user.role,
-            roles: respuesta.user.roles,
-            country: respuesta.user.country,
-          },
-        });
-      } catch {
-        savePetsAppSession(buildHardcodedAdminSession());
-      }
+      savePetsAppSession({
+        token: respuesta.token,
+        user: {
+          id: respuesta.user.id,
+          name: respuesta.user.name,
+          email: respuesta.user.email,
+          role: respuesta.user.role,
+          roles: respuesta.user.roles,
+          country: respuesta.user.country,
+        },
+      });
       router.replace("/admin");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "No se pudo iniciar sesión.");
     } finally {
       setBusy(false);
     }

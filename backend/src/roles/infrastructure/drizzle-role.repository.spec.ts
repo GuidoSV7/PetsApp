@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe } from 'vitest';
-import { createTestDb, type TestDb } from '../../testing/pglite.js';
+import { createTestDb, type TestDb } from '../../testing/postgres.js';
 import { roleRepositoryContract } from '../testing/role-repository.contract.js';
 import { DrizzleRoleRepository } from './drizzle-role.repository.js';
 
-describe('DrizzleRoleRepository (pglite)', () => {
+describe('DrizzleRoleRepository (PostgreSQL)', () => {
   let testDb: TestDb;
 
   beforeAll(async () => {
@@ -16,13 +16,13 @@ describe('DrizzleRoleRepository (pglite)', () => {
   roleRepositoryContract(
     'DrizzleRoleRepository',
     async () => {
-      await testDb.client.exec(
+      await testDb.client.query(
         'TRUNCATE users, user_roles RESTART IDENTITY CASCADE',
       );
-      await testDb.client.exec(
+      await testDb.client.query(
         "DELETE FROM roles WHERE code NOT IN ('admin', 'super_admin', 'member')",
       );
-      await testDb.client.exec(
+      await testDb.client.query(
         "UPDATE roles SET is_active = true, permissions = '[]'::jsonb",
       );
       return new DrizzleRoleRepository(testDb.db);

@@ -1,0 +1,315 @@
+{
+  "baseline": "6643f8964364051625d4ba71c8a2126eb4a945a3",
+  "browser": "153.0.8010.12",
+  "renderer": "SwiftShader",
+  "sourceViewerSha256": "83a044580f9a31dbf3d76db61bc024ff19e7ee178d94131bcfedc66c58b5b038",
+  "fixtureViewerSha256": "023f7003f4cdf77a4a66fc5ebfe75c68de665cea51616f1ebf7ea69fb3e26838",
+  "fixture": "Current src copy; observer + exposed existing quality callbacks + tap counter + subtree-unmount switch ONLY. No renderer setter/store reset/clock or model edits. Deterministic callback-driven buffer verification, not real-FPS monitor timing or phone performance.",
+  "viewport": [
+    390,
+    844
+  ],
+  "deviceScaleFactor": 2,
+  "injectedHints": {
+    "deviceMemory": 8,
+    "hardwareConcurrency": 8
+  },
+  "shadowResolution": 256,
+  "cases": [
+    {
+      "name": "normal-off",
+      "reducedMotion": false,
+      "needs": 80,
+      "statsEnabled": false,
+      "initial": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ],
+        "shadowTargets": [
+          [
+            256,
+            256
+          ]
+        ]
+      },
+      "lower": {
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ]
+      },
+      "raised": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ]
+      },
+      "fallback": {
+        "factor": 0.2,
+        "dpr": 1.15,
+        "buffer": [
+          322,
+          322
+        ],
+        "lateCallbacksIgnored": true
+      },
+      "same33CatInstances": true,
+      "orbitRotatedCamera": true,
+      "orbitStartEndPreservedDpr": true,
+      "realRaycastTapForwarded": true,
+      "stats": null,
+      "statsDomRemovedOnUnmount": true,
+      "screenshot": {
+        "path": "adaptive-normal-stats-off.png",
+        "sha256": "eeef2af7f52edd2d0e2d494994164c2594b6d89508464a6f510a32572fdc213a",
+        "uniqueColors": 82336
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "mockedApiRequests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet"
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet"
+        }
+      ]
+    },
+    {
+      "name": "normal-on",
+      "reducedMotion": false,
+      "needs": 80,
+      "statsEnabled": true,
+      "initial": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ],
+        "shadowTargets": [
+          [
+            256,
+            256
+          ]
+        ]
+      },
+      "lower": {
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ]
+      },
+      "raised": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ]
+      },
+      "fallback": {
+        "factor": 0.2,
+        "dpr": 1.15,
+        "buffer": [
+          322,
+          322
+        ],
+        "lateCallbacksIgnored": true
+      },
+      "same33CatInstances": true,
+      "orbitRotatedCamera": true,
+      "orbitStartEndPreservedDpr": true,
+      "realRaycastTapForwarded": true,
+      "stats": {
+        "position": "absolute",
+        "pointerEvents": "none",
+        "local": true,
+        "canvases": 3
+      },
+      "statsDomRemovedOnUnmount": true,
+      "screenshot": {
+        "path": "adaptive-normal-stats-on.png",
+        "sha256": "02315d736ea0b52adc5494e0884bf65a72abb7070d0e0a3030f2da022165d4a6",
+        "uniqueColors": 74803
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "mockedApiRequests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet"
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet"
+        }
+      ]
+    },
+    {
+      "name": "reduced-on",
+      "reducedMotion": true,
+      "needs": 0,
+      "statsEnabled": true,
+      "initial": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ],
+        "shadowTargets": [
+          [
+            256,
+            256
+          ]
+        ]
+      },
+      "lower": {
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ]
+      },
+      "raised": {
+        "dpr": 1.75,
+        "buffer": [
+          490,
+          490
+        ]
+      },
+      "fallback": {
+        "factor": 0.2,
+        "dpr": 1.15,
+        "buffer": [
+          322,
+          322
+        ],
+        "lateCallbacksIgnored": true
+      },
+      "same33CatInstances": true,
+      "orbitRotatedCamera": true,
+      "orbitStartEndPreservedDpr": true,
+      "realRaycastTapForwarded": true,
+      "stats": {
+        "position": "absolute",
+        "pointerEvents": "none",
+        "local": true,
+        "canvases": 3
+      },
+      "statsDomRemovedOnUnmount": true,
+      "screenshot": {
+        "path": "adaptive-reduced-stats-on.png",
+        "sha256": "8bdab3f849fa1acd8a444a37ac137b6c44dd886948757da26a284418add1eb3b",
+        "uniqueColors": 75167
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "mockedApiRequests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state"
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet"
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet"
+        }
+      ]
+    },
+    {
+      "name": "admin-on",
+      "reducedMotion": false,
+      "needs": 80,
+      "statsEnabled": true,
+      "initial": {
+        "dpr": 1.75,
+        "buffer": [
+          77,
+          490
+        ],
+        "shadowTargets": [
+          [
+            256,
+            256
+          ]
+        ]
+      },
+      "lower": {
+        "dpr": 1,
+        "buffer": [
+          44,
+          280
+        ]
+      },
+      "raised": {
+        "dpr": 1.75,
+        "buffer": [
+          77,
+          490
+        ]
+      },
+      "fallback": {
+        "factor": 0.2,
+        "dpr": 1.15,
+        "buffer": [
+          50,
+          322
+        ],
+        "lateCallbacksIgnored": true
+      },
+      "same33CatInstances": true,
+      "orbitRotatedCamera": true,
+      "orbitStartEndPreservedDpr": true,
+      "realRaycastTapForwarded": true,
+      "stats": {
+        "position": "absolute",
+        "pointerEvents": "none",
+        "local": true,
+        "canvases": 3
+      },
+      "statsDomRemovedOnUnmount": true,
+      "screenshot": {
+        "path": null,
+        "sha256": "42565a5ae33115df46638d93e9bb2a3f85f8630f9759ef1a58941465c0071afb",
+        "uniqueColors": 909
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "mockedApiRequests": []
+    }
+  ],
+  "cleanup": "Exit0 requires owned browser/server stopped, port freed and temporary copy removed."
+}
