@@ -82,6 +82,16 @@ describe("Cat3DViewer", () => {
     expect(screen.getByRole("img").getAttribute("aria-label")).not.toContain("Modelo personalizado");
   });
 
+  it("forwards complete patterned coats unchanged while keeping colors-only callers compatible (S7/S11)", () => {
+    const colors = { ...DEFAULT_GREY_COAT, pattern: "calico" as const };
+    const { rerender } = render(<Cat3DViewer colors={colors} />);
+    expect(procedural.mock.lastCall![0].colors).toBe(colors);
+    expect(procedural.mock.lastCall![0].colors.pattern).toBe("calico");
+    rerender(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(procedural.mock.lastCall![0].colors).toBe(DEFAULT_GREY_COAT);
+    expect(Object.hasOwn(procedural.mock.lastCall![0].colors, "pattern")).toBe(false);
+  });
+
   it("preserves procedural inputs, interaction, orbit controls and camera", () => {
     const design = { ...defaultCatDesign(), bodyDepth: 1.2, modelScale: 1.1 };
     const needs = { ...PREVIEW_PET_NEEDS, hunger: 10 };

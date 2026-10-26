@@ -80,6 +80,9 @@ describe("CameraCoatCapture gallery", () => {
         secondary: "#c4a574",
         accent: "#c9a0a8",
       });
+      // Preservation control: camera extraction has always emitted colors only.
+      expect(Object.keys(onColors.mock.lastCall![0]).sort()).toEqual(["accent", "primary", "secondary"]);
+      expect(Object.hasOwn(onColors.mock.lastCall![0], "pattern")).toBe(false);
       expect(onClose).toHaveBeenCalled();
     });
   });

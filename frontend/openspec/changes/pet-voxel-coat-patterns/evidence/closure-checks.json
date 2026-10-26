@@ -1,0 +1,28 @@
+{
+  "status": "full_suite_passed_native_review_pending_at_immutable_commit_freeze",
+  "humanVisualApproval": "Apruebo el atigrado revisado (M, bandas de cara y patas, tinta al 50 %) y el calicó\nde tres manchas grandes, en estado normal y sucio. Esmoquin y siamés siguen aprobados.",
+  "actualOuterCommand": "heavy -- node .git/agent-evidence/coat-prompt5-suite.cjs",
+  "effectiveSuite": {
+    "command": "cd frontend && heavy -- node_modules/.bin/vitest run --maxWorkers=2 --minWorkers=1 --reporter=dot --reporter=json --outputFile.json=../.git/agent-evidence/coat-prompt5-full.vitest.json",
+    "exitCode": 0,
+    "signal": null,
+    "home": "/home/agent",
+    "node": "v24.22.1",
+    "stdout": ".git/agent-evidence/coat-prompt5-full.stdout",
+    "stderr": ".git/agent-evidence/coat-prompt5-full.stderr",
+    "passed": 408,
+    "failed": 0,
+    "pending": 0,
+    "files": 52
+  },
+  "approvedSourceTestsByteIdentical": 182,
+  "sourceTestSeal": ".git/agent-evidence/coat-prompt5-approved-source-seal.json",
+  "independentVerifier": "NOT EXECUTED — explicit HOME exception, never approved",
+  "backendProductionPattern": "NOT VERIFIED — hard prerequisite before future merge",
+  "nativeReview": "After sole local commit per repository policy; result stored outside immutable candidate and in Engram/final response",
+  "restrictions": [
+    "No approved geometry/color/test changes",
+    "One local Conventional Commit only",
+    "No push/merge/production"
+  ]
+}

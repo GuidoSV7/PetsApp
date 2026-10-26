@@ -80,6 +80,32 @@ Contact shadows use fixed resolution 256, selected by the human after paired
 512/256 captures looked equivalent. Other shadow settings stay unchanged;
 there are no live shadow tiers or factor thresholds.
 
+## Voxel coat patterns
+
+The home presets include solid Gris/Blanco/Naranja, Atigrado (`tabby`),
+Calicó (`calico`), Esmoquin (`tuxedo`) and Siamés (`pointed`). Pattern boxes
+are children of the existing voxel parts; the 33-part anatomy, needs/idle
+behavior, admin design settings and adaptive/shadow policies are unchanged.
+Tabby uses12 boxes and derives stripe RGB with `round(channel * 0.50)`
+after the existing dirt mix; accent colors are not dirt-mixed. Calico uses4
+larger asymmetric boxes representing three logical spots, without thin body
+or face-side bars. Tuxedo/pointed use8/12 boxes; the hard ceiling is12.
+
+Pet-state reads normalize missing or unknown `coat.pattern` to `solid`.
+Preset writes include an explicit pattern; camera/photo writes include only
+three colors and preserve the saved backend pattern. Preset selection checks
+both primary color (case-insensitive) and pattern.
+
+See the [approved design and implementation status](openspec/changes/pet-voxel-coat-patterns/tasks.md).
+Browser pixel percentages and render counts are evidence, not human
+recognizability approval or phone/GPU performance proof. Prompt5 separately
+approves the final normal/dirty images; [closure review](openspec/changes/pet-voxel-coat-patterns/review.md)
+records the evidence, one-local-commit scope and native review procedure.
+
+**Merge prerequisite:** deploy backend `coat.pattern` support first and verify
+its raw response/deployed version. The frontend's `solid` read fallback does
+not prove backend deployment; an old backend rejects pattern writes.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

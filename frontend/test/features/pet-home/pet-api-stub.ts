@@ -2,7 +2,7 @@
  * Test double for the Nest `/pet/*` API (mirrors backend/pet-rules).
  * Used only in UI tests — production talks to the real backend.
  */
-import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import type { PetCoatInput, PetCoatState } from "@/features/pet-home/coat-patterns";
 import type { PetNeeds } from "@/features/pet-home/pet-stats";
 import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
 
@@ -20,7 +20,8 @@ export const API_INITIAL_NEEDS: PetNeeds = {
   hygiene: 78,
 };
 
-const DEFAULT_COAT: PetCoatColors = {
+const DEFAULT_COAT: PetCoatState = {
+  pattern: "solid",
   primary: "#8a8a8e",
   secondary: "#b4b4b8",
   accent: "#c9a0a8",
@@ -125,11 +126,11 @@ export function stubApplyAction(
 
 export function stubApplyCoat(
   state: PetStateResponse,
-  coat: PetCoatColors,
+  coat: PetCoatInput,
 ): PetStateResponse {
   return {
     ...state,
-    coat: { ...coat },
+    coat: { ...state.coat, ...coat },
     statusKey: "coated",
     mood: moodFromNeeds(state.needs),
   };

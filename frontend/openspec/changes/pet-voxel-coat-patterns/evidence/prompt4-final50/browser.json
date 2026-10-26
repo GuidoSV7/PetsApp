@@ -1,0 +1,860 @@
+{
+  "status": "awaiting_human_visual_decision",
+  "browser": "153.0.8010.12",
+  "renderer": "Chromium SwiftShader, not phone/GPU performance proof",
+  "baseline": "13253e9312237966ef35e9d74a585586da745f59",
+  "originalViewerSha256": "013b5117e7f28f5270311891b9413dd987b1fe95f24c72b89793ce49e0323ef6",
+  "fixtureViewerSha256": "257bb6fec7210e6487d3ff5132479cb84c5f61c7fbc760667649c5183b6d7d43",
+  "protocol": "Current src copied with symlinks preserved. Fixture-only observer freezes clock at0 and measures actual renderer counters (autoReset false/reset once per frame); model/palette/quality/camera/shadow rules unmodified. OS reduced-motion holds default rest yaw0. Physical device DPR1 naturally clamps adaptive DPR1 without bypassing its policy. Pattern is selected through real Personalizar UI/API stub on same mounted model and same preset palette as solid. Original CSS canvas screenshots are delivered unchanged (fractional layout can yield280x281 while the drawingbuffer is280x280). Metrics use unretouched PNGs read directly at the end of a requested real main render, aligned1:1 with actual280x280 cat mattes; masks are not resized or shifted. Offscreen matte passes are explicitly excluded from measured six-pass frames. No production requests.",
+  "cases": [
+    {
+      "pattern": "tabby",
+      "label": "Atigrado",
+      "pose": "normal",
+      "needs": 100,
+      "palette": {
+        "primary": "#6b7280",
+        "secondary": "#9ca3af",
+        "accent": "#c9a0a8"
+      },
+      "patches": 12,
+      "solid": {
+        "path": "tabby-normal-solid.png",
+        "sha256": "5821bb134080e12c150d05dce39eef74e7703a6f1a165316c913caf987df29f6",
+        "measurementBuffer": "tabby-normal-solid-buffer.png",
+        "mask": "tabby-normal-solid-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 33,
+              "triangles": 396
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 34,
+              "triangles": 398
+            }
+          ],
+          "drawCalls": 71,
+          "triangles": 802,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "patternCapture": {
+        "path": "tabby-normal.png",
+        "sha256": "99d32e492694f9117713e36d44f0bd16b5ef8008bd1bf9ec020d80b8c3f9019e",
+        "measurementBuffer": "tabby-normal-buffer.png",
+        "mask": "tabby-normal-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 45,
+              "triangles": 540
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 46,
+              "triangles": 542
+            }
+          ],
+          "drawCalls": 95,
+          "triangles": 1090,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "metrics": {
+        "width": 280,
+        "height": 280,
+        "catPixels": 18866,
+        "changedPixels": 1299,
+        "changedPercent": 6.885402311035726,
+        "thresholdRgb": 8,
+        "uniqueCatColors": 120,
+        "mask": "Union of same-camera white cat-only geometry mattes, 4-sample MSAA threshold128; background/floor/contact shadow hidden; not a canvas rectangle"
+      },
+      "floorPassed": true,
+      "view": {
+        "viewport": [
+          390,
+          844
+        ],
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ],
+        "camera": {
+          "position": [
+            0,
+            0.4200000000000002,
+            3.05
+          ],
+          "quaternion": [
+            -0.039904394895017556,
+            0,
+            0,
+            0.9992035024298415
+          ],
+          "projection": [
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            -1.0002000200020003,
+            -1,
+            0,
+            0,
+            -0.20002000200020004,
+            0
+          ]
+        },
+        "rootPosition": [
+          0,
+          -0.22,
+          0
+        ],
+        "rootScale": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "rootYaw": 0,
+        "clock": 0,
+        "reducedMotion": true,
+        "shadow": 256
+      },
+      "same33BaseInstancesAndMatrices": true,
+      "orbitMovedCamera": true,
+      "realRaycastTap": true,
+      "cameraControl": null,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "requests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/coat",
+          "body": {
+            "primary": "#6b7280",
+            "secondary": "#9ca3af",
+            "accent": "#c9a0a8",
+            "pattern": "tabby"
+          }
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        }
+      ]
+    },
+    {
+      "pattern": "tabby",
+      "label": "Atigrado",
+      "pose": "zero",
+      "needs": 0,
+      "palette": {
+        "primary": "#6b7280",
+        "secondary": "#9ca3af",
+        "accent": "#c9a0a8"
+      },
+      "patches": 12,
+      "solid": {
+        "path": "tabby-zero-solid.png",
+        "sha256": "867d6619b25fd3bb05f4ec1836204203357dd9f8fda1c57666637f5e197baeec",
+        "measurementBuffer": "tabby-zero-solid-buffer.png",
+        "mask": "tabby-zero-solid-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 33,
+              "triangles": 396
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 34,
+              "triangles": 398
+            }
+          ],
+          "drawCalls": 71,
+          "triangles": 802,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "patternCapture": {
+        "path": "tabby-zero.png",
+        "sha256": "bf372962b0eb70279dc3509457ba28ea19d489b3e9aa6c28867e731f8d37879d",
+        "measurementBuffer": "tabby-zero-buffer.png",
+        "mask": "tabby-zero-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 45,
+              "triangles": 540
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 46,
+              "triangles": 542
+            }
+          ],
+          "drawCalls": 95,
+          "triangles": 1090,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "metrics": {
+        "width": 280,
+        "height": 280,
+        "catPixels": 17266,
+        "changedPixels": 1074,
+        "changedPercent": 6.22031738677169,
+        "thresholdRgb": 8,
+        "uniqueCatColors": 151,
+        "mask": "Union of same-camera white cat-only geometry mattes, 4-sample MSAA threshold128; background/floor/contact shadow hidden; not a canvas rectangle"
+      },
+      "floorPassed": true,
+      "view": {
+        "viewport": [
+          390,
+          844
+        ],
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ],
+        "camera": {
+          "position": [
+            0,
+            0.4200000000000002,
+            3.05
+          ],
+          "quaternion": [
+            -0.039904394895017556,
+            0,
+            0,
+            0.9992035024298415
+          ],
+          "projection": [
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            -1.0002000200020003,
+            -1,
+            0,
+            0,
+            -0.20002000200020004,
+            0
+          ]
+        },
+        "rootPosition": [
+          0,
+          -0.22,
+          0
+        ],
+        "rootScale": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "rootYaw": 0,
+        "clock": 0,
+        "reducedMotion": true,
+        "shadow": 256
+      },
+      "same33BaseInstancesAndMatrices": true,
+      "orbitMovedCamera": true,
+      "realRaycastTap": true,
+      "cameraControl": null,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "requests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/coat",
+          "body": {
+            "primary": "#6b7280",
+            "secondary": "#9ca3af",
+            "accent": "#c9a0a8",
+            "pattern": "tabby"
+          }
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        }
+      ]
+    },
+    {
+      "pattern": "calico",
+      "label": "Calicó",
+      "pose": "normal",
+      "needs": 100,
+      "palette": {
+        "primary": "#c4a574",
+        "secondary": "#f0ebe3",
+        "accent": "#8b5a2b"
+      },
+      "patches": 4,
+      "solid": {
+        "path": "calico-normal-solid.png",
+        "sha256": "2b8474d42e62428078e2cb6e687717f26a60d56d7c6d0514f48cfbe565b765b9",
+        "measurementBuffer": "calico-normal-solid-buffer.png",
+        "mask": "calico-normal-solid-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 33,
+              "triangles": 396
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 34,
+              "triangles": 398
+            }
+          ],
+          "drawCalls": 71,
+          "triangles": 802,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "patternCapture": {
+        "path": "calico-normal.png",
+        "sha256": "b9f35012c24d536ad92ccfca52ae50362ccca6b1ad8a04d42b8929b9f8f22f64",
+        "measurementBuffer": "calico-normal-buffer.png",
+        "mask": "calico-normal-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 37,
+              "triangles": 444
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 38,
+              "triangles": 446
+            }
+          ],
+          "drawCalls": 79,
+          "triangles": 898,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "metrics": {
+        "width": 280,
+        "height": 280,
+        "catPixels": 18866,
+        "changedPixels": 2258,
+        "changedPercent": 11.968620799321531,
+        "thresholdRgb": 8,
+        "uniqueCatColors": 119,
+        "mask": "Union of same-camera white cat-only geometry mattes, 4-sample MSAA threshold128; background/floor/contact shadow hidden; not a canvas rectangle"
+      },
+      "floorPassed": true,
+      "view": {
+        "viewport": [
+          390,
+          844
+        ],
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ],
+        "camera": {
+          "position": [
+            0,
+            0.4200000000000002,
+            3.05
+          ],
+          "quaternion": [
+            -0.039904394895017556,
+            0,
+            0,
+            0.9992035024298415
+          ],
+          "projection": [
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            -1.0002000200020003,
+            -1,
+            0,
+            0,
+            -0.20002000200020004,
+            0
+          ]
+        },
+        "rootPosition": [
+          0,
+          -0.22,
+          0
+        ],
+        "rootScale": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "rootYaw": 0,
+        "clock": 0,
+        "reducedMotion": true,
+        "shadow": 256
+      },
+      "same33BaseInstancesAndMatrices": true,
+      "orbitMovedCamera": true,
+      "realRaycastTap": true,
+      "cameraControl": {
+        "realSyntheticCamera": true,
+        "threeColorWriteOnly": true,
+        "serverAndReloadPattern": "calico",
+        "changedPalette": {
+          "primary": "#8a8a8e",
+          "secondary": "#b4b4b8",
+          "accent": "#c9a0a8",
+          "pattern": "calico"
+        }
+      },
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "requests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/coat",
+          "body": {
+            "primary": "#c4a574",
+            "secondary": "#f0ebe3",
+            "accent": "#8b5a2b",
+            "pattern": "calico"
+          }
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/coat",
+          "body": {
+            "primary": "#8a8a8e",
+            "secondary": "#b4b4b8",
+            "accent": "#c9a0a8"
+          }
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        }
+      ]
+    },
+    {
+      "pattern": "calico",
+      "label": "Calicó",
+      "pose": "zero",
+      "needs": 0,
+      "palette": {
+        "primary": "#c4a574",
+        "secondary": "#f0ebe3",
+        "accent": "#8b5a2b"
+      },
+      "patches": 4,
+      "solid": {
+        "path": "calico-zero-solid.png",
+        "sha256": "112ba70ef5bbf6368c079b37f54cb8cb943fe04c7ea39008b0d772cbeb4d4c79",
+        "measurementBuffer": "calico-zero-solid-buffer.png",
+        "mask": "calico-zero-solid-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 33,
+              "triangles": 396
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 34,
+              "triangles": 398
+            }
+          ],
+          "drawCalls": 71,
+          "triangles": 802,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "patternCapture": {
+        "path": "calico-zero.png",
+        "sha256": "5035f225313d03d473fd1518d520d1c50124b6f0d44db12fd9902afbfe12043d",
+        "measurementBuffer": "calico-zero-buffer.png",
+        "mask": "calico-zero-mask.png",
+        "cost": {
+          "passes": [
+            {
+              "kind": "contact-depth",
+              "calls": 37,
+              "triangles": 444
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "contact-blur",
+              "calls": 1,
+              "triangles": 2
+            },
+            {
+              "kind": "main",
+              "calls": 38,
+              "triangles": 446
+            }
+          ],
+          "drawCalls": 79,
+          "triangles": 898,
+          "instrumentationMattePassesExcluded": true
+        }
+      },
+      "metrics": {
+        "width": 280,
+        "height": 280,
+        "catPixels": 17266,
+        "changedPixels": 2248,
+        "changedPercent": 13.019807714583575,
+        "thresholdRgb": 8,
+        "uniqueCatColors": 156,
+        "mask": "Union of same-camera white cat-only geometry mattes, 4-sample MSAA threshold128; background/floor/contact shadow hidden; not a canvas rectangle"
+      },
+      "floorPassed": true,
+      "view": {
+        "viewport": [
+          390,
+          844
+        ],
+        "dpr": 1,
+        "buffer": [
+          280,
+          280
+        ],
+        "camera": {
+          "position": [
+            0,
+            0.4200000000000002,
+            3.05
+          ],
+          "quaternion": [
+            -0.039904394895017556,
+            0,
+            0,
+            0.9992035024298415
+          ],
+          "projection": [
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            4.010780933535845,
+            0,
+            0,
+            0,
+            0,
+            -1.0002000200020003,
+            -1,
+            0,
+            0,
+            -0.20002000200020004,
+            0
+          ]
+        },
+        "rootPosition": [
+          0,
+          -0.22,
+          0
+        ],
+        "rootScale": [
+          0.78,
+          0.78,
+          0.78
+        ],
+        "rootYaw": 0,
+        "clock": 0,
+        "reducedMotion": true,
+        "shadow": 256
+      },
+      "same33BaseInstancesAndMatrices": true,
+      "orbitMovedCamera": true,
+      "realRaycastTap": true,
+      "cameraControl": null,
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "requests": [
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "GET",
+          "pathname": "/petsapp-api/pet/state",
+          "body": null
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/coat",
+          "body": {
+            "primary": "#c4a574",
+            "secondary": "#f0ebe3",
+            "accent": "#8b5a2b",
+            "pattern": "calico"
+          }
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        },
+        {
+          "method": "POST",
+          "pathname": "/petsapp-api/pet/actions/pet",
+          "body": {}
+        }
+      ]
+    }
+  ],
+  "humanVisualDecision": "PENDING — mandatory stop before review.md/native RDD; >=3% is only a floor, never recognizability approval",
+  "independentVerifier": "UNEXECUTED by human exception; not approved",
+  "backendProductionPattern": "UNVERIFIED; hard merge prerequisite",
+  "cleanup": "Exit0 requires owned browser/server stopped, ephemeral port released and scratch copy removed"
+}

@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import { normalizeCoatPattern, type PetCoatInput, type PetCoatState } from "@/features/pet-home/coat-patterns";
 import type { PetNeeds } from "@/features/pet-home/pet-stats";
 import type { PetStatusKey } from "@/features/pet-home/pet-status";
 
@@ -9,7 +9,7 @@ const GUEST_HEADER = "X-Pet-Guest-Key";
 export type PetStateResponse = {
   coins: number;
   needs: PetNeeds;
-  coat: PetCoatColors;
+  coat: PetCoatState;
   statusKey: PetStatusKey | string;
   mood: string;
   name: string;
@@ -40,38 +40,56 @@ function guestHeaders() {
   return { [GUEST_HEADER]: getOrCreateGuestKey() };
 }
 
+type RawPetStateResponse = Omit<PetStateResponse, "coat"> & {
+  coat: Omit<PetCoatState, "pattern"> & { pattern?: unknown };
+};
+
+/** Normalize reads only; writes retain backend validation and omission semantics. */
+function normalizePetState(state: RawPetStateResponse): PetStateResponse {
+  return {
+    ...state,
+    coat: { ...state.coat, pattern: normalizeCoatPattern(state.coat.pattern) },
+  };
+}
+
 export async function fetchPetState(): Promise<PetStateResponse> {
-  const { data } = await api.get<PetStateResponse>("/pet/state", {
+  const { data } = await api.get<RawPetStateResponse>("/pet/state", {
     headers: guestHeaders(),
   });
-  return data;
+  return normalizePetState(data);
 }
 
 export async function applyPetAction(
   action: CareActionName,
 ): Promise<PetStateResponse> {
-  const { data } = await api.post<PetStateResponse>(
+  const { data } = await api.post<RawPetStateResponse>(
     `/pet/actions/${action}`,
     {},
     { headers: guestHeaders() },
   );
-  return data;
+  return normalizePetState(data);
 }
 
 export async function applyPetCoat(
-  coat: PetCoatColors,
+  coat: PetCoatInput,
 ): Promise<PetStateResponse> {
-  const { data } = await api.post<PetStateResponse>("/pet/coat", coat, {
+  const payload: PetCoatInput = {
+    primary: coat.primary,
+    secondary: coat.secondary,
+    accent: coat.accent,
+  };
+  if (Object.hasOwn(coat, "pattern")) payload.pattern = coat.pattern;
+  const { data } = await api.post<RawPetStateResponse>("/pet/coat", payload, {
     headers: guestHeaders(),
   });
-  return data;
+  return normalizePetState(data);
 }
 
 export async function renamePet(name: string): Promise<PetStateResponse> {
-  const { data } = await api.post<PetStateResponse>(
+  const { data } = await api.post<RawPetStateResponse>(
     "/pet/name",
     { name },
     { headers: guestHeaders() },
   );
-  return data;
+  return normalizePetState(data);
 }

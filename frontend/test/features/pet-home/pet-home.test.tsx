@@ -11,13 +11,13 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import {
   PET_NAME,
   PET_STATUS,
   SPEECH_DISMISS_MS,
 } from "@/features/pet-home/pet-status";
-import type { PetStateResponse } from "@/features/pet-home/api/pet.service";
+import { applyPetCoat, type PetStateResponse } from "@/features/pet-home/api/pet.service";
+import type { PetCoatInput } from "@/features/pet-home/coat-patterns";
 import {
   API_FEED_COST,
   API_STARTING_COINS,
@@ -48,7 +48,7 @@ vi.mock("@/features/pet-home/api/pet.service", () => ({
     serverState = stubApplyAction(serverState, action);
     return structuredClone(serverState);
   }),
-  applyPetCoat: vi.fn(async (coat: typeof DEFAULT_GREY_COAT) => {
+  applyPetCoat: vi.fn(async (coat: PetCoatInput) => {
     serverState = stubApplyCoat(serverState, coat);
     return structuredClone(serverState);
   }),
@@ -93,12 +93,12 @@ vi.mock("@/features/pet-home/components/Cat3DViewer", () => ({
     onPetInteract,
     design,
   }: {
-    colors: { primary: string };
+    colors: PetCoatInput;
     design?: CatDesignTunables;
     onPetInteract?: () => void;
   }) => (
     <div>
-      <div role="img" aria-label={PET_NAME} data-primary={colors.primary} data-design={JSON.stringify(design)} />
+      <div role="img" aria-label={PET_NAME} data-primary={colors.primary} data-pattern={colors.pattern} data-design={JSON.stringify(design)} />
       <button type="button" onClick={() => onPetInteract?.()}>
         Tocar gato
       </button>
@@ -376,6 +376,24 @@ describe("PetHomeStage (API-backed)", () => {
       screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary"),
     ).toBe("#8b5a2b");
     expect(latestCoins).toBe(API_STARTING_COINS);
+  });
+
+  it("preserves calico in Home and viewer after camera colors and reload (S12)", async () => {
+    serverState.coat = { primary: "#c4a574", secondary: "#f0ebe3", accent: "#8b5a2b", pattern: "calico" };
+    await ready();
+    expect(screen.getByRole("img", { name: PET_NAME }).getAttribute("data-pattern")).toBe("calico");
+    fireEvent.click(screen.getByRole("button", { name: /^Personalizar$/i }));
+    expect(screen.getByRole("button", { name: "Pelaje Calicó" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: /Colores de mi gato/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Capturar colores" }));
+    await waitFor(() => expect(screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary")).toBe("#8b5a2b"));
+    expect(vi.mocked(applyPetCoat).mock.lastCall?.[0]).toEqual({ primary: "#8b5a2b", secondary: "#c4a574", accent: "#c9a0a8" });
+    expect(screen.getByRole("img", { name: PET_NAME }).getAttribute("data-pattern")).toBe("calico");
+    expect(screen.getAllByRole("button", { name: /^Pelaje / }).every(button => button.getAttribute("aria-pressed") === "false")).toBe(true);
+    cleanup();
+    await ready();
+    expect(screen.getByRole("img", { name: PET_NAME }).getAttribute("data-pattern")).toBe("calico");
+    expect(screen.getByRole("img", { name: PET_NAME }).getAttribute("data-primary")).toBe("#8b5a2b");
   });
 
   it("applies a coat preset via API", async () => {
