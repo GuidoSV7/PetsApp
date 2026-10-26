@@ -29,6 +29,13 @@
       "when": 1792291000000,
       "tag": "0003_starting_coins_5",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792291000001,
+      "tag": "0004_coat_pattern",
+      "breakpoints": true
     }
   ]
 }

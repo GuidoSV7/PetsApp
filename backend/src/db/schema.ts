@@ -100,6 +100,7 @@ export const petStates = pgTable(
       .notNull()
       .default('#b4b4b8'),
     coatAccent: varchar('coat_accent', { length: 7 }).notNull().default('#c9a0a8'),
+    coatPattern: varchar('coat_pattern', { length: 16 }).notNull().default('solid'),
     statusKey: varchar('status_key', { length: 32 }).notNull().default('idle'),
     name: varchar('name', { length: 16 }).notNull().default('Michi'),
     renameCount: integer('rename_count').notNull().default(0),

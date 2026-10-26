@@ -7,7 +7,7 @@ import {
   it,
   vi,
 } from 'vitest';
-import { ValidationPipe } from '@nestjs/common';
+import { createValidationPipe } from '../config/validation-pipe.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
@@ -23,7 +23,12 @@ const GUEST = '44444444-4444-4444-8444-444444444444';
 const initial = {
   coins: 5,
   needs: { hunger: 72, fun: 80, energy: 65, hygiene: 78 },
-  coat: { primary: '#8a8a8e', secondary: '#b4b4b8', accent: '#c9a0a8' },
+  coat: {
+    primary: '#8a8a8e',
+    secondary: '#b4b4b8',
+    accent: '#c9a0a8',
+    pattern: 'solid',
+  },
   statusKey: 'idle',
   name: 'Michi',
   renameCount: 0,
@@ -73,13 +78,7 @@ describe('model retirement through the real application', () => {
       .compile();
     app = module.createNestApplication<NestExpressApplication>();
     configureHttpApp(app, { NODE_ENV: 'test', TRUST_PROXY: '0' });
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
+    app.useGlobalPipes(createValidationPipe());
     await app.init();
     expect(app.get(PG_POOL)).toBe(applicationPool);
     expect(app.get(DRIZZLE)).toBe(fixture.db);
@@ -205,7 +204,12 @@ describe('model retirement through the real application', () => {
     expect(updated.status).toBe(201);
     const coated = {
       ...initial,
-      coat: { primary: '#aabbcc', secondary: '#ddeeff', accent: '#123456' },
+      coat: {
+        primary: '#aabbcc',
+        secondary: '#ddeeff',
+        accent: '#123456',
+        pattern: 'solid',
+      },
       statusKey: 'coated',
     };
     expect(updated.body).toEqual(coated);

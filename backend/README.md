@@ -40,6 +40,57 @@ adapters, contracts, fixtures).
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
 
+### Pet coat patterns
+
+Pet endpoints use the existing UUID `X-Pet-Guest-Key` header. `GET /pet/state`
+returns `coat` with the existing `primary`, `secondary`, `accent` colors and
+a required `pattern`. New pets use `solid`.
+
+`POST /pet/coat` still requires all three valid `#RRGGBB` colors and returns
+the updated state with status201. The pattern is optional:
+
+```json
+{ "primary": "#aabbcc", "secondary": "#ddeeff", "accent": "#123456", "pattern": "calico" }
+```
+
+- Ordered persisted identifiers: `solid`, `tabby`, `tuxedo`, `calico`, `pointed`.
+  Append values only; never rename, remove or reorder stored identifiers.
+- Omitting `pattern` preserves the saved pattern, including colors-only
+  customization/camera requests. Explicit known values replace it.
+- An unknown string such as `striped` receives400 from the shared DTO pipe
+  (`pattern must be one of the following values: solid, tabby, tuxedo, calico, pointed`).
+  The service independently rejects invalid supplied values, including null,
+  with400/`Unknown coat pattern` before creating or updating state.
+- Unknown database values read as `solid` without a read-time repair write.
+  No pattern price, shop restriction or change to other pet endpoints is added.
+- Bootstrap and real HTTP tests use `createValidationPipe()`; whitelist,
+  forbidNonWhitelisted and transform remain enabled without duplicate test options.
+
+#### Coat-pattern migration and deployment order
+
+The backend container runs `node dist/db/migrate.js && exec node dist/main.js`:
+**0004 and the new backend ship in the same deploy; migration runs before API
+startup**, and failure prevents the app from starting. There is no separate
+operator migration step. During rollout, old backend inserts omit the new column
+and receive its database default `solid`; old updates do not erase it.
+
+**Deploy this backend to production before deploying the frontend that sends
+pattern (`pet-voxel-coat-patterns`).** The old DTO rejects that property because
+forbidNonWhitelisted is enabled. This change does not deploy either application.
+
+`0004_coat_pattern.sql` is handwritten: `SET LOCAL lock_timeout = '5s';`,
+a `--> statement-breakpoint`, then the varchar(16)/NOT NULL/DEFAULT solid
+column. Installed Drizzle executes these statements in one transaction. Constant
+defaults avoid a table rewrite on PostgreSQL11+, but the ALTER still needs a table
+lock; acquisition times out after5s instead of waiting indefinitely at startup.
+
+No CHECK or UPDATE backfill is needed. Do not run `drizzle-kit generate` for
+this change: meta contains only the0000 snapshot and regeneration would repeat
+existing schema. Append the0004 journal entry with a timestamp strictly greater
+than0003 (1792291000001 >1792291000000); equal timestamps are also skipped.
+Existing SQL migrations/snapshot stay unchanged. Never drop the new column or
+stored values as an automatic rollback.
+
 ### Public registration
 
 `POST /auth/register` creates a `member` account and signs it in: the answer

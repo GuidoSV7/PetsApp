@@ -46,6 +46,7 @@ describe('PetController (drizzle)', () => {
     const created = await controller.getState(GUEST);
     expect(created.coins).toBe(STARTING_COINS);
     expect(created.statusKey).toBe('idle');
+    expect(created.coat.pattern).toBe('solid');
 
     const fed = await controller.applyAction(GUEST, 'feed');
     expect(fed.coins).toBe(STARTING_COINS - 5);

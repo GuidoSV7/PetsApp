@@ -1,6 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestDb, type TestDb } from '../../testing/postgres.js';
-import { INITIAL_NEEDS, STARTING_COINS, initialSnapshot } from '../pet-rules.js';
+import {
+  INITIAL_NEEDS,
+  STARTING_COINS,
+  initialSnapshot,
+} from '../pet-rules.js';
 import { DrizzlePetRepository } from './drizzle-pet.repository.js';
 
 const GUEST = '22222222-2222-4222-8222-222222222222';
@@ -32,10 +36,47 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
     expect(created.guestKey).toBe(GUEST);
     expect(created.coins).toBe(STARTING_COINS);
     expect(created.needs).toEqual({ ...INITIAL_NEEDS });
+    expect(created.coat).toEqual(initialSnapshot().coat);
 
     const found = await repo.findByGuestKey(GUEST);
     expect(found?.id).toBe(created.id);
     expect(found?.coat.primary).toBe('#8a8a8e');
+  });
+
+  it('round-trips explicit patterns on both create and update', async () => {
+    const repo = await fresh();
+    const original = initialSnapshot();
+    const pointed = {
+      ...original,
+      coat: { ...original.coat, pattern: 'pointed' as const },
+    };
+    expect((await repo.create(GUEST, pointed)).coat).toEqual(pointed.coat);
+    expect((await repo.findByGuestKey(GUEST))?.coat).toEqual(pointed.coat);
+    const calico = {
+      ...pointed,
+      coat: { ...pointed.coat, pattern: 'calico' as const },
+    };
+    expect((await repo.update(GUEST, calico)).coat).toEqual(calico.coat);
+    expect((await repo.findByGuestKey(GUEST))?.coat).toEqual(calico.coat);
+  });
+
+  it('reads a raw zebra value as solid without a repair write', async () => {
+    const repo = await fresh();
+    await repo.create(GUEST, initialSnapshot());
+    await testDb.client.query(
+      'UPDATE pet_states SET coat_pattern=$1 WHERE guest_key=$2',
+      ['zebra', GUEST],
+    );
+    const found = await repo.findByGuestKey(GUEST);
+    expect(found?.coat).toEqual(initialSnapshot().coat);
+    expect(
+      (
+        await testDb.client.query(
+          'SELECT coat_pattern FROM pet_states WHERE guest_key=$1',
+          [GUEST],
+        )
+      ).rows,
+    ).toEqual([{ coat_pattern: 'zebra' }]);
   });
 
   it('updates coins and needs for the same guest', async () => {
@@ -48,6 +89,7 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
         primary: '#aabbcc',
         secondary: '#ddeeff',
         accent: '#123456',
+        pattern: 'solid',
       },
       statusKey: 'fed',
       name: 'Luna',

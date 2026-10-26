@@ -1,0 +1,185 @@
+{
+  "schema": "petsapp.pet-coat-http-differential/v1",
+  "baseline": "d7d0fd29c06b33cbb8ccb427940d46fbcf2a602d",
+  "identicalHarnessSha256": "62919bc8eaaeab32e33819e19f6e071ed32ff9a05c3a2cad99bc2f57a466236b",
+  "observations": 30,
+  "routeGroups": [
+    "GET /pet/state",
+    "POST /pet/coat",
+    "POST /pet/actions/:action",
+    "POST /pet/name"
+  ],
+  "baselineExit": 0,
+  "candidateExit": 0,
+  "unchangedProjectedObservations": 26,
+  "requestedNonAdditiveDeltas": [
+    {
+      "key": "pattern:new-input",
+      "reason": "new valid optional property accepted instead of historical whitelist rejection",
+      "before": {
+        "scenario": "pattern",
+        "step": "new-input",
+        "method": "post",
+        "path": "/pet/coat",
+        "status": 400,
+        "body": {
+          "message": [
+            "property pattern should not exist"
+          ],
+          "error": "Bad Request",
+          "statusCode": 400
+        }
+      },
+      "after": {
+        "scenario": "pattern",
+        "step": "new-input",
+        "method": "post",
+        "path": "/pet/coat",
+        "status": 201,
+        "body": {
+          "coins": 5,
+          "needs": {
+            "hunger": 72,
+            "fun": 80,
+            "energy": 65,
+            "hygiene": 78
+          },
+          "coat": {
+            "primary": "#8a8a8e",
+            "secondary": "#b4b4b8",
+            "accent": "#c9a0a8",
+            "pattern": "calico"
+          },
+          "statusKey": "coated",
+          "name": "Michi",
+          "renameCount": 0,
+          "mood": "Feliz"
+        }
+      }
+    },
+    {
+      "key": "pattern:new-input-reload",
+      "reason": "requested successful coat mutation now persists",
+      "before": {
+        "scenario": "pattern",
+        "step": "new-input-reload",
+        "method": "get",
+        "path": "/pet/state",
+        "status": 200,
+        "body": {
+          "coins": 5,
+          "needs": {
+            "hunger": 72,
+            "fun": 80,
+            "energy": 65,
+            "hygiene": 78
+          },
+          "coat": {
+            "primary": "#8a8a8e",
+            "secondary": "#b4b4b8",
+            "accent": "#c9a0a8"
+          },
+          "statusKey": "idle",
+          "name": "Michi",
+          "renameCount": 0,
+          "mood": "Feliz"
+        }
+      },
+      "after": {
+        "scenario": "pattern",
+        "step": "new-input-reload",
+        "method": "get",
+        "path": "/pet/state",
+        "status": 200,
+        "body": {
+          "coins": 5,
+          "needs": {
+            "hunger": 72,
+            "fun": 80,
+            "energy": 65,
+            "hygiene": 78
+          },
+          "coat": {
+            "primary": "#8a8a8e",
+            "secondary": "#b4b4b8",
+            "accent": "#c9a0a8",
+            "pattern": "calico"
+          },
+          "statusKey": "coated",
+          "name": "Michi",
+          "renameCount": 0,
+          "mood": "Feliz"
+        }
+      }
+    },
+    {
+      "key": "striped:reject",
+      "reason": "recognized optional property now receives strict pattern validation",
+      "before": {
+        "scenario": "striped",
+        "step": "reject",
+        "method": "post",
+        "path": "/pet/coat",
+        "status": 400,
+        "body": {
+          "message": [
+            "property pattern should not exist"
+          ],
+          "error": "Bad Request",
+          "statusCode": 400
+        }
+      },
+      "after": {
+        "scenario": "striped",
+        "step": "reject",
+        "method": "post",
+        "path": "/pet/coat",
+        "status": 400,
+        "body": {
+          "message": [
+            "pattern must be one of the following values: solid, tabby, tuxedo, calico, pointed"
+          ],
+          "error": "Bad Request",
+          "statusCode": 400
+        }
+      }
+    },
+    {
+      "key": "null:reject",
+      "reason": "recognized optional property now receives strict pattern validation",
+      "before": {
+        "scenario": "null",
+        "step": "reject",
+        "method": "post",
+        "path": "/pet/coat",
+        "status": 400,
+        "body": {
+          "message": [
+            "property pattern should not exist"
+          ],
+          "error": "Bad Request",
+          "statusCode": 400
+        }
+      },
+      "after": {
+        "scenario": "null",
+        "step": "reject",
+        "method": "post",
+        "path": "/pet/coat",
+        "status": 400,
+        "body": {
+          "message": "Unknown coat pattern",
+          "error": "Bad Request",
+          "statusCode": 400
+        }
+      }
+    }
+  ],
+  "allowedAdditiveDelta": "coat.pattern solid, or saved calico in the pattern scenario",
+  "unexpectedDeltas": 0,
+  "baselinePipeSource": "parsed actual baseline main.ts literal, not copied defaults",
+  "candidatePipeSource": "actual createValidationPipe()",
+  "homePreserved": "/home/agent",
+  "fixtures": "separate anchors/templates/clones for baseline and candidate; synthetic guests",
+  "copiesRemoved": true
+}

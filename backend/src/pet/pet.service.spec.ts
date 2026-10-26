@@ -45,6 +45,7 @@ describe('PetService (drizzle)', () => {
     expect(state.coins).toBe(STARTING_COINS);
     expect(state.mood).toBe('Feliz');
     expect(state.statusKey).toBe('idle');
+    expect(state.coat.pattern).toBe('solid');
   });
 
   it('persists feed across getOrCreate', async () => {
@@ -77,6 +78,93 @@ describe('PetService (drizzle)', () => {
     expect(state.coat.primary).toBe('#aabbcc');
     expect(state.coins).toBe(STARTING_COINS);
     expect(state.statusKey).toBe('coated');
+  });
+
+  it('persists calico and preserves it on a later colors-only save', async () => {
+    const initial = await service.getOrCreate(GUEST);
+    const colors = {
+      primary: '#AABBCC',
+      secondary: '#DDEEFF',
+      accent: '#123456',
+    };
+    const expected = {
+      ...initial,
+      coat: {
+        primary: '#aabbcc',
+        secondary: '#ddeeff',
+        accent: '#123456',
+        pattern: 'calico',
+      },
+      statusKey: 'coated',
+    };
+    expect(
+      await service.setCoat(GUEST, { ...colors, pattern: 'calico' }),
+    ).toEqual(expected);
+    expect(await service.getOrCreate(GUEST)).toEqual(expected);
+    const nextColors = {
+      primary: '#112233',
+      secondary: '#445566',
+      accent: '#778899',
+    };
+    const again = { ...expected, coat: { ...nextColors, pattern: 'calico' } };
+    expect(await service.setCoat(GUEST, nextColors)).toEqual(again);
+    expect(await service.getOrCreate(GUEST)).toEqual(again);
+  });
+
+  it.each(['striped', null])(
+    'rejects direct invalid pattern %s without mutating or creating rows',
+    async (pattern) => {
+      const repo = new DrizzlePetRepository(testDb.db);
+      const before = await service.getOrCreate(GUEST);
+      const row = await repo.findByGuestKey(GUEST);
+      const input = {
+        primary: '#112233',
+        secondary: '#445566',
+        accent: '#778899',
+        pattern: pattern as never,
+      };
+      const missing = '77777777-7777-4777-8777-777777777777';
+      for (const guest of [GUEST, missing]) {
+        await expect(service.setCoat(guest, input)).rejects.toMatchObject({
+          response: {
+            statusCode: 400,
+            message: 'Unknown coat pattern',
+            error: 'Bad Request',
+          },
+        });
+      }
+      expect(await service.getOrCreate(GUEST)).toEqual(before);
+      expect(await repo.findByGuestKey(GUEST)).toEqual(row);
+      expect(await repo.findByGuestKey(missing)).toBeNull();
+    },
+  );
+
+  it('preserves a saved pattern through existing care and name updates', async () => {
+    const colors = {
+      primary: '#112233',
+      secondary: '#445566',
+      accent: '#778899',
+    };
+    const coated = await service.setCoat(GUEST, {
+      ...colors,
+      pattern: 'pointed',
+    });
+    const petted = {
+      ...coated,
+      needs: { ...coated.needs, fun: 88 },
+      statusKey: 'petted',
+    };
+    expect(await service.applyAction(GUEST, 'pet')).toEqual(petted);
+    const named = {
+      ...petted,
+      name: 'Luna',
+      renameCount: 1,
+      statusKey: 'renamed',
+    };
+    expect(await service.rename(GUEST, 'Luna')).toEqual(named);
+    expect(await service.getOrCreate(GUEST)).toEqual(named);
+    expect(named.coat.pattern).toBe('pointed');
+    expect(named.coins).toBe(STARTING_COINS);
   });
 
   it('renames for free once, then charges five coins', async () => {

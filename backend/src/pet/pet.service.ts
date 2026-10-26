@@ -5,10 +5,11 @@ import {
   applyRename,
   initialSnapshot,
   isCareAction,
+  isCoatPattern,
   isHexColor,
   moodFromNeeds,
   type CareAction,
-  type PetCoat,
+  type PetCoatInput,
   type PetSnapshot,
 } from './pet-rules.js';
 import {
@@ -61,7 +62,7 @@ export class PetService {
 
   async setCoat(
     guestKey: string | undefined,
-    coat: PetCoat,
+    coat: PetCoatInput,
   ): Promise<PetStateDto> {
     const key = this.assertGuestKey(guestKey);
     if (
@@ -71,11 +72,15 @@ export class PetService {
     ) {
       throw new BadRequestException('Coat colors must be #RRGGBB');
     }
+    if (coat.pattern !== undefined && !isCoatPattern(coat.pattern)) {
+      throw new BadRequestException('Unknown coat pattern');
+    }
     const current = await this.requireRow(key);
     const next = applyCoat(this.toSnapshot(current), {
       primary: coat.primary.toLowerCase(),
       secondary: coat.secondary.toLowerCase(),
       accent: coat.accent.toLowerCase(),
+      pattern: coat.pattern,
     });
     const saved = await this.pets.update(key, next);
     return this.toDto(saved);
