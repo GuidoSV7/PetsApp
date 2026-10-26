@@ -1,0 +1,302 @@
+{
+  "status": "technical_checks_passed_awaiting_human_visual_decision",
+  "scope": "Prompt4 only tabby/calico; tuxedo/pointed approved unchanged",
+  "baselineHead": "13253e9312237966ef35e9d74a585586da745f59",
+  "sourceSha256": "e3d4f1a7399cfbd56aa5f56670d4461955980632f3e6012eff49cc1a19ec92dd",
+  "tdd": {
+    "geometry": {
+      "red": {
+        "failed": 7,
+        "passed": 34,
+        "exitCode": 1,
+        "assertionOnly": true,
+        "prefix": ".git/agent-evidence/coat-prompt4-red"
+      },
+      "firstCandidate": {
+        "passed": 75,
+        "failed": 1,
+        "exitCode": 1,
+        "reason": "Actual forbidden opposing cream side-face contact, fixed with0.003 gap; no exception/test tolerance weakened",
+        "prefix": ".git/agent-evidence/coat-prompt4-first-geometry"
+      },
+      "green": {
+        "passed": 76,
+        "failed": 0,
+        "exitCode": 0,
+        "prefix": ".git/agent-evidence/coat-prompt4-green"
+      }
+    },
+    "contrast": {
+      "reason": "Inspected actual revised geometry35 dirty image before exercising human's conditional50% authorization",
+      "red": {
+        "failed": 4,
+        "passed": 47,
+        "exitCode": 1,
+        "prefix": ".git/agent-evidence/coat-prompt4-contrast-red"
+      },
+      "green": {
+        "passed": 76,
+        "failed": 0,
+        "exitCode": 0,
+        "prefix": ".git/agent-evidence/coat-prompt4-contrast-green"
+      }
+    }
+  },
+  "integrated": {
+    "home": "/home/agent",
+    "node": "v24.22.1",
+    "steps": [
+      {
+        "label": "focused",
+        "command": "cd frontend && node_modules/.bin/vitest run test/features/pet-home/coat-patterns.test.ts test/features/pet-home/coat-pattern-geometry.test.ts test/features/pet-home/cat-3d-model.test.tsx test/features/pet-home/cat-3d-model-coat-patterns.test.tsx test/features/pet-home/pet-customize.test.ts test/features/pet-home/personalize-strip.test.tsx test/features/pet-home/pet.service.test.ts test/features/pet-home/pet-home.test.tsx test/features/pet-home/camera-coat-capture.test.tsx test/features/pet-home/cat-3d-viewer.test.tsx --maxWorkers=2 --minWorkers=1 --reporter=dot --reporter=json --outputFile.json=../.git/agent-evidence/coat-prompt4-integrated-focused.vitest.json",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 7201,
+        "stdout": ".git/agent-evidence/coat-prompt4-integrated-focused.stdout",
+        "stderr": ".git/agent-evidence/coat-prompt4-integrated-focused.stderr",
+        "passed": 189,
+        "failed": 0,
+        "pending": 0,
+        "files": 10
+      },
+      {
+        "label": "controls",
+        "command": "cd frontend && node_modules/.bin/vitest run test/features/pet-home/cat-idle-motion.test.ts test/features/pet-home/cat-part-tree.test.ts test/features/pet-home/need-visuals.test.ts test/features/pet-home/pet-render-quality.test.ts test/features/admin/cat-design-settings.test.ts test/features/admin/admin-design-3d-page.test.tsx --maxWorkers=2 --minWorkers=1 --reporter=dot --reporter=json --outputFile.json=../.git/agent-evidence/coat-prompt4-integrated-controls.vitest.json",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 2532,
+        "stdout": ".git/agent-evidence/coat-prompt4-integrated-controls.stdout",
+        "stderr": ".git/agent-evidence/coat-prompt4-integrated-controls.stderr",
+        "passed": 65,
+        "failed": 0,
+        "pending": 0,
+        "files": 6
+      },
+      {
+        "label": "full",
+        "command": "cd frontend && node_modules/.bin/vitest run --maxWorkers=2 --minWorkers=1 --reporter=dot --reporter=json --outputFile.json=../.git/agent-evidence/coat-prompt4-integrated-full.vitest.json",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 23615,
+        "stdout": ".git/agent-evidence/coat-prompt4-integrated-full.stdout",
+        "stderr": ".git/agent-evidence/coat-prompt4-integrated-full.stderr",
+        "passed": 408,
+        "failed": 0,
+        "pending": 0,
+        "files": 52
+      },
+      {
+        "label": "types",
+        "command": "cd frontend && node_modules/.bin/tsc --noEmit",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 4110,
+        "stdout": ".git/agent-evidence/coat-prompt4-integrated-types.stdout",
+        "stderr": ".git/agent-evidence/coat-prompt4-integrated-types.stderr"
+      },
+      {
+        "label": "build",
+        "command": "cd frontend && node_modules/.bin/next build",
+        "exitCode": 0,
+        "signal": null,
+        "durationMs": 18960,
+        "stdout": ".git/agent-evidence/coat-prompt4-integrated-build.stdout",
+        "stderr": ".git/agent-evidence/coat-prompt4-integrated-build.stderr"
+      }
+    ]
+  },
+  "browser": {
+    "command": "PET_COAT_PATTERNS=tabby,calico PET_COAT_EVIDENCE_LABEL=prompt4-final50 NODE_PATH=/home/agent/.npm/_npx/6bcb61ec6d5aea22/node_modules heavy -- node odd/evidence/pet-voxel-coat-browser.cjs",
+    "exitCode": 0,
+    "report": "browser.json",
+    "cases": 4,
+    "allFloorsPassed": true,
+    "allErrorsZero": true,
+    "resourcesCleaned": true
+  },
+  "visibility": {
+    "report": "visibility-and-differential.json",
+    "allChecks": 72,
+    "newTabbyCalicoChecks": 32,
+    "newMinimum": "81/81",
+    "required": "41/81"
+  },
+  "differential": {
+    "command": "node .git/agent-evidence/coat-prompt4-observations.cjs",
+    "exitCode": 0,
+    "total": 28,
+    "unchanged": 24,
+    "requested": 4,
+    "unexpected": 0,
+    "stdoutStderrExitSidecarsPreserved": true
+  },
+  "crossRunAdvisory": {
+    "priorAudit": "The extra cross-run original CSS PNG hash-equality assumption failed. This was an advisory harness assertion, not a failed product test/browser pair. Diagnose without rerunning or changing original images.",
+    "comparisons": [
+      {
+        "file": "tabby-normal.png",
+        "dimensions": [
+          280,
+          281
+        ],
+        "changed": 1304,
+        "maxRgbDelta": 15,
+        "bounds": [
+          69,
+          12,
+          210,
+          251
+        ]
+      },
+      {
+        "file": "tabby-normal-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 1299,
+        "maxRgbDelta": 15,
+        "bounds": [
+          96,
+          74,
+          183,
+          251
+        ]
+      },
+      {
+        "file": "tabby-normal-solid-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      },
+      {
+        "file": "tabby-zero.png",
+        "dimensions": [
+          280,
+          281
+        ],
+        "changed": 1314,
+        "maxRgbDelta": 9,
+        "bounds": [
+          96,
+          87,
+          183,
+          251
+        ]
+      },
+      {
+        "file": "tabby-zero-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 1314,
+        "maxRgbDelta": 9,
+        "bounds": [
+          96,
+          87,
+          183,
+          251
+        ]
+      },
+      {
+        "file": "tabby-zero-solid-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      },
+      {
+        "file": "calico-normal.png",
+        "dimensions": [
+          280,
+          281
+        ],
+        "changed": 5,
+        "maxRgbDelta": 1,
+        "bounds": [
+          69,
+          12,
+          210,
+          81
+        ]
+      },
+      {
+        "file": "calico-normal-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      },
+      {
+        "file": "calico-normal-solid-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      },
+      {
+        "file": "calico-zero.png",
+        "dimensions": [
+          280,
+          281
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      },
+      {
+        "file": "calico-zero-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      },
+      {
+        "file": "calico-zero-solid-buffer.png",
+        "dimensions": [
+          280,
+          280
+        ],
+        "changed": 0,
+        "maxRgbDelta": 0,
+        "bounds": null
+      }
+    ]
+  },
+  "limits": [
+    "Human visual judgment pending; floors do not approve readability.",
+    "Independent verifier UNEXECUTED, previous explicit HOME-profile exception, not approved.",
+    "Production backend coat.pattern deployment UNVERIFIED; future hard merge prerequisite.",
+    "Chromium SwiftShader, not phone/GPU timing proof.",
+    "No commits, staging, review.md, native RDD, production requests or writes."
+  ],
+  "finalScopeAudit": {
+    "command": "node .git/agent-evidence/coat-prompt4-scope-audit.cjs",
+    "exitCode": 0,
+    "report": ".git/agent-evidence/coat-prompt4-final-scope-audit.json",
+    "preliminaryFailure": "Audit referenced absent view.yaw, corrected to actual report field view.rootYaw; no product/browser rerun. Not feature RED.",
+    "onlyProductSourceDelta": "src/features/pet-home/coat-patterns.ts",
+    "previous48PngsIdentical": true,
+    "finalPngs": 24,
+    "linksValid": 16,
+    "indexEmpty": true,
+    "headUnchanged": true
+  }
+}

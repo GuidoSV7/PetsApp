@@ -1,0 +1,741 @@
+{
+  "status": "passed",
+  "baseline": "Prior Prompt3 uncommitted candidate archived before Prompt4, not HEAD lacking this feature",
+  "home": "/home/agent",
+  "sourceSha256": "e3d4f1a7399cfbd56aa5f56670d4461955980632f3e6012eff49cc1a19ec92dd",
+  "approvedPreservation": [
+    {
+      "pattern": "solid",
+      "descriptorSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identicalToPreviousCandidate": true
+    },
+    {
+      "pattern": "tuxedo",
+      "descriptorSha256": "b2c2d537f8d36a979bf45dc9142d9a39de057de74f551a704610e320c5b0823c",
+      "identicalToPreviousCandidate": true
+    },
+    {
+      "pattern": "pointed",
+      "descriptorSha256": "9e5d69dc1e1ae920d066eca7a55d9392d9f81bd78a36c1cee9fb78d99f04d0c3",
+      "identicalToPreviousCandidate": true
+    }
+  ],
+  "counts": {
+    "solid": 0,
+    "tabby": 12,
+    "tuxedo": 8,
+    "calico": 4,
+    "pointed": 12
+  },
+  "view": {
+    "camera": [
+      0,
+      0.42,
+      3.05
+    ],
+    "root": [
+      0,
+      -0.22,
+      0
+    ],
+    "scale": 0.78,
+    "yaw": 0
+  },
+  "visibility": [
+    {
+      "id": "tabby-head-0",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-1",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-2",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-3",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-4",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-5",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-6",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-7",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFL-0",
+      "anchor": "legFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFL-1",
+      "anchor": "legFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFR-0",
+      "anchor": "legFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFR-1",
+      "anchor": "legFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-0",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-1",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-2",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-3",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-4",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-5",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-6",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-head-7",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFL-0",
+      "anchor": "legFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFL-1",
+      "anchor": "legFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFR-0",
+      "anchor": "legFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tabby-legFR-1",
+      "anchor": "legFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-body-0",
+      "anchor": "body",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-body-1",
+      "anchor": "body",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-legFL-0",
+      "anchor": "legFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFL-0",
+      "anchor": "pawFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFL-1",
+      "anchor": "pawFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-legFR-0",
+      "anchor": "legFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFR-0",
+      "anchor": "pawFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFR-1",
+      "anchor": "pawFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-body-0",
+      "anchor": "body",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-body-1",
+      "anchor": "body",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-legFL-0",
+      "anchor": "legFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFL-0",
+      "anchor": "pawFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFL-1",
+      "anchor": "pawFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-legFR-0",
+      "anchor": "legFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFR-0",
+      "anchor": "pawFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "tuxedo-pawFR-1",
+      "anchor": "pawFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-head-0",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-head-1",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-head-2",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-legFR-0",
+      "anchor": "legFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-head-0",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-head-1",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-head-2",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "calico-legFR-0",
+      "anchor": "legFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-0",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 63,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-1",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 63,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-2",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-3",
+      "anchor": "head",
+      "pose": "normal",
+      "visible": 76,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-earL-0",
+      "anchor": "earL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-earR-0",
+      "anchor": "earR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-legFL-0",
+      "anchor": "legFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFL-0",
+      "anchor": "pawFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFL-1",
+      "anchor": "pawFL",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-legFR-0",
+      "anchor": "legFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFR-0",
+      "anchor": "pawFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFR-1",
+      "anchor": "pawFR",
+      "pose": "normal",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-0",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 63,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-1",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 63,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-2",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-head-3",
+      "anchor": "head",
+      "pose": "zero",
+      "visible": 76,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-earL-0",
+      "anchor": "earL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-earR-0",
+      "anchor": "earR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-legFL-0",
+      "anchor": "legFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFL-0",
+      "anchor": "pawFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFL-1",
+      "anchor": "pawFL",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-legFR-0",
+      "anchor": "legFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFR-0",
+      "anchor": "pawFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    },
+    {
+      "id": "pointed-pawFR-1",
+      "anchor": "pawFR",
+      "pose": "zero",
+      "visible": 81,
+      "total": 81,
+      "buried": []
+    }
+  ],
+  "observations": [
+    {
+      "id": "fetchPetState/missing",
+      "result": "unchanged"
+    },
+    {
+      "id": "applyPetAction/missing",
+      "result": "unchanged"
+    },
+    {
+      "id": "renamePet/missing",
+      "result": "unchanged"
+    },
+    {
+      "id": "applyPetCoat/missing",
+      "result": "unchanged"
+    },
+    {
+      "id": "fetchPetState/calico",
+      "result": "unchanged"
+    },
+    {
+      "id": "applyPetAction/calico",
+      "result": "unchanged"
+    },
+    {
+      "id": "renamePet/calico",
+      "result": "unchanged"
+    },
+    {
+      "id": "applyPetCoat/calico",
+      "result": "unchanged"
+    },
+    {
+      "id": "fetchPetState/future",
+      "result": "unchanged"
+    },
+    {
+      "id": "applyPetAction/future",
+      "result": "unchanged"
+    },
+    {
+      "id": "renamePet/future",
+      "result": "unchanged"
+    },
+    {
+      "id": "applyPetCoat/future",
+      "result": "unchanged"
+    },
+    {
+      "id": "invalid-write/future",
+      "result": "unchanged"
+    },
+    {
+      "id": "invalid-write/null",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/undefined/100",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/undefined/0",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/solid/100",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/solid/0",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/tabby/100",
+      "result": "requested recipe/color delta; base33 identical"
+    },
+    {
+      "id": "model/tabby/0",
+      "result": "requested recipe/color delta; base33 identical"
+    },
+    {
+      "id": "model/tuxedo/100",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/tuxedo/0",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/calico/100",
+      "result": "requested recipe/color delta; base33 identical"
+    },
+    {
+      "id": "model/calico/0",
+      "result": "requested recipe/color delta; base33 identical"
+    },
+    {
+      "id": "model/pointed/100",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/pointed/0",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/future/100",
+      "result": "unchanged"
+    },
+    {
+      "id": "model/future/0",
+      "result": "unchanged"
+    }
+  ],
+  "total": 28,
+  "unchanged": 24,
+  "requested": 4,
+  "unexpected": 0,
+  "limits": "Whole-face/idle-domain checked separately by repository tests; this read-only report reuses actual repository visibility helper. Differential uses public frontend service mock/actual-model SSR, not backend HTTP or browser proof."
+}
