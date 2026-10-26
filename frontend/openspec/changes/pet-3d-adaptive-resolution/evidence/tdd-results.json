@@ -1,0 +1,215 @@
+{
+  "baseline": "6643f8964364051625d4ba71c8a2126eb4a945a3",
+  "initialRedBeforeProductionEdits": true,
+  "redCollectionImportFailures": 0,
+  "newPureHelperTests": "GREEN-only; added after public assertion RED",
+  "runs": [
+    {
+      "stage": "red",
+      "cwd": "frontend",
+      "command": "./node_modules/.bin/vitest run test/features/pet-home/cat-3d-viewer.test.tsx --maxWorkers=2 --reporter=dot",
+      "exitCode": 1,
+      "passed": 7,
+      "failed": 24,
+      "skipped": 0,
+      "durationSeconds": 1.59,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-red.stdout",
+          "bytes": 287,
+          "sha256": "2670a09a9e4971aa81eed447f6a761e8d21add61b4884ce0f4fbca57fa0d8d6c"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-red.stderr",
+          "bytes": 11116,
+          "sha256": "e2f243e11884d8b13b2a9d4bb09d5d5239fb7595c4bf2846328a1e7416d82ac2"
+        }
+      }
+    },
+    {
+      "stage": "dpr-green",
+      "cwd": "frontend",
+      "command": "./node_modules/.bin/vitest run test/features/pet-home/cat-3d-viewer.test.tsx test/features/pet-home/pet-render-quality.test.ts -t 'starts at numeric ceiling|requested monitor|quantizes factor|unchanged quantized|latches the final|ceiling policy|factor policy' --maxWorkers=2 --reporter=dot",
+      "exitCode": 0,
+      "passed": 62,
+      "failed": 0,
+      "skipped": 8,
+      "durationSeconds": 2.05,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-dpr-green.stdout",
+          "bytes": 383,
+          "sha256": "8820004ff005f8bb48a34373ec3197963612769e7a1563347744f704edae7a5d"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-dpr-green.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "stage": "focused-green",
+      "cwd": "frontend",
+      "command": "./node_modules/.bin/vitest run test/features/pet-home/cat-3d-viewer.test.tsx test/features/pet-home/pet-render-quality.test.ts --maxWorkers=2 --reporter=dot",
+      "exitCode": 0,
+      "passed": 70,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 1.42,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-focused-green.stdout",
+          "bytes": 379,
+          "sha256": "1915bf15a71aa11c4939b2818d307ab4d34077410c622f9d8531b5e411385be8"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-focused-green.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "stage": "shadow-red",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 30,
+      "durationSeconds": 2.05,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-shadow-red.stdout",
+          "bytes": 281,
+          "sha256": "2eb1300ced2c93d86a7036c2dcb0faabf689f7761430b8f446fcde08f1cdabb7"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-shadow-red.stderr",
+          "bytes": 1006,
+          "sha256": "8282f90b323a534cf5041ff1a8a99752623fa64b35a01adcfad36c58edef0d28"
+        }
+      }
+    },
+    {
+      "stage": "shadow-green",
+      "exitCode": 0,
+      "passed": 70,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 2.76,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-shadow-green.stdout",
+          "bytes": 379,
+          "sha256": "236ae2dd30d84ed60c87cbb9babf26e3bcf53df01d16e06003f22434047c5bb7"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-shadow-green.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "stage": "controls",
+      "exitCode": 0,
+      "passed": 83,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 4.71,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-controls.stdout",
+          "bytes": 407,
+          "sha256": "117577072bef92b8e505b444ab86c9c40a9dc94da455fe7826acdd37d72b1a60"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-controls.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "stage": "full",
+      "exitCode": 0,
+      "passed": 280,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 32.03,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-full.stdout",
+          "bytes": 807,
+          "sha256": "432c16f55a7cb689dbc01020aad6a6f7589e002a6487e2daa6e96f305d612abd"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-full.stderr",
+          "bytes": 290,
+          "sha256": "8bf04cbd09a3feb55ec6dd281d430975c9e72b790a10d0792880c685bae56e4d"
+        }
+      }
+    },
+    {
+      "stage": "tsc",
+      "exitCode": 0,
+      "passed": null,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": null,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-tsc.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-tsc.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "stage": "build",
+      "exitCode": 0,
+      "passed": null,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": null,
+      "streams": {
+        "stdout": {
+          "archive": ".git/agent-evidence/pet-adaptive-build.stdout",
+          "bytes": 916,
+          "sha256": "08461bdc4323ae076854ba699d62677051f342ad9e97c13c7bb2322e29ee429c"
+        },
+        "stderr": {
+          "archive": ".git/agent-evidence/pet-adaptive-build.stderr",
+          "bytes": 120,
+          "sha256": "1a555c314779c46a20a31e13deb347c641a3aaba44607e2282930aa1b3dbef22"
+        }
+      }
+    }
+  ],
+  "finalVerification": "PASS:functional controls/fullsuite/typecheck/build/public differential/4realbrowsercases;phonehumanmeasurementnotexecuted",
+  "independentVerifier": "UNEXECUTED / NOT APPROVED; explicitly accepted for this candidate",
+  "nativeReview": "NOT_STARTED",
+  "commits": false,
+  "shadowDecision": "Prompt3 human:256looksidentical;fixed256;no live tiers",
+  "warnings": [
+    "Existing admin mock:non-boolean scroll attribute",
+    "Next Edge runtime disables static generation for that page"
+  ],
+  "harnessFailures": [
+    {
+      "stage": "initial browser job20",
+      "exitCode": 1,
+      "reason": "GET-only fixture rejected actual POST pet action; no product failure claimed; owned server manually stopped; corrected job21 passed"
+    },
+    {
+      "stage": "initial differential",
+      "exitCode": 1,
+      "reason": "Vite denies test loading under.git; relocated owned copies inside project; corrected differential passed"
+    }
+  ]
+}

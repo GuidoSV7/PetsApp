@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
+import { ContactShadows, OrbitControls, PerformanceMonitor, Stats } from "@react-three/drei";
+import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-quality";
 import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
@@ -16,6 +17,8 @@ import {
 } from "@/features/pet-home/pet-stats";
 import { PET_NAME } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
+
+const performanceBounds = (): [number, number] => [45, 58];
 
 type Props = {
   colors: PetCoatColors;
@@ -38,6 +41,32 @@ export function Cat3DViewer({
   needs = PREVIEW_PET_NEEDS,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
+  const [ceiling] = useState(() => typeof window === "undefined" ? 1 : maxDprForDevice({
+    deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+    hardwareConcurrency: navigator.hardwareConcurrency,
+    devicePixelRatio: window.devicePixelRatio,
+  }));
+  const [selectedDpr, setSelectedDpr] = useState(ceiling);
+  const [statsEnabled] = useState(() => typeof window !== "undefined"
+    && new URLSearchParams(window.location.search).get("pet3dStats") === "1");
+  const [statsParent, setStatsParent] = useState<HTMLDivElement | null>(null);
+  const statsParentRef = useMemo(() => statsParent ? { current: statsParent } : undefined, [statsParent]);
+  const selectedDprRef = useRef(ceiling);
+  const frozen = useRef(false);
+  const applyFactor = useCallback((factor: number) => {
+    if (frozen.current) return;
+    const next = dprForFactor(factor, ceiling);
+    if (next !== selectedDprRef.current) {
+      selectedDprRef.current = next;
+      setSelectedDpr(next);
+    }
+  }, [ceiling]);
+  const onChange = useCallback(({ factor }: { factor: number }) => applyFactor(factor), [applyFactor]);
+  const onFallback = useCallback(({ factor }: { factor: number }) => {
+    if (frozen.current) return;
+    applyFactor(factor);
+    frozen.current = true;
+  }, [applyFactor]);
   const needHint = describeNeedVisuals(needVisualCues(needs));
   const ariaLabel = [
     `${PET_NAME}. Arrastrá para girar, tocá para ronronear.`,
@@ -48,11 +77,21 @@ export function Cat3DViewer({
 
   return (
     <div className={styles.canvasHost} role="img" aria-label={ariaLabel}>
+      {statsEnabled && <div ref={setStatsParent} aria-hidden="true" />}
       <Canvas
         camera={{ position: [0, 0.42, 3.05], fov: 28 }}
-        dpr={[1, 1.75]}
+        dpr={selectedDpr}
         gl={{ antialias: true, alpha: true }}
       >
+        <PerformanceMonitor
+          factor={1}
+          step={0.15}
+          bounds={performanceBounds}
+          flipflops={8}
+          onChange={onChange}
+          onFallback={onFallback}
+        />
+        {statsEnabled && statsParentRef && <Stats showPanel={0} parent={statsParentRef} className={styles.fpsOverlay} />}
         <ambientLight intensity={0.72} />
         <directionalLight
           position={[2.8, 4.2, 2.2]}
@@ -77,6 +116,7 @@ export function Cat3DViewer({
           />
         </Suspense>
         <ContactShadows
+          resolution={256}
           position={[0, -0.62, 0]}
           opacity={0.28}
           scale={3.4}

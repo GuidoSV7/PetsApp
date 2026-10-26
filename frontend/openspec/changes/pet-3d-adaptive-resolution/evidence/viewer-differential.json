@@ -1,0 +1,258 @@
+{
+  "baseline": "6643f8964364051625d4ba71c8a2126eb4a945a3",
+  "method": "Same public-render/input harness against isolated baseline and current src copies; no package manager or HOME change; mocks at graphics boundary. Real graphics are checked separately.",
+  "runs": [
+    {
+      "mode": "base",
+      "exitCode": 0,
+      "stdout": ".git/agent-evidence/pet-adaptive-differential-base.stdout",
+      "stderr": ".git/agent-evidence/pet-adaptive-differential-base.stderr"
+    },
+    {
+      "mode": "current",
+      "exitCode": 0,
+      "stdout": ".git/agent-evidence/pet-adaptive-differential-current.stdout",
+      "stderr": ".git/agent-evidence/pet-adaptive-differential-current.stderr"
+    }
+  ],
+  "cases": 6,
+  "observations": 18,
+  "unexpectedDeltas": 0,
+  "unchanged": "aria/class/model props and mount count/camera/gl/lights/controls/orbit-start/end/tap forwarding/shadow appearance props",
+  "requestedDeltas": [
+    {
+      "case": "high",
+      "step": "initial",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.75,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "high",
+      "step": "start",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.15,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "high",
+      "step": "end",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.15,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "low-memory",
+      "step": "initial",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.25,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "low-memory",
+      "step": "start",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.05,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "low-memory",
+      "step": "end",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.05,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "fallback-low",
+      "step": "initial",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.25,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "fallback-low",
+      "step": "start",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.05,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "fallback-low",
+      "step": "end",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.05,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "fractional",
+      "step": "initial",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.35,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "fractional",
+      "step": "start",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.05,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "fractional",
+      "step": "end",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.05,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "reduced-zero",
+      "step": "initial",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.5,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "reduced-zero",
+      "step": "start",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.1,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "reduced-zero",
+      "step": "end",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.1,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": false
+    },
+    {
+      "case": "stats",
+      "step": "initial",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.75,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": true
+    },
+    {
+      "case": "stats",
+      "step": "start",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.15,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": true
+    },
+    {
+      "case": "stats",
+      "step": "end",
+      "oldDpr": [
+        1,
+        1.75
+      ],
+      "newDpr": 1.15,
+      "oldShadow": "implicit512",
+      "newShadow": 256,
+      "monitorAdded": true,
+      "statsAdded": true
+    }
+  ]
+}

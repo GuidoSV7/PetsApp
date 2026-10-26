@@ -56,6 +56,30 @@ stored bytes. Real sessions retain their existing behavior.
 Follow-up, not implemented here: validate the layout session against
 `/auth/profile` instead of relying only on localStorage.
 
+## Voxel viewer FPS diagnostics
+
+The viewer starts at a client-device DPR ceiling and adapts its numeric Canvas
+DPR using drei PerformanceMonitor. On fallback it keeps the final selected
+quality for that mounted viewer; a reload begins a new session.
+
+Append `?pet3dStats=1` to the existing home or Diseño 3D URL (use
+`&pet3dStats=1` if it already has query parameters), then reload to show the
+existing drei FPS panel. It is absent by default, including production; only
+the exact value `1` enables it. Remove the parameter and reload to disable it.
+The local overlay does not intercept orbit/tap input and adds no dependency.
+
+For low-end Android and iPhone checks, record device/browser, viewport,
+battery/thermal conditions and reduced-motion preference. Observe startup and
+at least 30 seconds of settled foreground FPS, then orbit/tap and check the
+shadow. Repeat with reduced motion and the admin preview. FPS instrumentation
+adds overhead and is not GPU timing or proof of a specific bottleneck.
+Phone results must be recorded by the human tester, not inferred from server
+or software-rendered Chromium performance.
+
+Contact shadows use fixed resolution 256, selected by the human after paired
+512/256 captures looked equivalent. Other shadow settings stay unchanged;
+there are no live shadow tiers or factor thresholds.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

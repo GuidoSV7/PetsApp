@@ -684,3 +684,11 @@
     --care-min-height: 70px;
   }
 }
+
+/* Opt-in diagnostics only; override Stats' inline fixed positioning. */
+.fpsOverlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  pointer-events: none;
+}
