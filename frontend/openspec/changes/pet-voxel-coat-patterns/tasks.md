@@ -34,7 +34,7 @@ Commit1 necessarily freezes these runtime outcomes as pending. Resolve its hash 
 - Archive-only:24geometry35 PNGs and24superseded root tabby/calico PNGs are absent from the rebuilt repository. Historical JSON paths/hashes still identify those original captures on the unpublished backup branch; not every historical image path exists in a fresh clone. Values/statuses are not rewritten.
 - Initial geometry REDs mostly failed nonempty-descriptor guards; they do not demonstrate every geometric counterexample. Known-pattern forwarding and camera omission were already-green controls. See review.md for the evidence limits.
 - **Independent verifier NOT EXECUTED**, explicit HOME exception, never approved. Native review is not a substitute.
-- **Production backend coat.pattern NOT VERIFIED**: T6/S13 remains a hard prerequisite for any future merge, outside this reconstruction. No phone/real-GPU timing proof.
+- **T6/S13 satisfied by owner verification reported2026-10-26**: production `GET /petsapp-api/pet/state` includes `coat.pattern`, and the owner explicitly lifts the merge prerequisite; see [review](review.md#s13-production-verification--owner-report-2026-10-26). No agent production request or exact value/raw JSON is claimed. Prompt8 authorizes feature-only push and PR; the owner retains merge control. No phone/real-GPU timing proof.
 
 ## Deferred follow-ups — not authorized in this reconstruction
 

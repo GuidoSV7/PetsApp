@@ -1,6 +1,17 @@
 # Voxel coat patterns — approved candidate and closure review
 
-Prompt7 supersedes the original single-commit delivery: reconstruct exactly two local commits over `13253e9`, rerun the full suite at the final HEAD, and run fresh-consent native RDD on commit1 only. Prompt5's visual approval remains valid. Geometry, colors and all182 sealed source/test files remain byte-identical to `cc9b2b2`. No push, merge or production operations.
+Prompt7 reconstructed the approved implementation as two local commits over `13253e9`; its full suite passed and native RDD approved commit1 only. Prompt8 now authorizes an S13 documentation commit, a push of `feat/pet-voxel-coat-patterns` only, and a PR to `main`. The backup branch stays unpublished; the owner will merge. Prompt5's visual approval remains valid. Geometry, colors and all182 sealed source/test files remain byte-identical to `cc9b2b2`. No production operations.
+
+## S13 production verification — owner report, 2026-10-26
+
+Recorded on **2026-10-26 UTC** from the owner's Prompt8 report:
+
+> Verifiqué en producción que GET /petsapp-api/pet/state devuelve `coat.pattern`.
+> Se levanta la condición de merge S13.
+
+**Observed response content, as reported by the owner:** `GET /petsapp-api/pet/state` includes the `coat.pattern` field. The exact pattern value, full raw JSON and production-request timestamp were not supplied; none is invented here. This is an owner-attested production check, not an independent agent probe. The agent made no production requests.
+
+**S13 is satisfied by that owner verification; the merge prerequisite is lifted.** Merge itself remains owner-controlled and is not authorized for the agent.
 
 ## Human decision (verbatim)
 
@@ -61,7 +72,7 @@ Paths below are under `frontend/test/features/pet-home/`. NEW RED means observed
 | S10 | `personalize-strip.test.tsx`: primary AND normalized pattern, explicit preset payload | NEW RED; case-insensitive primary and secondary/accent-ignore controls preserved |
 | S11 | `pet.service.test.ts`, `pet-home.test.tsx`, viewer tests: complete normalized state for GET/save/care/rename | NEW RED for pattern read/prop flow; endpoints, headers, other fields and invalid-write behavior preserved |
 | S12 | `camera-coat-capture.test.tsx`, service/home tests: exactly3 color keys, omission preserves calico through save/reload | Camera omission was already-green4/4; new stub/state persistence failures observed separately, not claimed as camera RED |
-| S13 | Backend-first production deployment prerequisite | **NOT VERIFIED**; source merge/frontend fallback/local stubs are not deployment evidence; no production requests |
+| S13 | Backend-first production deployment prerequisite | **VERIFIED BY OWNER**, reported2026-10-26: production GET `/petsapp-api/pet/state` returns `coat.pattern`; owner lifts the merge prerequisite. No agent production requests; exact value/raw JSON not provided |
 
 ## Commands and observed results
 
@@ -94,9 +105,9 @@ Prompt7 explicitly authorizes replacing that unpublished delivery with exactly t
 1. `feat(pet-home): draw tabby, tuxedo, calico and pointed coat patterns as voxel boxes` — source, tests, proposal/design/specs/tasks/review and functional README; no evidence or root ODD paths.
 2. `docs(openspec): add coat pattern visual evidence` — only retained files under `evidence/`; no source/test changes.
 
-README process metadata belongs here: human approval is separate from the pixel floor; browser counts do not prove phone/GPU performance; production backend support must be verified before a future merge. No prohibited attribution, publishing or production work is authorized.
+README process metadata belongs here: human approval is separate from the pixel floor; browser counts do not prove phone/GPU performance. Production backend support was the S13 prerequisite, now satisfied by the dated owner report above. Prompt8 authorizes feature-branch publishing and a PR only, with no backup publication, prohibited attribution, agent merge or production work.
 
-At this document's commit freeze, the Prompt7 final-HEAD suite and new native verdict are **pending**, not claimed as passed. The full suite runs once on the final two-commit HEAD with unchanged HOME and at most two workers. Its unmodified runner/result/streams are saved under `.git/agent-evidence/coat-prompt7-full.*`; source seals and both manifests are recorded outside the committed tree.
+At commit1's original freeze, the Prompt7 final-HEAD suite and new native verdict were **pending**. They subsequently completed: the full suite at `9af89b44669d64d9a7adcc17170f732201f3ca3b` passed408/408 tests in52files,0failures/0skips,exit0, with unchanged HOME and at most two workers. Native `review-75380ccfac8718d4` approved only `bd816d4ff8ce2eebd1c0a1530063b8f810c2806b`; its exact acknowledgement completed and authority was burned. The evidence commit and this later documentation commit are not claimed as natively reviewed. Individual advisory text was not exposed by the facade, so no zero-findings claim is made. Raw suite streams, source seals and manifests remain under `.git/agent-evidence/coat-prompt7-full.*` and the delivery receipts.
 
 Repository policy requires **commit first, then immutable committed-only review from the main checkout**. After the final-HEAD suite, temporarily detach that checkout at commit1, inspect authority and follow the offered native route with explicit base13253e9 and fresh consent. Commit2 is NOT part of that review. Restore the final branch afterward. If context still exceeds the budget, stop and report added/deleted lines per file; do not split again, truncate evidence, retry the identical candidate or disable RDD.
 
@@ -105,7 +116,7 @@ Actual hashes, final-HEAD suite status, full native findings/closure or blocker 
 ## Limitations and deviations
 
 - **Independent verifier NOT EXECUTED**: explicit HOME-isolation exception, not approval. Native review does not replace it.
-- **Production backend `coat.pattern` NOT VERIFIED**: hard prerequisite before future merge. No push, merge or production access is authorized now.
+- **Production backend `coat.pattern` VERIFIED BY OWNER**, reported2026-10-26 as documented above; S13's merge prerequisite is lifted. This is not an agent verification, and no exact pattern value/raw JSON was supplied. No agent merge or production access is authorized.
 - Chromium/SwiftShader is not phone, real-GPU timing or production-readiness proof; admin inheritance does not promise exposure under every independent tuning/view angle.
 - Historical planning had8 tabby/5 calico boxes and35% darkening. Prompt4/5 intentionally supersede those with12/4 and50%; historical receipts retain their original capture-time values/status.
 - Preliminary failures remain recorded: CSS screenshot/buffer mismatch, corrected with exact buffer/mask alignment; fixture issues; advisory cross-run CSS hash assumption (five calico CSS pixels at delta≤1, identical actual GPU buffers); audit typo `view.yaw` corrected to actual `view.rootYaw`. No image retouching or fake assertion RED.
