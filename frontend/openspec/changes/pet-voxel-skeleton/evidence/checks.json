@@ -1,0 +1,328 @@
+{
+  "status": "PASS",
+  "implementationCommit": "f6a0002888d6db5e11bb3ce72ac7f0cd184ca2ca",
+  "baselineCommit": "867853a291b907d32c453f962c17d9db137f9f8a",
+  "actualBrowserWorldMatrices": 3444,
+  "maxWorldCoefficientError": 2.220446049250313e-16,
+  "worldTolerance": 0.000001,
+  "pixelComparisons": 20,
+  "changedPixels": 0,
+  "maxPixelDelta": 0,
+  "fullSuite": {
+    "passed": 461,
+    "files": 55,
+    "failed": 0,
+    "skipped": 0,
+    "maxWorkers": 2,
+    "heavy": true
+  },
+  "typescriptExitCode": 0,
+  "buildExitCode": 0,
+  "buildWarning": "Edge runtime disables static generation for that page (nonblocking)",
+  "differential": {
+    "status": "PASS",
+    "baseRef": "867853a291b907d32c453f962c17d9db137f9f8a",
+    "cases": 9,
+    "unchanged": 8,
+    "requested": 1,
+    "unexpected": 0,
+    "legacySamples": 40,
+    "optionalRoute": {
+      "callbackCount": [
+        0,
+        1
+      ],
+      "rootAndBounceUnchanged": true,
+      "legacyMeshesNowDelegated": [
+        "tailMid",
+        "tailTip"
+      ]
+    },
+    "stdoutStderrExitCodesPreserved": true,
+    "scope": "Public applyCatIdleFrame and unchanged legacy helpers, exact JSON/matrices, isolated baseline data; no API/database/browser or production access",
+    "cleanup": "Owned source archive/symlink removed; HOME unchanged"
+  },
+  "rows": [
+    {
+      "id": "solid-100",
+      "worldMatrices": 231,
+      "maxWorldCoefficientError": 1.1102230246251565e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 71,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 226
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132200
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "solid-0",
+      "worldMatrices": 231,
+      "maxWorldCoefficientError": 8.326672684688674e-17,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 71,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 261
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132735
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "tabby-100",
+      "worldMatrices": 315,
+      "maxWorldCoefficientError": 1.1102230246251565e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 95,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 237
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132211
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "tabby-0",
+      "worldMatrices": 315,
+      "maxWorldCoefficientError": 8.326672684688674e-17,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 95,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 274
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132748
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "tuxedo-100",
+      "worldMatrices": 287,
+      "maxWorldCoefficientError": 1.1102230246251565e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 87,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 231
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132205
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "tuxedo-0",
+      "worldMatrices": 287,
+      "maxWorldCoefficientError": 8.326672684688674e-17,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 87,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 269
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132743
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "calico-100",
+      "worldMatrices": 259,
+      "maxWorldCoefficientError": 1.1102230246251565e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 79,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 231
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132205
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "calico-0",
+      "worldMatrices": 259,
+      "maxWorldCoefficientError": 8.326672684688674e-17,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 79,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 270
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132744
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "pointed-100",
+      "worldMatrices": 315,
+      "maxWorldCoefficientError": 1.1102230246251565e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 95,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 247
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132221
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "pointed-0",
+      "worldMatrices": 315,
+      "maxWorldCoefficientError": 1.1102230246251565e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 95,
+      "canvasPixels": {
+        "width": 280,
+        "height": 280,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 295
+      },
+      "homePixels": {
+        "width": 390,
+        "height": 844,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "uniqueColors": 132769
+      },
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "admin-tabby-0",
+      "worldMatrices": 315,
+      "maxWorldCoefficientError": 2.220446049250313e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 95,
+      "canvasPixels": null,
+      "homePixels": null,
+      "jsErrors": [],
+      "requestFailures": []
+    },
+    {
+      "id": "admin-pointed-0",
+      "worldMatrices": 315,
+      "maxWorldCoefficientError": 2.220446049250313e-16,
+      "hiddenBoxes": 6,
+      "joints": 22,
+      "emptyAnchors": 3,
+      "drawCalls": 95,
+      "canvasPixels": null,
+      "homePixels": null,
+      "jsErrors": [],
+      "requestFailures": []
+    }
+  ],
+  "limitations": [
+    "SwiftShader controlled rendering, not mobile/GPU performance",
+    "Pixel captures cover ten default-admin home/canvas pairs; extra admin scenarios compare actual matrices",
+    "No independent verifier or native review verdict yet"
+  ]
+}
