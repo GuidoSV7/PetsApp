@@ -1,0 +1,342 @@
+{
+  "stage": "T1 test-only assertion RED; stopped before GREEN",
+  "baseline": "9ffa2e1d58b5efe46e0f6346b59cb34d1086e617",
+  "command": "cd frontend && ./node_modules/.bin/vitest run test/features/auth/login-page.test.tsx test/features/auth/stores/auth-session.test.ts test/features/admin/admin-access.test.tsx test/lib/retired-hardcoded-admin-contracts.test.ts test/lib/pet-model-proxy-retirement.test.ts test/lib/retired-pet-model-contracts.test.ts --maxWorkers=2 --reporter=dot",
+  "execution": {
+    "foreground": true,
+    "runner": "vitest 3.2.7",
+    "exit_code": 1,
+    "exit_code_preserved": true,
+    "files": {
+      "total": 6,
+      "failed": 5,
+      "passed": 1
+    },
+    "tests": {
+      "total": 42,
+      "failed": 18,
+      "passed": 24,
+      "skipped": 0
+    },
+    "collection_failures": 0,
+    "import_failures": 0,
+    "reported_assertion_failures": 74,
+    "start_at_runner_local_time": "00:40:09",
+    "duration_seconds": 2.6,
+    "timing_ms": {
+      "transform": 510,
+      "setup": 0,
+      "collect": 1020,
+      "tests": 907,
+      "environment": 1580,
+      "prepare": 507
+    },
+    "capture": "Exact command executed inside a foreground shell group redirecting each stream to fresh system scratch; shell exited with the child status, not a success guard.",
+    "stdout": {
+      "path": "/tmp/petsapp-admin-red.GkkMeI/stdout.log",
+      "bytes": 328,
+      "sha256": "9813c18970f8dd85087501afbda3b74f6a484a24958c0f3befed562c654ecce2",
+      "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-red/stdout.log"
+    },
+    "stderr": {
+      "path": "/tmp/petsapp-admin-red.GkkMeI/stderr.log",
+      "bytes": 31909,
+      "sha256": "359d0748b435cccb35d99f58c1d383d45c719b44741ddb29063fd71e29d1d4fc",
+      "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-red/stderr.log"
+    },
+    "raw_stream_policy": "Exact unmodified streams retained only at the referenced scratch paths, not embedded here. No retired credential/token values appear in assertion output."
+  },
+  "earlier_attempts": [
+    {
+      "command": "same exact focused command",
+      "exit_code": 1,
+      "files_failed": 5,
+      "files_passed": 1,
+      "tests_failed": 18,
+      "tests_passed": 24,
+      "collection_failures": 0,
+      "reported_assertion_failures": 62,
+      "start_at_runner_local_time": "00:39:22",
+      "duration_seconds": 3.61,
+      "timing_ms": {
+        "transform": 702,
+        "setup": 0,
+        "collect": 1650,
+        "tests": 1220,
+        "environment": 2100,
+        "prepare": 634
+      },
+      "raw_output": "Initial tool result retained by runtime transcript; separate stdout/stderr files were not captured for this attempt.",
+      "follow_up": "Added explicit storage setItem/removeItem call-count assertions to catch same-byte overwrites, then repeated the authorized foreground command with exact stream capture. No production changes or harness/import fixes."
+    }
+  ],
+  "per_file": [
+    {
+      "path": "test/features/auth/login-page.test.tsx",
+      "total": 14,
+      "failed": 10,
+      "passed": 4
+    },
+    {
+      "path": "test/features/auth/stores/auth-session.test.ts",
+      "total": 13,
+      "failed": 2,
+      "passed": 11
+    },
+    {
+      "path": "test/features/admin/admin-access.test.tsx",
+      "total": 6,
+      "failed": 2,
+      "passed": 4
+    },
+    {
+      "path": "test/lib/retired-hardcoded-admin-contracts.test.ts",
+      "total": 3,
+      "failed": 3,
+      "passed": 0
+    },
+    {
+      "path": "test/lib/pet-model-proxy-retirement.test.ts",
+      "total": 1,
+      "failed": 0,
+      "passed": 1
+    },
+    {
+      "path": "test/lib/retired-pet-model-contracts.test.ts",
+      "total": 5,
+      "failed": 1,
+      "passed": 4
+    }
+  ],
+  "rule_verdicts": [
+    {
+      "rule": "S1 old pair plus Nest rejection",
+      "verdict": "functional assertion RED",
+      "test": "S1/S3 Nest rejected credentials, storage empty: request, error, reset, no mutation/navigation",
+      "observed": "Exact service request and pending/reset assertions pass. Error is absent; session and bearer exist; storage is written/removed and admin navigation occurs."
+    },
+    {
+      "rule": "S2 arbitrary real admin and super_admin",
+      "verdict": "functional assertion RED for both roles",
+      "tests": [
+        "S2 arbitrary real admin reaches Nest and saves its exact response",
+        "S2 arbitrary real super_admin reaches Nest and saves its exact response"
+      ],
+      "observed": "Service is not called, returned session is not saved, no admin navigation occurs, and the pre-filter error remains."
+    },
+    {
+      "rule": "S3 API and network rejection",
+      "verdict": "functional assertion RED for each failure and storage state",
+      "test_template": "S1/S3 {Nest rejected credentials|Network unavailable}, storage {empty|petsapp_session_v1|petsapp_sesion_v1}: request, error, reset, no mutation/navigation",
+      "case_count": 6,
+      "observed": "All cases call the service and restore submit availability but fail error/no-session/no-bearer/no-write/no-removal/no-navigation assertions. Stored bytes change for empty and alternate-key states; the primary-key case writes identical bytes, caught by explicit write counters."
+    },
+    {
+      "rule": "S4 both persisted keys",
+      "verdict": "functional assertion RED for both keys",
+      "test_template": "S4 rejects old session in {petsapp_session_v1|petsapp_sesion_v1} through every reader without changing bytes",
+      "observed": "getPetsAppSession, getSessionToken and getSession return non-null. Stored bytes remain unchanged."
+    },
+    {
+      "rule": "S5 actual LoginPage and AdminLayout",
+      "verdict": "functional assertion RED for each component and key",
+      "test_templates": [
+        "S4/S5 old session in {key} never mount-redirects to admin",
+        "S4/S5 old session in {key} cannot render children or provide a bearer"
+      ],
+      "observed": "Login mount redirects to admin; layout renders protected children instead of redirecting to /. Both use the real shared getter; no session decision is mocked. Stored bytes remain unchanged."
+    },
+    {
+      "rule": "S7 recursive credential scan",
+      "verdict": "functional assertion RED",
+      "test": "contains no full old credential or token literal in any regular src file regardless of extension",
+      "observed": "Boolean scan reports the existing retired source module, without printing matched literals. Every recursive regular file is scanned as bytes, with no extension filter."
+    },
+    {
+      "rule": "S1/S7 module/import retirement",
+      "verdict": "existence/reference assertion RED, not import/collection failure",
+      "tests": [
+        "removes the retired module without an import/collection failure",
+        "contains no imports or re-exports referencing the retired module",
+        "removes all eight frontend model modules and the retired admin module"
+      ],
+      "observed": "The old module still exists and LoginPage still references it. No source was deleted to force RED."
+    }
+  ],
+  "preservation": {
+    "passed_count": 24,
+    "controls": [
+      "Legitimate Nest super_admin success for the formerly public pair",
+      "Real member denial, visible permission error, no session/navigation, restored submit",
+      "Real admin and super_admin LoginPage mount redirects",
+      "Actual AdminLayout absent/member/admin/super_admin decisions",
+      "Real admin/super_admin/member public readers and updateUserInSession in each storage key",
+      "Primary precedence, malformed primary does not fall back, absent/malformed values, unavailable storage",
+      "Original member persistence, alternate-key read/save migration, clearSession and role helpers",
+      "Catch-all forwards GET/POST/PUT/DELETE authorization/payload/query and preserves upstream 403",
+      "Retired GLB references, deployment setting, procedural scale and obsolete-test contracts"
+    ],
+    "auth_service_tests": "Unmodified and not run in this stage; not part of the authorized focused command.",
+    "store_baseline_differential": "Deferred to parent T5; production remains the baseline during this RED stage."
+  },
+  "source_guard": {
+    "command": "git diff --exit-code 9ffa2e1 -- frontend/src backend",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "",
+    "tracked_application_source_unchanged": true,
+    "untracked_guard_command": "git ls-files --others --exclude-standard -- frontend/src backend",
+    "untracked_guard_output": "",
+    "readme_changed": false,
+    "old_source_or_test_module_deleted": false
+  },
+  "structural_check": {
+    "command": "git diff --check",
+    "exit_code": 0
+  },
+  "scope_self_check": {
+    "S1": "Nest rejection plus retired-module existence assertions",
+    "S2": "Arbitrary real admin/super_admin, legitimate former-pair success, member denial",
+    "S3": "API/network failures with empty and each old stored-session key; exact request, pending, error, bytes, write counters and navigation",
+    "S4": "Both keys through all public readers; bytes unchanged",
+    "S5": "Actual components with real session decision; old keys denied and real gates preserved",
+    "S6": "Existing store controls retained and public-helper/precedence/storage-failure preservation added; proxy controls preserved",
+    "S7": "Dedicated fixture, all-regular-file byte scanner, module absence and source reference checks; GLB tests decoupled",
+    "scope_creep": false,
+    "not_performed": [
+      "GREEN",
+      "runtime edits",
+      "README edits",
+      "source/module deletion",
+      "browser",
+      "full suite",
+      "typecheck",
+      "build",
+      "install",
+      "production access",
+      "HOME changes",
+      "commit",
+      "push",
+      "PR",
+      "review"
+    ]
+  },
+  "scratch_retained_for_parent": "Archived exact streams under .git/agent-evidence/remove-hardcoded-admin-login-red; original owned scratch removed.",
+  "green": {
+    "stage": "T2-T4 GREEN and T5 public-store differential; parent broader gates pending",
+    "red_record_policy": "All original RED fields, hashes and parent-added archived paths above are preserved as historical evidence. Parent removed the obsolete source/helper test only after accepting assertion RED.",
+    "command": "cd frontend && ./node_modules/.bin/vitest run test/features/auth/login-page.test.tsx test/features/auth/stores/auth-session.test.ts test/features/admin/admin-access.test.tsx test/lib/retired-hardcoded-admin-contracts.test.ts test/lib/pet-model-proxy-retirement.test.ts test/lib/retired-pet-model-contracts.test.ts test/features/auth/api/auth.service.test.ts --maxWorkers=2 --reporter=dot",
+    "execution": {
+      "foreground": true,
+      "exit_code": 0,
+      "files": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      "tests": {
+        "total": 47,
+        "passed": 47,
+        "failed": 0,
+        "skipped": 0
+      },
+      "collection_failures": 0,
+      "start_at_runner_local_time": "00:45:38",
+      "duration_seconds": 2.53,
+      "timing_ms": {
+        "transform": 444,
+        "setup": 0,
+        "collect": 983,
+        "tests": 789,
+        "environment": 1200,
+        "prepare": 536
+      },
+      "stdout": {
+        "path": "/tmp/petsapp-admin-green.F6Ccbg/stdout.log",
+        "bytes": 333,
+        "sha256": "85d98a54dcbb7cd84ecac4e863c4615141ca97168e65ddc9c8d45468ba5d6ef9",
+        "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-admin-green.F6Ccbg/stdout.log"
+      },
+      "stderr": {
+        "path": "/tmp/petsapp-admin-green.F6Ccbg/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-admin-green.F6Ccbg/stderr.log"
+      }
+    },
+    "typecheck": {
+      "command": "cd frontend && ./node_modules/.bin/tsc --noEmit --incremental false",
+      "exit_code": 0,
+      "elapsed_ms": 6460,
+      "stdout": {
+        "path": "/tmp/petsapp-admin-types.MMAEio/stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-admin-types.MMAEio/stdout.log"
+      },
+      "stderr": {
+        "path": "/tmp/petsapp-admin-types.MMAEio/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-admin-types.MMAEio/stderr.log"
+      }
+    },
+    "differential": {
+      "command": "node /tmp/petsapp-store-differential.pdZgrt/runner.cjs",
+      "exit_code": 0,
+      "report": "frontend/openspec/changes/remove-hardcoded-admin-login/evidence/store-differential.json",
+      "total": 30,
+      "passed": 30,
+      "identical": 25,
+      "allowed_legacy_deltas": 5,
+      "unexpected": 0,
+      "duration_ms": 463.221166
+    },
+    "structural_check": {
+      "command": "git diff --check",
+      "first_exit_code": 2,
+      "first_result": "README inserted block inherited CRLF; git reported its added lines 23-58 as trailing whitespace. Original output remains in the runtime transcript.",
+      "bounded_correction": "Normalized README line endings to LF, retaining its original content plus the approved admin section.",
+      "final_exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "protected_paths": {
+      "command": "git diff --exit-code 9ffa2e1 -- frontend/src/features/auth/api frontend/src/app/petsapp-api frontend/src/lib/axios.ts frontend/src/lib/api-auth-policy.ts frontend/src/lib/petsapp-api-origin.ts frontend/src/features/auth/types frontend/src/app/admin/AdminLayout.tsx frontend/src/app/admin/layout.tsx backend",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "unchanged": true
+    },
+    "test_changes": "All stage-1 RED assertions retained unchanged. Added one requested non-Error generic-fallback test, observed GREEN only; no harness corrections or new assertion RED claimed for that added case. Four unchanged auth-service tests included in this authorized run.",
+    "self_review": {
+      "S1": "Old imports, pre-Nest filter and local fallback removed; parent-owned obsolete module deletion retained; old-pair Nest rejection passes.",
+      "S2": "Arbitrary real admin/super_admin succeed with exact Nest result; legitimate former-pair success and member denial preserved.",
+      "S3": "API/network errors preserve storage and avoid navigation; pending reset and generic non-Error fallback pass.",
+      "S4": "Only the retired user ID is rejected by the shared getter; both keys and all readers return null without mutations or changed precedence.",
+      "S5": "Actual LoginPage/AdminLayout tests pass; layout remains unchanged and client-only, documented accurately.",
+      "S6": "Auth-service/proxy/role/cookie/backend/layout paths unchanged; focused controls and 30-case public-store differential pass.",
+      "S7": "All-regular-file recursive source scan and module/reference absence assertions pass; old literals remain only in the designated fixture.",
+      "S8": "README links existing backend seed steps, names required real environment inputs, and explains existing-user skip/no rotation.",
+      "S9": "README makes production password review/rotation human-only; no production operations performed.",
+      "scope_creep": false
+    },
+    "independent_verifier": "UNEXECUTED per current human request; no approval claimed",
+    "pending_parent_gates": [
+      "full suite",
+      "build",
+      "real browser",
+      "report",
+      "RDD"
+    ],
+    "scratch_retained_for_parent_archive_and_cleanup": [
+      "/tmp/petsapp-admin-green.F6Ccbg",
+      "/tmp/petsapp-admin-types.MMAEio",
+      "/tmp/petsapp-store-differential.pdZgrt"
+    ]
+  },
+  "parent_archive": {
+    "path": ".git/agent-evidence/remove-hardcoded-admin-login-green",
+    "original_owned_scratch_removed": true
+  }
+}

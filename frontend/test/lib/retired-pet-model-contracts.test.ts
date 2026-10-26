@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import * as adminLogin from "@/features/auth/hardcoded-admin";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
 import { CAT_MODEL_SCALE } from "@/features/pet-home/pet-layout";
 
@@ -33,11 +32,11 @@ function filesUnder(directory: string): string[] {
 }
 
 describe("retired frontend pet-model contracts", () => {
-  it("removes all eight frontend model modules and the local bearer validator export", () => {
+  it("removes all eight frontend model modules and the retired admin module", () => {
     for (const filename of retiredSources) {
       expect(existsSync(path.join(frontendRoot, "src", filename)), filename).toBe(false);
     }
-    expect(adminLogin).not.toHaveProperty("isHardcodedAdminBearer");
+    expect(existsSync(path.join(frontendRoot, "src/features/auth/hardcoded-admin.ts"))).toBe(false);
   });
 
   it("leaves no retired module references or modelUrl contract in production source", () => {

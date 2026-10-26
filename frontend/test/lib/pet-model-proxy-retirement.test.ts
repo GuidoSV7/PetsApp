@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import * as route from "@/app/petsapp-api/[...path]/route";
-import { HARDCODED_ADMIN_TOKEN } from "@/features/auth/hardcoded-admin";
+import { legacyToken } from "../fixtures/legacy-admin-session";
 
 const { upstream } = vi.hoisted(() => ({ upstream: vi.fn() }));
 vi.mock("undici", () => ({ Agent: class {}, fetch: upstream }));
@@ -23,7 +23,7 @@ describe("model URLs through the preserved catch-all", () => {
       }));
       const request = new NextRequest(`http://local.invalid/petsapp-api/${segments.join("/")}?t=1`, {
         method,
-        headers: { authorization: `Bearer ${HARDCODED_ADMIN_TOKEN}` },
+        headers: { authorization: `Bearer ${legacyToken}` },
         ...(method === "GET" ? {} : { body: "sentinel payload" }),
       });
       const response = await route[method](request, { params: Promise.resolve({ path: segments }) });
@@ -33,7 +33,7 @@ describe("model URLs through the preserved catch-all", () => {
       const [url, init] = upstream.mock.lastCall!;
       expect(url).toBe(`http://isolated.invalid/${segments.join("/")}?t=1`);
       expect(init.method).toBe(method);
-      expect(init.headers.get("authorization")).toBe(`Bearer ${HARDCODED_ADMIN_TOKEN}`);
+      expect(init.headers.get("authorization") === `Bearer ${legacyToken}`).toBe(true);
       if (method !== "GET") expect(init.body.toString()).toBe("sentinel payload");
     }
     expect(upstream).toHaveBeenCalledTimes(4);

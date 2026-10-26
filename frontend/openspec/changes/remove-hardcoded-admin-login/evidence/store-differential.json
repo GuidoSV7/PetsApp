@@ -1,0 +1,1110 @@
+{
+  "baseline": "9ffa2e1d58b5efe46e0f6346b59cb34d1086e617",
+  "candidate": "working tree",
+  "method": "Same public API inputs in isolated vm contexts; TypeScript transpileModule, fixture loaded directly without copying literal values; complete returns/storage bytes/call arguments/counters/streams/exit compared in memory.",
+  "command": "node /tmp/petsapp-store-differential.pdZgrt/runner.cjs",
+  "duration_ms": 463.221166,
+  "public_exports": [
+    "clearSession",
+    "getPetsAppSession",
+    "getSession",
+    "getSessionToken",
+    "isAdminRole",
+    "isSessionRole",
+    "landingPathForRole",
+    "savePetsAppSession",
+    "updateUserInSession"
+  ],
+  "source_sha256": {
+    "baseline": "30f7a5b00f8cef0cb13429111ae5ae987cccb3ac8578886dddeb61e77e713c2d",
+    "candidate": "6eab5f070b922bc87c5d19c4aa68717dc8b35afea1741ad142e0b1527d758679"
+  },
+  "counts": {
+    "total": 30,
+    "passed": 30,
+    "identical": 25,
+    "allowed_legacy_deltas": 5,
+    "unexpected": 0
+  },
+  "allowed_delta_contract": {
+    "retired-readers": "All three public readers return null for the selected retired session, with identical reads, unchanged bytes and zero writes/removals. Primary-key precedence is retained; no fallback to a real alternate.",
+    "retired-update": "updateUserInSession now sees the retired session as absent: no save/migration/write/removal; subsequent readers return null. Baseline updates user and migrates to primary while keeping the retired token. This is solely the requested shared-getter rejection effect."
+  },
+  "records": [
+    {
+      "name": "real-admin-petsapp_session_v1-read-update-clear",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 13,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 13,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-admin-petsapp_sesion_v1-read-update-clear",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 17,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 17,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-admin-save-replaces-alternate-and-clear-both",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 9,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 9,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-super_admin-petsapp_session_v1-read-update-clear",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 13,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 13,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-super_admin-petsapp_sesion_v1-read-update-clear",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 17,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 17,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-super_admin-save-replaces-alternate-and-clear-both",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 9,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 9,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-member-petsapp_session_v1-read-update-clear",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 13,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 13,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-member-petsapp_sesion_v1-read-update-clear",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 17,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 17,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "real-member-save-replaces-alternate-and-clear-both",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 9,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 9,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "primary-real-precedes-alternate-real",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "malformed-primary-does-not-fallback",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "empty-primary-does-not-fallback",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "real-primary-precedes-retired-alternate",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "retired-primary-does-not-fallback-to-real-alternate",
+      "verdict": "pass",
+      "allowed_delta": "retired-readers",
+      "comparison": {
+        "result_equal": false,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "absent",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 14,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 14,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "invalid-json",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "null",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "empty-object",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "missing-token",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "missing-email",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "invalid-role",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "storage-unavailable-getItem",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 1,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "storage-unavailable-setItem",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 10,
+          "setItem": 2,
+          "removeItem": 2
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 10,
+          "setItem": 2,
+          "removeItem": 2
+        }
+      }
+    },
+    {
+      "name": "storage-unavailable-removeItem",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 2,
+          "removeItem": 3
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 7,
+          "setItem": 2,
+          "removeItem": 3
+        }
+      }
+    },
+    {
+      "name": "no-window-existing-server-outcomes",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 0,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 0,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "role-and-landing-helpers",
+      "verdict": "pass",
+      "allowed_delta": null,
+      "comparison": {
+        "result_equal": true,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 0,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 0,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "retired-petsapp_session_v1-all-public-readers",
+      "verdict": "pass",
+      "allowed_delta": "retired-readers",
+      "comparison": {
+        "result_equal": false,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 3,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "retired-petsapp_session_v1-update-through-getter",
+      "verdict": "pass",
+      "allowed_delta": "retired-update",
+      "comparison": {
+        "result_equal": false,
+        "storage_equal": false,
+        "counters_equal": false,
+        "calls_equal": false,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 4,
+          "setItem": 1,
+          "removeItem": 1
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 4,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "retired-petsapp_sesion_v1-all-public-readers",
+      "verdict": "pass",
+      "allowed_delta": "retired-readers",
+      "comparison": {
+        "result_equal": false,
+        "storage_equal": true,
+        "counters_equal": true,
+        "calls_equal": true,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 6,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 6,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    },
+    {
+      "name": "retired-petsapp_sesion_v1-update-through-getter",
+      "verdict": "pass",
+      "allowed_delta": "retired-update",
+      "comparison": {
+        "result_equal": false,
+        "storage_equal": false,
+        "counters_equal": false,
+        "calls_equal": false,
+        "stdout_equal": true,
+        "stderr_equal": true,
+        "exit_equal": true,
+        "exports_equal": true
+      },
+      "baseline": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 5,
+          "setItem": 1,
+          "removeItem": 1
+        }
+      },
+      "candidate": {
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "counters": {
+          "getItem": 8,
+          "setItem": 0,
+          "removeItem": 0
+        }
+      }
+    }
+  ],
+  "raw_runner_path": "/tmp/petsapp-store-differential.pdZgrt/runner.cjs",
+  "raw_runner_sha256": "2f2986d4cc8138a35bd3e0bb9111ac55fe255a35b24b53b0b0b71305dd3a3f62",
+  "execution": {
+    "foreground": true,
+    "exit_code": 0,
+    "stdout": {
+      "path": "/tmp/petsapp-store-differential.pdZgrt/stdout.log",
+      "bytes": 3796,
+      "sha256": "8b37cea354369306c0b7bb1a63b506799826759250fd349a3211e13474f99738",
+      "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-store-differential.pdZgrt/stdout.log"
+    },
+    "stderr": {
+      "path": "/tmp/petsapp-store-differential.pdZgrt/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archived_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-store-differential.pdZgrt/stderr.log"
+    },
+    "scratch_policy": "Owned fresh system scratch, outside the worktree. Retained for parent archive/cleanup; no raw fixture values logged or copied into the runner/report."
+  },
+  "independent_verifier": "UNEXECUTED per current human request; no approval claimed",
+  "archived_raw_runner_path": ".git/agent-evidence/remove-hardcoded-admin-login-green/petsapp-store-differential.pdZgrt/runner.cjs",
+  "parent_archive": {
+    "path": ".git/agent-evidence/remove-hardcoded-admin-login-green",
+    "original_owned_scratch_removed": true
+  }
+}
