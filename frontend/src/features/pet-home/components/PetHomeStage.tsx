@@ -13,10 +13,8 @@ import {
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
-import {
-  DEFAULT_GREY_COAT,
-  type PetCoatColors,
-} from "@/features/pet-home/extract-coat-colors";
+import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
+import type { PetCoatInput, PetCoatState } from "@/features/pet-home/coat-patterns";
 import { moodCaption } from "@/features/pet-home/pet-customize";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
 import {
@@ -76,7 +74,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [statusKey, setStatusKey] = useState<PetStatusKey>("idle");
   const [pulse, setPulse] = useState(0);
   const [reactPulse, setReactPulse] = useState(0);
-  const [coat, setCoat] = useState<PetCoatColors>(DEFAULT_GREY_COAT);
+  const [coat, setCoat] = useState<PetCoatState>({ ...DEFAULT_GREY_COAT, pattern: "solid" });
   const [needs, setNeeds] = useState<PetNeeds>(EMPTY_PET_NEEDS);
   const [mood, setMood] = useState("Feliz");
   const [petName, setPetName] = useState(DEFAULT_PET_NAME);
@@ -173,7 +171,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     }
   };
 
-  const onCoat = async (colors: PetCoatColors) => {
+  const onCoat = async (colors: PetCoatInput) => {
     if (locked) return;
     setBusy(true);
     try {
