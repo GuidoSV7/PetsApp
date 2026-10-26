@@ -323,6 +323,70 @@
   "limitations": [
     "SwiftShader controlled rendering, not mobile/GPU performance",
     "Pixel captures cover ten default-admin home/canvas pairs; extra admin scenarios compare actual matrices",
-    "No independent verifier or native review verdict yet"
-  ]
+    "Native facade exposed three nonblocking WARNING IDs/locations, not full explanations/recommendations; these are not invented"
+  ],
+  "independentVerification": {
+    "status": "functional_PASS_owner_accepted_environment_deviation",
+    "sourceCommit": "f6a0002888d6db5e11bb3ce72ac7f0cd184ca2ca",
+    "focusedPassed": 121,
+    "files": 8,
+    "typesExit": 0,
+    "extraRouteProbePassed": 1,
+    "extraProbeCommitted": false,
+    "parentOriginalHomeSpotcheckPassed": 6,
+    "environmentDeviation": "Role required isolated HOME and system-temp dependency copies; Node24.22.1/Vitest3.2.7 matched; no install/package manager/network",
+    "freshOwnerChoice": "accept-isolated-verification-clean-owned-scratch",
+    "ownedScratchCleaned": true,
+    "proofPreservedLocally": true
+  },
+  "nativeReview": {
+    "lineageId": "review-56e5a887a0ca4831",
+    "consentBinding": "ba3fa113-2653-4925-93c7-4bdac3929244",
+    "consentAnswer": "granted",
+    "baseCommit": "867853a291b907d32c453f962c17d9db137f9f8a",
+    "reviewedCommit": "f6a0002888d6db5e11bb3ce72ac7f0cd184ca2ca",
+    "targetIdentity": "sha256:d314a4ecf3e54b89adc1088a6fe84cb7dd0f1030fdfede2aa9d60182b9011cf5",
+    "riskTier": "medium",
+    "changedFiles": 40,
+    "originalChangedLines": 1241,
+    "lenses": [
+      "review-risk",
+      "review-readability",
+      "review-reliability"
+    ],
+    "preparedReviewers": 3,
+    "submittedReviewers": 3,
+    "state": "approved",
+    "outcome": "native-approved-acknowledgement-completed",
+    "consumedRevision": "sha256:bcb02e6ac94c2276ad051a422a21a40cf237f5e740d8f2c03bcfa57bba1ae182",
+    "authority": "burned",
+    "burnEvidence": "gentle-ai.review-acknowledged/v1",
+    "mutationOutcome": "committed",
+    "correctionRequired": false,
+    "advisoryFindings": [
+      {
+        "id": "R2-reproducible-browser-protocol",
+        "lens": "readability",
+        "location": "frontend/openspec/changes/pet-voxel-skeleton/evidence/README.md:7-11",
+        "severity": "WARNING",
+        "disposition": "informational"
+      },
+      {
+        "id": "R3-browser-parity",
+        "lens": "reliability",
+        "location": "frontend/openspec/changes/pet-voxel-skeleton/tasks.md:20",
+        "severity": "WARNING",
+        "disposition": "informational"
+      },
+      {
+        "id": "R3-live-reconciliation",
+        "lens": "reliability",
+        "location": "frontend/test/features/pet-home/cat-3d-model-skeleton.test.tsx:86-96",
+        "severity": "WARNING",
+        "disposition": "informational"
+      }
+    ],
+    "advisoryPolicy": "All nonblocking; none opened correction/reopened review. Detailed explanations/recommendations were not returned by facade; do not invent them or claim zero findings.",
+    "delivery": "none; no A1 push/merge/backend/production"
+  }
 }

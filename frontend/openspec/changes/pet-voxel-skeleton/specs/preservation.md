@@ -1,6 +1,6 @@
 # Spec: visual parity, F2 and phase boundaries
 
-Status: APPROVED by Prompt11, including D1/D2 and adjustments1/2. Runtime acceptance is pending; no result is claimed until observed.
+Status: IMPLEMENTED and verified under Prompt11/D1/D2/adjustments1/2:20exact image comparisons0changed/maxdelta0,3,444actual world matrices maxerror2.22e-16. Full proof and acknowledged native scope: [verification report](../review.md). This passive status update is not part of native approval.
 
 ## S4 — Preserve complete existing transforms and behavior
 

@@ -1,6 +1,6 @@
 # Design: voxel skeleton (A1)
 
-Status: APPROVED by Prompt11, D1/D2 accepted. Implementation base: main867853a; owner adjustments below supersede the preliminary transform recipe. No implementation proof is claimed yet.
+Status: IMPLEMENTED and verified for A1. D1/D2 and owner adjustments below remain the approved contract. Base main867853a; implementation f6a0002 received native APPROVED + acknowledgement. See [verification report](review.md) for exact functional proof, accepted isolation deviation and nonblocking follow-ups.
 All coordinates below are model-space coordinates before the existing outer wrapper; dimensions use the current box units.
 
 ## 1. Current graph and transform ownership

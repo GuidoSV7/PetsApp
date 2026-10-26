@@ -1,6 +1,6 @@
 # Proposal: voxel skeleton (A1)
 
-Status: APPROVED by owner Prompt11 with D1/D2 and adjustments1/2.
+Status: IMPLEMENTED and verified under owner Prompt11 with D1/D2 and adjustments1/2. Source f6a0002 is native APPROVED + acknowledged; [verification report](review.md) records exact proof/scope and follow-ups. No A1 publication authorized.
 Implementation branch: `feat/pet-voxel-skeleton`, based on main `867853a291b907d32c453f962c17d9db137f9f8a`, after PR2 and scope PR3 merge commits. Planning originally inspected85152cb while PR2 was OPEN; that historical precondition is now resolved.
 
 ## Outcome

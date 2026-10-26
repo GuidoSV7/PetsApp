@@ -1,6 +1,6 @@
 # Spec: joints, attachments and hidden anatomy
 
-Status: APPROVED by Prompt11; acceptance remains to be executed. D1/D2 accepted. Static-bind adjustment1 and stop-on-pixel-difference adjustment2 override the preliminary design.
+Status: IMPLEMENTED and verified. D1/D2 and adjustments1/2 are retained. [Verification report](../review.md) records the exact executed acceptance, native approval/acknowledgement and nonblocking follow-ups; this passive status update is outside native approval.
 
 ## S1 — Rigid joints and surface-following positions
 
