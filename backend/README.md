@@ -144,7 +144,7 @@ Use its existing cluster on 127.0.0.1:55432, not a Docker replacement:
 For a focused check, replace the test command with e.g.
 `npm test -- src/testing/postgres.spec.ts --maxWorkers=2`. Keep the anchor cleanup.
 The helper creates/migrates the template itself; do not add a shell-migrated cache.
-The currently verified VPS server is PostgreSQL16.15; CI/local examples use18,
+The currently verified VPS server is PostgreSQL16.15; the local Docker example uses18,
 matching the reported production major. Passing locally on16 is not18 coverage.
 
 ### Developer machine / Docker (not the VPS)
@@ -177,8 +177,8 @@ docker stop agent-petsapp-tests
 
 These are synthetic local credentials, not production values. Stop only the test
 container you created, including after failures; never run this launch command
-on the VPS or stop a preexisting service. CI provides its own PostgreSQL18 service
-and a unique unit-test anchor, without changing E2E or job-wide DATABASE_URL.
+on the VPS or stop a preexisting service. GitHub Actions CI is not configured;
+run the checks locally with an isolated test database before merging.
 
 Without CREATEDB, do not silently run parallel files on one mutable database.
 Alternative deployment strategy: externally provision one migrated run database

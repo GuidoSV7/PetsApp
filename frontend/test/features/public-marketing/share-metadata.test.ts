@@ -15,11 +15,17 @@ describe("landingShareMetadata", () => {
     expect(metadata.openGraph?.title).toBe(siteName);
     expect(metadata.openGraph?.siteName).toBe(siteName);
     expect(metadata.openGraph?.locale).toBe("es_LA");
-    expect(metadata.openGraph?.type).toBe("website");
+    const openGraph = metadata.openGraph;
+    expect(openGraph && "type" in openGraph ? openGraph.type : undefined).toBe(
+      "website",
+    );
     expect(metadata.openGraph?.images).toEqual([
       expect.objectContaining({ url: SHARE_IMAGE_FALLBACK }),
     ]);
-    expect(metadata.twitter?.card).toBe("summary_large_image");
+    const twitter = metadata.twitter;
+    expect(twitter && "card" in twitter ? twitter.card : undefined).toBe(
+      "summary_large_image",
+    );
     expect(metadata.twitter?.title).toBe(siteName);
     expect(metadata.twitter?.images).toEqual([SHARE_IMAGE_FALLBACK]);
     expect(serialized).not.toContain("localhost");
