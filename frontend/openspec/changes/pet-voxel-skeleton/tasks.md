@@ -1,6 +1,6 @@
 # Tasks: voxel skeleton (A1)
 
-Status: APPROVED — Prompt11 G0/D1/D2 accepted with static-bind and mandatory pixel-stop adjustments. Implementation baseline main867853a on feat/pet-voxel-skeleton. T0 verified; no production code changed yet. T1 starts after the baseline work-unit commit.
+Status: APPROVED — Prompt11 G0/D1/D2 accepted with static-bind and mandatory pixel-stop adjustments. Implementation baseline main867853a on feat/pet-voxel-skeleton. T0/T1 verified. T1 static graph/compiler and idle helper are not yet wired to the renderer.
 Requirements: [S1–S3](specs/skeleton.md), [S4–S7](specs/preservation.md). Implementation tasks are authorized; uncompleted entries are not executed results. Detailed live evidence: local `odd/tasks/pet-voxel-skeleton.md`.
 
 ## This planning phase
@@ -28,4 +28,4 @@ No backend, production, dependency, camera/DPR/shadow policy, new animation/pose
 
 ## Delivery state
 
-P1/P2/G0/T0 are complete. T0 froze12 real-browser scenarios×6idle samples and10home/canvas pairs before production edits;13/13 fixture controls and full421/421 in53files/0skips passed. T1–T5 have not started. Bind offsets are compiled only on admin/needs changes; frame samples must not change them. Any nonzero pixel difference stops the work with images/count/maxdelta, without pixel-driven code fixes. No A1 runtime/native result is claimed until observed. Scope PR3 and coat PR2 are merged under the owner's documented external-CI exception; A1 remains local only.
+P1/P2/G0/T0 are complete. T0 froze12 real-browser scenarios×6idle samples and10home/canvas pairs before production edits;13/13 fixture controls and full421/421 in53files/0skips passed. T1: observed RED15/0 from a loadable empty-graph scaffold, then GREEN15new graph tests plus preservation controls and TypeScript. Twelve frozen actual-browser scenarios match rest/idle worlds;101hunger samples cover default limb contacts. A test-harness Float32 bounding error was fixed without weakening precision. T2–T5 remain pending. Bind offsets are compiled only on admin/needs changes; frame samples must not change them. Any nonzero pixel difference stops the work with images/count/maxdelta, without pixel-driven code fixes. No A1 runtime/native result is claimed until observed. Scope PR3 and coat PR2 are merged under the owner's documented external-CI exception; A1 remains local only.
