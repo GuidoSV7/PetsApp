@@ -1,0 +1,31 @@
+# Tasks: voxel skeleton (A1)
+
+Status: APPROVED — Prompt11 G0/D1/D2 accepted with static-bind and mandatory pixel-stop adjustments. Implementation baseline main867853a on feat/pet-voxel-skeleton. T0 verified; no production code changed yet. T1 starts after the baseline work-unit commit.
+Requirements: [S1–S3](specs/skeleton.md), [S4–S7](specs/preservation.md). Implementation tasks are authorized; uncompleted entries are not executed results. Detailed live evidence: local `odd/tasks/pet-voxel-skeleton.md`.
+
+## This planning phase
+
+- [x] P1 — Read current graph/anatomy/needs/idle/pattern/frame contracts and admin/viewer integration; identify prospective shear and obsolete topology assertions. Read-only explorer, one source spot-check and Three r186 documentation; no tests run.
+- [x] P2 — Write proposal, design, two specs and these tasks. Provide concrete joint/hidden-part/accessory tables and decisions D1/D2. No source/test edits or commits.
+- [x] G0 — Owner validated the documents, D1 migration and D2 A1 compatibility. Adjustment1: bindLb only admin/resolved needs, never recalculated per frame, with idle-invariance test. Adjustment2: stop and report any pixel difference, do not adjust code to force equality.
+
+## Authorized TDD and implementation — Prompt11
+
+| Task | Specs | Route and required evidence | Commit plan, after authorization |
+|---|---|---|---|
+| T0 — Confirm baseline and freeze actual-scene oracles | S4,S5,S7 | Establish a baseline containing accepted coat patterns; PR#2 was OPEN during planning. Before production edits, capture independent full world matrices and deterministic local home pixels/counters. Store test fixture data, not tests that read git history. Existing parity controls are expected GREEN. | Baseline fixtures travel with the behavior they protect; coherent local commits authorized by Prompt11. |
+| T1 — Define rigid joint graph and hidden manifest | S1–S3 | Write loadable failing assertions for missing joints/unit scale, exact chains, surface positions, append-only hidden IDs and containment. Observe genuine assertion RED, then implement the proposed graph/evaluator. Keep legacy anatomy/tree/pose exports intact. | Bounded model/evaluator unit with its tests; aim ≤400 authored changed lines. |
+| T2 — Integrate renderer, attachments and existing idle | S1–S5 | New graph/hidden-visibility assertions supply feature RED; frozen matrix checks are preservation controls. Apply admin/needs/one idle sample, preserve pivots/root/registry/keyed identity, original patch parents and all33 original world matrices. Apply D1 only as approved; assert39+N total meshes,33+N visible. | Integration with its tests, split only at coherent reviewable behavior boundaries. |
+| T3 — Replace F2 eye constants | S6 | Derive head-local eye extents from anatomy while preserving strict existing inequalities/geometry. This refactor has no meaningful behavioral RED on today's anatomy; report that honestly and run the existing clearance controls. Do not include F1/F3. | Include with the skeleton regression coverage it supports. |
+| T4 — Run acceptance and existing controls | S1–S6 | Focused tests, unchanged legacy helper/needs/idle/admin/viewer controls, hunger0–100 contact, full suite under heavy/max2workers, TypeScript/build and isolated previous/new differential where shared behavior changes. Real-browser all-five-pattern/all100-all0 exact pixels and measured draws; no production endpoints. | Keep evidence/docs with the verified behavior; record failures/skips rather than claiming success. |
+| T5 — Native review and handoff | S1–S7 | After functional gates, commit-first native RDD from the main checkout under the owner switch and fresh candidate consent. Review A1, not the accumulated coat feature; honor exact native bindings. Assess actual diff/risk for any independently required verifier; do not inherit the old HOME exception automatically. | Coherent local commits and fresh-consent A1-only native review authorized by Prompt11. No A1 push/merge; prerequisite merges were separately authorized. |
+
+## Allowed future surfaces and non-goals
+
+Likely source surfaces: `frontend/src/features/pet-home/cat-skeleton*.ts`, hidden-part definitions, the actual model/joint-rendering integration and only necessary frame-adapter wiring. Existing anatomy/tree/pose contracts and idle/need formulas stay intact. Relevant tests are the actual model/frame/coat suites and F2 in `coat-patterns.test.ts`; new independent fixture data belongs to those suites. Evidence belongs to this change's future evidence directory, not edited coat-pattern evidence.
+
+No backend, production, dependency, camera/DPR/shadow policy, new animation/pose, admin UI or F1/F3 work. Any plan revision must preserve the user's original parity boundaries; do not silently broaden into a general rig/animation framework.
+
+## Delivery state
+
+P1/P2/G0/T0 are complete. T0 froze12 real-browser scenarios×6idle samples and10home/canvas pairs before production edits;13/13 fixture controls and full421/421 in53files/0skips passed. T1–T5 have not started. Bind offsets are compiled only on admin/needs changes; frame samples must not change them. Any nonzero pixel difference stops the work with images/count/maxdelta, without pixel-driven code fixes. No A1 runtime/native result is claimed until observed. Scope PR3 and coat PR2 are merged under the owner's documented external-CI exception; A1 remains local only.

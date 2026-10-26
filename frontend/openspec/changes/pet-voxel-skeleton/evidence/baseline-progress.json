@@ -1,0 +1,53 @@
+{
+  "phase": "baseline",
+  "cases": [
+    {
+      "id": "solid-100",
+      "drawCalls": 71
+    },
+    {
+      "id": "solid-0",
+      "drawCalls": 71
+    },
+    {
+      "id": "tabby-100",
+      "drawCalls": 95
+    },
+    {
+      "id": "tabby-0",
+      "drawCalls": 95
+    },
+    {
+      "id": "tuxedo-100",
+      "drawCalls": 87
+    },
+    {
+      "id": "tuxedo-0",
+      "drawCalls": 87
+    },
+    {
+      "id": "calico-100",
+      "drawCalls": 79
+    },
+    {
+      "id": "calico-0",
+      "drawCalls": 79
+    },
+    {
+      "id": "pointed-100",
+      "drawCalls": 95
+    },
+    {
+      "id": "pointed-0",
+      "drawCalls": 95
+    },
+    {
+      "id": "admin-tabby-0",
+      "drawCalls": 95
+    },
+    {
+      "id": "admin-pointed-0",
+      "drawCalls": 95
+    }
+  ]
+}
