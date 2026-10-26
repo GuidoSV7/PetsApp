@@ -23,6 +23,13 @@ import { CAT_IDLE_PART_IDS } from "@/features/pet-home/cat-idle-motion";
 import { useReducedMotion } from "@/features/pet-home/use-reduced-motion";
 import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
 import {
+  deriveTabbyStripeColor,
+  getCoatPatternBoxes,
+  normalizeCoatPattern,
+  type CoatPatternBox,
+  type PetCoatInput,
+} from "@/features/pet-home/coat-patterns";
+import {
   applyNeedDirtToCoat,
   applyNeedVisualsToAnatomy,
   needVisualCues,
@@ -33,7 +40,7 @@ import {
 } from "@/features/pet-home/pet-stats";
 
 type Props = {
-  colors: PetCoatColors;
+  colors: PetCoatInput;
   /** When true, skip idle yaw (user is orbiting). */
   orbiting?: boolean;
   /** Extra yaw from UI chevrons. */
@@ -136,6 +143,21 @@ export function Cat3DModel({
     coatForNeeds.secondary,
   ]);
 
+  const patchesByAnchor = useMemo(() => {
+    const patches = new Map<string, CoatPatternBox[]>();
+    for (const box of getCoatPatternBoxes(normalizeCoatPattern(colors.pattern))) {
+      const anchored = patches.get(box.anchorId) ?? [];
+      anchored.push(box);
+      patches.set(box.anchorId, anchored);
+    }
+    return patches;
+  }, [colors.pattern]);
+  const patchPalette = useMemo(() => ({
+    stripe: { ...palette.primary, color: deriveTabbyStripeColor(coatForNeeds.primary) },
+    secondary: palette.secondary,
+    accent: palette.accent,
+  }), [palette, coatForNeeds.primary]);
+
   useEffect(() => {
     if (design) return;
     setStoredDesign(loadCatDesign());
@@ -179,6 +201,16 @@ export function Cat3DModel({
         <meshStandardMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness}
           emissive={mat.emissive} emissiveIntensity={mat.emissiveIntensity ?? 0} />
         {node.children.map(renderPart)}
+        {patchesByAnchor.get(part.id)?.map((box) => {
+          const ink = patchPalette[box.ink];
+          return (
+            <mesh key={box.id} name={box.id}
+              position={[...box.position]} rotation={[...box.rotation]}>
+              <boxGeometry args={[...box.args]} />
+              <meshStandardMaterial color={ink.color} roughness={ink.roughness} metalness={ink.metalness} />
+            </mesh>
+          );
+        })}
       </mesh>
     );
   };

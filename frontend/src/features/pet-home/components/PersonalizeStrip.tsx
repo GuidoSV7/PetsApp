@@ -2,15 +2,15 @@
 
 import { useId, useState } from "react";
 import { COAT_PRESETS } from "@/features/pet-home/pet-customize";
-import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import { normalizeCoatPattern, type PetCoatInput } from "@/features/pet-home/coat-patterns";
 import { DEFAULT_PET_NAME } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
 
 type Props = {
   petName?: string;
-  activeCoat: PetCoatColors;
+  activeCoat: PetCoatInput;
   disabled?: boolean;
-  onSelectCoat: (coat: PetCoatColors) => void;
+  onSelectCoat: (coat: PetCoatInput) => void;
   onOpenCamera: () => void;
 };
 
@@ -60,7 +60,8 @@ export function PersonalizeStrip({
             {COAT_PRESETS.map((preset) => {
               const selected =
                 preset.coat.primary.toLowerCase() ===
-                activeCoat.primary.toLowerCase();
+                activeCoat.primary.toLowerCase() &&
+                normalizeCoatPattern(activeCoat.pattern) === preset.pattern;
               return (
                 <button
                   key={preset.id}
@@ -72,7 +73,7 @@ export function PersonalizeStrip({
                   aria-label={`Pelaje ${preset.label}`}
                   aria-pressed={selected}
                   disabled={disabled}
-                  onClick={() => onSelectCoat(preset.coat)}
+                  onClick={() => onSelectCoat({ ...preset.coat, pattern: preset.pattern })}
                 />
               );
             })}

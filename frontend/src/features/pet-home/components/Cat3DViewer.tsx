@@ -6,7 +6,7 @@ import { ContactShadows, OrbitControls, PerformanceMonitor, Stats } from "@react
 import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-quality";
 import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
-import type { PetCoatColors } from "@/features/pet-home/extract-coat-colors";
+import type { PetCoatInput } from "@/features/pet-home/coat-patterns";
 import {
   describeNeedVisuals,
   needVisualCues,
@@ -21,7 +21,7 @@ import styles from "./pet-home.module.css";
 const performanceBounds = (): [number, number] => [45, 58];
 
 type Props = {
-  colors: PetCoatColors;
+  colors: PetCoatInput;
   yawBias?: number;
   /** Bump from parent to replay the happy bounce. */
   reactPulse?: number;
