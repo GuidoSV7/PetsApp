@@ -84,8 +84,9 @@ there are no live shadow tiers or factor thresholds.
 
 The home presets include solid Gris/Blanco/Naranja, Atigrado (`tabby`),
 Calicó (`calico`), Esmoquin (`tuxedo`) and Siamés (`pointed`). Pattern boxes
-are children of the existing voxel parts; the 33-part anatomy, needs/idle
-behavior, admin design settings and adaptive/shadow policies are unchanged.
+are direct children of the original voxel meshes. A1 retains all33 original
+visible boxes and adds six explicitly hidden boxes; needs/idle behavior,
+admin design settings and adaptive/shadow policies are unchanged.
 Tabby uses12 boxes and derives stripe RGB with `round(channel * 0.50)`
 after the existing dirt mix; accent colors are not dirt-mixed. Calico uses4
 larger asymmetric boxes representing three logical spots, without thin body
@@ -102,6 +103,18 @@ for the patch layout and color contracts.
 **Backend compatibility:** pattern writes require backend `coat.pattern`
 support. The frontend's `solid` read fallback does not add backend support;
 older backends reject pattern writes.
+
+## A1 voxel skeleton
+
+Each original/new box is owned by a mesh-free, unit-scale joint; visual
+scale stays on boxes. The22-joint hierarchy has three empty accessory anchors.
+Forearms, shins, jaw and tongue are present but hidden, with no A1 toggle.
+Static box binds are compiled only when admin/resolved needs change. Idle
+rotates ear/tail joints and applies separate blink scales to eyes/pupils;
+it never solves a legacy animated world per frame. The A1 rest-offset
+compensation preserves independent legacy limbs; A2 will decide whether
+limbs follow the body. Existing mesh-tree helpers and default frame callers
+retain their contracts. See [A1 design](openspec/changes/pet-voxel-skeleton/design.md).
 
 ## Learn More
 

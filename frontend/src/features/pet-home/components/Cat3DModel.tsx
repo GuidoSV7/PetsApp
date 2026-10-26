@@ -17,7 +17,9 @@ import {
   type CatMaterialRole,
   type CatPart,
 } from "@/features/pet-home/cat-anatomy";
-import { buildCatPartTree, resolveCatPartPose, type CatPartNode } from "@/features/pet-home/cat-part-tree";
+import { buildCatPartTree, type CatPartNode } from "@/features/pet-home/cat-part-tree";
+import { buildCatSkeleton, applyCatSkeletonMotion, type CatBoxBind } from "@/features/pet-home/cat-skeleton";
+import { CatSkeletonParts } from "@/features/pet-home/components/CatSkeletonParts";
 import { applyCatIdleFrame } from "@/features/pet-home/cat-idle-frame";
 import { CAT_IDLE_PART_IDS } from "@/features/pet-home/cat-idle-motion";
 import { useReducedMotion } from "@/features/pet-home/use-reduced-motion";
@@ -93,6 +95,8 @@ export function Cat3DModel({
   const group = useRef<Group>(null);
   const bounce = useRef(0);
   const meshes = useRef(new Map<string, Mesh>());
+  const boxes = useRef(new Map<string, Mesh>());
+  const joints = useRef(new Map<string, Group>());
   const seed = useRef<number | null>(null);
   const origin = useRef<number | null>(null);
   if (seed.current === null) {
@@ -122,6 +126,7 @@ export function Cat3DModel({
       tunables.modelScale,
     ],
   );
+  const skeleton = useMemo(() => buildCatSkeleton(anatomy), [anatomy]);
   const tree = useMemo(() => buildCatPartTree(CAT_ANATOMY), []);
   const nodesById = useMemo(() => {
     const nodes = new Map<string, CatPartNode>();
@@ -179,28 +184,29 @@ export function Cat3DModel({
     origin.current ??= now;
     bounce.current = applyCatIdleFrame({
       root: group.current, meshes: meshes.current, nodes: nodesById, resolved: resolvedById,
+      applyMotion: motion => applyCatSkeletonMotion(skeleton, joints.current, boxes.current, motion),
       elapsedSeconds: now - origin.current, deltaSeconds: delta,
       cues, seed: seed.current!, reducedMotion, orbiting, yawBias, modelScale, bounce: bounce.current,
     });
   });
 
-  const renderPart = (node: CatPartNode): React.ReactNode => {
-    const part = resolvedById.get(node.part.id)!;
-    const transform = resolveCatPartPose(node, part);
+  const renderBox = (bind: CatBoxBind): React.ReactNode => {
+    const part = bind.part;
     const mat = palette[part.role];
     const castShadow = part.role === "primary" &&
       (part.id === "body" || part.id === "head" || part.id.startsWith("tail"));
     return (
-      <mesh key={part.id} name={part.id} castShadow={castShadow}
-        ref={CAT_IDLE_PART_IDS.some((id) => id === part.id) ? (mesh) => {
-          if (mesh) meshes.current.set(part.id, mesh);
-          else meshes.current.delete(part.id);
-        } : undefined}
-        position={[...transform.position]} rotation={[...transform.rotation]} scale={[...transform.scale]}>
+      <mesh key={part.id} name={part.id} castShadow={castShadow} visible={bind.visible}
+        ref={mesh => {
+          if (mesh) boxes.current.set(part.id, mesh); else boxes.current.delete(part.id);
+          if (CAT_IDLE_PART_IDS.some(id => id === part.id)) {
+            if (mesh) meshes.current.set(part.id, mesh); else meshes.current.delete(part.id);
+          }
+        }}
+        position={[...bind.position]} scale={[...bind.scale]}>
         <PartGeometry part={part} />
         <meshStandardMaterial color={mat.color} roughness={mat.roughness} metalness={mat.metalness}
           emissive={mat.emissive} emissiveIntensity={mat.emissiveIntensity ?? 0} />
-        {node.children.map(renderPart)}
         {patchesByAnchor.get(part.id)?.map((box) => {
           const ink = patchPalette[box.ink];
           return (
@@ -231,7 +237,7 @@ export function Cat3DModel({
         document.body.style.cursor = "auto";
       }}
     >
-      {tree.map(renderPart)}
+      <CatSkeletonParts skeleton={skeleton} joints={joints.current} renderBox={renderBox} />
     </group>
   );
 }

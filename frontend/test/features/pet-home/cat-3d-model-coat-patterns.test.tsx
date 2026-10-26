@@ -67,9 +67,9 @@ function scene(coat: PetCoatInput = colors, needs: PetNeeds = clean, tunables = 
 }
 function assertPatches(doc: ParentNode, pattern: typeof COAT_PATTERNS[number], expected: Map<string, Matrix4>) {
   const boxes = getCoatPatternBoxes(pattern);
-  expect(doc.querySelectorAll("mesh")).toHaveLength(33 + boxes.length);
-  expect(doc.querySelectorAll("boxgeometry")).toHaveLength(33 + boxes.length);
-  expect(doc.querySelectorAll("meshstandardmaterial")).toHaveLength(33 + boxes.length);
+  expect(doc.querySelectorAll("mesh")).toHaveLength(39 + boxes.length);
+  expect(doc.querySelectorAll("boxgeometry")).toHaveLength(39 + boxes.length);
+  expect(doc.querySelectorAll("meshstandardmaterial")).toHaveLength(39 + boxes.length);
   for (const box of boxes) {
     const patch = mesh(doc, box.id);
     expect(patch, box.id).not.toBeNull();
@@ -112,7 +112,7 @@ describe("real Cat3DModel coat boxes (S2/S4/S5)", () => {
   it.each([undefined, null, "zebra"])("preserves colors-only solid for absent/unknown pattern %s", pattern => {
     const input = { ...colors, pattern } as unknown as PetCoatInput;
     expect(scene(input).body.innerHTML).toBe(scene({ ...colors, pattern: "solid" }).body.innerHTML);
-    expect(scene(input).querySelectorAll("mesh")).toHaveLength(33);
+    expect(scene(input).querySelectorAll("mesh")).toHaveLength(39);
   });
 });
 
