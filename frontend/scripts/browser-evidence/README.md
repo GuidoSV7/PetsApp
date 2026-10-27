@@ -9,7 +9,23 @@ Use these shared frontend scripts for real-browser cat verification. They are te
 - Playwright **1.63.0** and its matching Chromium browser/system libraries. The shared VPS already provides the browsers. Do not run browser/system dependency installers there. `npm exec` below supplies the pinned Playwright package through its cache, not the application manifest.
 - A working software WebGL context. Chromium is launched with `--use-angle=swiftshader` and `--enable-unsafe-swiftshader`. This is deterministic rendering evidence, not phone/real-GPU performance evidence.
 
-## Run A1's after phase
+## Free-care acceptance (real API and PostgreSQL)
+
+Build the backend first (`cd backend && npm run build`). From the repository root:
+
+```sh
+heavy -- npm exec --offline --yes --package=playwright@1.63.0 --call 'NODE_PATH="$(dirname "$(dirname "$(command -v playwright)")")" node frontend/scripts/browser-evidence/free-pet-care.cjs'
+```
+
+This runner requires the host `pgtest-db` helper and the isolated test cluster on `127.0.0.1:55432`. It creates a unique disposable database, applies migrations with the real backend runner, starts the built API and an isolated frontend copy on free loopback ports, and registers an actual local fixture member. Care requests go through the real same-origin proxy, without mocked responses. Application dependencies and normal HOME are reused; no package or browser installation is performed (`--offline`).
+
+A test-only row starts with hunger10, zero coins and a legacy `broke` status. Reading it must leave its stored row unchanged and return neutral `idle`. Three UI feeds must return hunger28/46/64 with coins0, followed by three valid renames and a reload of the same guest. Assertions cover persisted name/count/hunger/coins, absent balance/plus/insufficient-funds copy, intact brand/logout, no horizontal overflow, working nonblank WebGL and no JS/network errors. A separate real API creation checks the unchanged initial needs and coins0.
+
+`EVIDENCE_DIRECTORY` contains `browser.json`, mobile/desktop home and canvas screenshots, owned server logs, and `cleanup.json`. The runner closes owned servers/browser/client, drops only its disposable database and removes its workspace on every outcome. It never targets production or modifies A1 evidence.
+
+## Run A1's historical after phase
+
+A1's whole-home zero-pixel comparison is historical: it intentionally fails after an approved header change such as hiding the coin counter. Do not regenerate its baseline or change product code to force equality. Use the free-care runner for the new home and preserve A1's geometry/world/fixture tests.
 
 From the repository root:
 

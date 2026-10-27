@@ -1,0 +1,327 @@
+{
+  "status": "PASS",
+  "scope": "Local working-tree verification before local commits; raw source base c81e631, not deployed evidence",
+  "runtime": {
+    "node": "v24.22.1",
+    "home": "normal HOME unchanged",
+    "browser": "153.0.8010.12",
+    "renderer": "Chromium SwiftShader; not physical phone/GPU performance",
+    "postgres": {
+      "server_version": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)"
+    }
+  },
+  "tdd": {
+    "backend": {
+      "red": {
+        "failed": 7,
+        "passed": 11
+      },
+      "firstGreen": 18,
+      "finalFocused": 59
+    },
+    "frontend": {
+      "definitiveRed": {
+        "failed": 12,
+        "passed": 4
+      },
+      "finalFocused": 87
+    },
+    "parentCorrection": {
+      "first": {
+        "failed": 2,
+        "passed": 20
+      },
+      "final": 22
+    },
+    "excludedFromBehaviorRed": [
+      "Ambiguous frontend brand query before definitive RED",
+      "Missing new migration SQL",
+      "Incorrect new-test mood oracle",
+      "Browser brand query and Next route-announcer assertion"
+    ]
+  },
+  "gates": {
+    "backendTests": {
+      "tests": 501,
+      "files": 46,
+      "skipped": 0
+    },
+    "frontendTests": {
+      "tests": 479,
+      "files": 57,
+      "skipped": 0
+    }
+  },
+  "exitCodes": {
+    "backend-full": 0,
+    "backend-types": 0,
+    "backend-lint": 0,
+    "backend-build": 0,
+    "frontend-full": 0,
+    "frontend-types": 0,
+    "frontend-build": 0,
+    "baseline-http": 0,
+    "current-http": 0
+  },
+  "differential": {
+    "status": "PASS",
+    "cases": 28,
+    "unchanged": 21,
+    "requestedChanges": 7,
+    "unexpected": 0,
+    "protocol": "Exact public HTTP status/body and subsequent GET compared between c81e631 and working candidate, each on its own throwaway PostgreSQL database. Successful old positive-balance actions are the independent expected-effects oracle for formerly blocked zero-balance feed/rename. All error responses and stored-row-preservation checks unchanged.",
+    "rows": [
+      {
+        "id": "new",
+        "result": "requested-change"
+      },
+      {
+        "id": "feed-0",
+        "result": "requested-change"
+      },
+      {
+        "id": "play-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "sleep-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "bathe-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "pet-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "rename0-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "rename1-0",
+        "result": "requested-change"
+      },
+      {
+        "id": "coat-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "invalid-action-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "invalid-name-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "same-name-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "long-name-0",
+        "result": "unchanged"
+      },
+      {
+        "id": "legacy-0",
+        "result": "requested-change"
+      },
+      {
+        "id": "feed-37",
+        "result": "requested-change"
+      },
+      {
+        "id": "play-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "sleep-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "bathe-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "pet-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "rename0-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "rename1-37",
+        "result": "requested-change"
+      },
+      {
+        "id": "coat-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "invalid-action-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "invalid-name-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "same-name-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "long-name-37",
+        "result": "unchanged"
+      },
+      {
+        "id": "legacy-37",
+        "result": "requested-change"
+      },
+      {
+        "id": "invalid-key",
+        "result": "unchanged"
+      }
+    ]
+  },
+  "browser": {
+    "status": "PASS",
+    "api": "Real NestJS + same-origin proxy; no mocked care responses",
+    "initialNeeds": {
+      "hunger": 72,
+      "fun": 80,
+      "energy": 65,
+      "hygiene": 78
+    },
+    "initialCoins": 0,
+    "legacyReadLeftRowUnchanged": true,
+    "actions": [
+      {
+        "action": "feed",
+        "httpStatus": 201,
+        "coins": 0,
+        "hunger": 28,
+        "name": "Michi",
+        "renameCount": 0,
+        "statusKey": "fed"
+      },
+      {
+        "action": "feed",
+        "httpStatus": 201,
+        "coins": 0,
+        "hunger": 46,
+        "name": "Michi",
+        "renameCount": 0,
+        "statusKey": "fed"
+      },
+      {
+        "action": "feed",
+        "httpStatus": 201,
+        "coins": 0,
+        "hunger": 64,
+        "name": "Michi",
+        "renameCount": 0,
+        "statusKey": "fed"
+      },
+      {
+        "action": "rename",
+        "httpStatus": 201,
+        "coins": 0,
+        "hunger": 64,
+        "name": "Luna",
+        "renameCount": 1,
+        "statusKey": "renamed"
+      },
+      {
+        "action": "rename",
+        "httpStatus": 201,
+        "coins": 0,
+        "hunger": 64,
+        "name": "Nube",
+        "renameCount": 2,
+        "statusKey": "renamed"
+      },
+      {
+        "action": "rename",
+        "httpStatus": 201,
+        "coins": 0,
+        "hunger": 64,
+        "name": "Mora",
+        "renameCount": 3,
+        "statusKey": "renamed"
+      }
+    ],
+    "reloaded": {
+      "coins": 0,
+      "needs": {
+        "hunger": 64,
+        "fun": 80,
+        "energy": 65,
+        "hygiene": 78
+      },
+      "coat": {
+        "primary": "#8a8a8e",
+        "secondary": "#b4b4b8",
+        "accent": "#c9a0a8",
+        "pattern": "solid"
+      },
+      "statusKey": "renamed",
+      "name": "Mora",
+      "renameCount": 3,
+      "mood": "Feliz"
+    },
+    "screenshots": [
+      {
+        "label": "mobile",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "canvas": {
+          "width": 280,
+          "height": 281,
+          "uniqueColors": 31124
+        },
+        "layout": {
+          "viewport": 390,
+          "scroll": 390,
+          "header": {
+            "left": 0,
+            "right": 390
+          }
+        },
+        "file": "mobile-home.png"
+      },
+      {
+        "label": "desktop",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "canvas": {
+          "width": 280,
+          "height": 281,
+          "uniqueColors": 13786
+        },
+        "layout": {
+          "viewport": 1440,
+          "scroll": 1440,
+          "header": {
+            "left": 0,
+            "right": 1440
+          }
+        },
+        "file": "desktop-home.png"
+      }
+    ],
+    "errors": [],
+    "failures": [],
+    "cleanup": "PASS"
+  },
+  "preservation": {
+    "protectedFiles": 69,
+    "preexistingUntracked": 26
+  },
+  "delivery": "Owner selected local-only: no issue, PR, push, merge or deploy."
+}
