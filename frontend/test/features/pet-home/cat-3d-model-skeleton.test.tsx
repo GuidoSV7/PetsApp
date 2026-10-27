@@ -80,6 +80,66 @@ describe("actual A1 renderer and idle route (S2/S4/S9/S11)", () => {
     }
     for (const name of ["accessory-neck", "accessory-head", "accessory-back"]) expect(doc.querySelector(`group[name="${name}"]`)?.children).toHaveLength(0);
   });
+  it("reconciles live needs100→0→100 and admin without rebuilding meshes or compiling per frame", async () => {
+    const container = document.createElement("div"), root = createRoot(container);
+    const compile = vi.spyOn(rig, "buildCatSkeleton");
+    const applied = vi.spyOn(frameModule, "applyCatIdleFrame");
+    const moved = vi.spyOn(rig, "applyCatSkeletonMotion");
+    const get = (id: string) => fixtures.find(f => f.id === id)!;
+    // The unchanged oracle contains tuned admin at needs0; isolate that admin-only
+    // transition after exercising the requested 100→0→100 round trip.
+    const sequence = ["tabby-100", "tabby-0", "tabby-100", "tabby-0", "admin-tabby-0", "tabby-100"].map(get);
+    let originals: Map<string, Element> | undefined;
+    let registry: ReadonlyMap<string, unknown> | undefined;
+    let jointRefs: Parameters<typeof rig.applyCatSkeletonMotion>[1] | undefined;
+    let boxRefs: Parameters<typeof rig.applyCatSkeletonMotion>[2] | undefined;
+    let originalJoints: Map<string, unknown> | undefined;
+    try {
+      for (const [index, fixture] of sequence.entries()) {
+        observed.boxes.length = 0;
+        await act(async () => root.render(model(fixture)));
+        expect(compile).toHaveBeenCalledTimes(index + 1);
+        container.querySelectorAll("mesh,group").forEach(setters);
+        const currentMeshes = new Map(Array.from(container.querySelectorAll("mesh")).map(el => [el.getAttribute("name")!, el]));
+        if (!originals) originals = currentMeshes;
+        for (const [id, el] of currentMeshes) expect(el, id).toBe(originals.get(id));
+        expect(currentMeshes.size).toBe(51);
+        const hidden = observed.boxes.filter(p => p.visible === false).map(p => p.name).sort();
+        expect(hidden).toEqual([...extras].sort());
+        const skeleton = compile.mock.results.at(-1)!.value as rig.CatSkeleton;
+        const staticBinds = JSON.stringify([...skeleton.bindings]);
+        const checkFrame = (time: number, expected: FrozenState) => {
+          frame.current!({ clock: { getElapsedTime: () => 100 + time } }, 0);
+          assertWorlds(container, expected);
+          expect(compile).toHaveBeenCalledTimes(index + 1);
+          expect(JSON.stringify([...skeleton.bindings])).toBe(staticBinds);
+          const input = applied.mock.calls.at(-1)![0], motion = moved.mock.calls.at(-1)!;
+          registry ??= input.meshes;
+          jointRefs ??= motion[1]; boxRefs ??= motion[2];
+          originalJoints ??= new Map(jointRefs);
+          expect(input.meshes).toBe(registry);
+          expect([...input.meshes.keys()].sort()).toEqual(["eyeL", "eyeR", "earL", "earR", "tailMid", "tailTip"].sort());
+          for (const [id, mesh] of input.meshes) expect(mesh, id).toBe(originals!.get(id));
+          expect(motion[0]).toBe(skeleton);
+          expect(motion[1]).toBe(jointRefs); expect(motion[2]).toBe(boxRefs);
+          for (const [id, mesh] of boxRefs) expect(mesh, id).toBe(originals!.get(id));
+          for (const [id, joint] of jointRefs) expect(joint, id).toBe(originalJoints!.get(id));
+        };
+        // Rest is reduced-motion; idle0 already bends the tip. Reuse the
+        // independent idle oracle, not the reduced-motion rest snapshot.
+        if (index === 0) checkFrame(0, fixture.idle.find(sample => sample.time === 0)!.state);
+        const commonTime = fixture.idle.find(sample => sample.time === .375)!;
+        checkFrame(commonTime.time, commonTime.state);
+        for (const sample of fixture.idle) checkFrame(sample.time, sample.state);
+      }
+    } finally {
+      await act(async () => root.unmount());
+      if (registry) expect(registry.size).toBe(0);
+      if (jointRefs) expect(jointRefs.size).toBe(0);
+      if (boxRefs) expect(boxRefs.size).toBe(0);
+      compile.mockRestore(); applied.mockRestore(); moved.mockRestore();
+    }
+  });
   for (const fixture of fixtures) {
     it(`${fixture.id}: complete actual SSR worlds against frozen browser`, () => {
       const doc = new DOMParser().parseFromString(renderToStaticMarkup(model(fixture)), "text/html"); assertWorlds(doc, fixture.rest);

@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "scope": "Owner-approved verification follow-ups; tests/docs/shared browser tooling only",
+  "applicationSourceByteIdenticalTo": "f6a0002888d6db5e11bb3ce72ac7f0cd184ca2ca",
+  "sourceFilesUnchanged": 119,
+  "focused": {
+    "initial": {
+      "passed": 55,
+      "failed": 1,
+      "classification": "Invalid test oracle: reduced-motion rest was compared with idle0; actual tailTip coefficient exactly matched frozen idle0, not a product RED"
+    },
+    "corrected": {
+      "passed": 56,
+      "failed": 0
+    }
+  },
+  "fullSuite": {
+    "passed": 463,
+    "total": 463,
+    "files": 56,
+    "failed": 0,
+    "skipped": 0,
+    "maxWorkers": 2,
+    "heavy": true,
+    "exitCode": 0
+  },
+  "typescript": {
+    "command": "tsc --noEmit",
+    "exitCode": 0
+  },
+  "build": {
+    "command": "next build",
+    "heavy": true,
+    "exitCode": 0,
+    "warning": "Existing edge-runtime/static-generation warning"
+  },
+  "browser": {
+    "runner": "frontend/scripts/browser-evidence/pet-voxel-skeleton.cjs",
+    "phase": "after",
+    "exitCode": 0,
+    "cases": 12,
+    "pixelComparisons": 20,
+    "changedPixels": 0,
+    "maxPixelChannelDelta": 0,
+    "worldMatrices": 3444,
+    "maxWorldCoefficientError": 2.220446049250313e-16,
+    "matrixTolerance": 0.000001,
+    "drawCallsAtBothNeedEndpoints": {
+      "solid": 71,
+      "tabby": 95,
+      "tuxedo": 87,
+      "calico": 79,
+      "pointed": 95
+    },
+    "pageJsRequestErrors": 0,
+    "hiddenBoxesPerSample": 6,
+    "unitScaleJointsPerSample": 22,
+    "emptyAnchorsPerSample": 3,
+    "ownedResourcesStopped": true,
+    "scratchRemoved": true,
+    "renderer": "Chromium SwiftShader; not physical-phone/real-GPU performance"
+  },
+  "frozenFixtureSha256": "e63f0eeb1fd77754159c9267b6a4ed17f5268addf1b58c4eb987516c6000b6cc",
+  "historicalCapturesAndFixtureUnchanged": true,
+  "nativeReview": {
+    "implementationCommit": "f6a0002888d6db5e11bb3ce72ac7f0cd184ca2ca",
+    "approvedAndAcknowledged": true,
+    "authority": "burned",
+    "followupsIncludedInThatApproval": false,
+    "newReviewRun": false
+  },
+  "githubChecks": {
+    "expected": "absent",
+    "greenClaim": false,
+    "ownerAuthorizedReplacement": "Fresh full suite, TypeScript and build; merge commit only"
+  }
+}

@@ -1,6 +1,6 @@
 # A1 skeleton verification report
 
-Status: functional PASS; independent functional PASS with freshly owner-accepted isolation deviation; native APPROVED + ACKNOWLEDGED. Local only: no push/merge or delivery approval.
+Status: original A1 functional/independent PASS and native APPROVED + ACKNOWLEDGED; owner-approved verification follow-ups PASS. Publication to main with a merge commit is now explicitly authorized. Native approval scope remains f6a0002, not these follow-ups.
 
 ## Scope and commits
 
@@ -14,9 +14,9 @@ Base/main: `867853a291b907d32c453f962c17d9db137f9f8a`.
 | T3 F2 eye bounds | `f6a0002888d6db5e11bb3ce72ac7f0cd184ca2ca` |22/22before and after; no invented RED |
 | T4 visual evidence | `0c39cf49bed0453e1b0dc6ec065fca8ecf463a2e` |20exact images,3,444matrices, unchanged draws; passive evidence, outside native approval |
 
-No source/test changes occurred after the final pixel comparison. The approved native range is main867853a → f6a0002: A1 only, including T0 but not the earlier coat implementation, T4 evidence or later passive closure documentation.
+No application-source changes occurred after the original final pixel comparison. Later owner-approved changes affect tests, docs and shared browser tooling only; their fresh gates are recorded below. The approved native range is main867853a → f6a0002: A1 only, including T0 but not the earlier coat implementation, T4 evidence or later passive closure documentation.
 
-## Functional verification
+## Original implementation verification
 
 - Full suite: **461/461**,55files,0failed,0skipped, `heavy`, max2workers.
 - TypeScript: `tsc --noEmit`, exit0.
@@ -49,6 +49,7 @@ Actual browser JS/page/request errors:0. Owned servers/browsers stopped. See [co
 
 ## Honest failure history and limitations
 
+- T1's15 loadable RED assertions stopped at22-joint/39-bind counts or missing bindings; downstream matrices/contact/idle were not each independently RED-proven.
 - T1's initial post-implementation harness used Float32 buffer bounds against exact decimal geometry at1e-12. Switching the test to declared box corners fixed two harness failures without reducing precision or changing production.
 - T2's first run did not load because Vite/jsdom rewrote a fixture URL; it is not RED. The subsequent loadable run had12preservation passes and13failures:12real unwanted legacy-per-frame solver calls, plus an invalid React.createElement visibility observer. The observer now checks actual public renderBox element props and retains all hidden assertions. The test's orbiting input was corrected to match the frozen home; no production changes were made for these harness issues.
 - Chromium SwiftShader is controlled rendering proof, **not physical-phone or real-GPU performance**. No such performance result is claimed.
@@ -74,7 +75,7 @@ Native consent was requested separately and explicitly answered **granted** thro
 
 ### Native nonblocking follow-ups
 
-All three are informational `WARNING`s; none opened a correction or reopens approval. Locations below belong to the frozen f6a0002 candidate. They were not fixed or re-reviewed.
+All three are informational `WARNING`s; none opened a correction or reopens approval. Locations below belong to the frozen f6a0002 candidate. They were left as follow-ups at original closure. The owner later authorized the test/docs/browser-tooling resolutions below; no second native review was run.
 
 | ID | Lens | Frozen location |
 |---|---|---|
@@ -84,6 +85,26 @@ All three are informational `WARNING`s; none opened a correction or reopens appr
 
 The facade returned IDs/severity/locations but not detailed explanations/recommendations. They are not invented, and approval does not mean zero findings.
 
-## Final boundary
+## Owner-approved verification follow-ups
 
-A1 implementation is complete and verified. The feature branch is restored; source/tests remain identical to the reviewed and pixel-tested f6a0002. T4 evidence and this passive closing update are outside native approval. Main and the local coat backup are unchanged; all21unrelated untracked files retain their original hashes. No pending/failed/skipped functional check remains; physical-phone/GPU performance was not claimed. No A1 push, merge, backend, production or Dokploy operation occurred. Future publication and any follow-up work remain the owner's decisions.
+- **R2 reproducibility:** the harness is now versioned at `frontend/scripts/browser-evidence/pet-voxel-skeleton.cjs`, with shared host/browser requirements and the explicit after command. Only after is supported. The public baseline rejection has exact exit2/empty stdout/documented stderr, and a test proves every historical evidence file and the fixture stay unchanged.
+- **R3 browser parity:** the versioned command actually ran again:12cases,20decoded image comparisons,0changed pixels/maxdelta0;3,444complete matrices/max coefficient error2.220446049250313e-16; draws71/95/87/79/95 unchanged at both need endpoints; JS/page/request errors0. Fresh screenshots/raw results stay in unique Git-private run output, not over the historical captures. Owned browser/server and copied scratch were stopped/removed.
+- **R3 live reconciliation:** existing pattern rerenders now assert0extra compiler calls and that all six idle registry values are the original meshes. The new single-mounted non-StrictMode test exercises tabby100→0→100, then0again to isolate the existing tuned-admin0 oracle, and finally returns to original100/default admin. It preserves mesh/ref-map identity, six hidden props and static binds; each configuration update compiles once, frames compile0times, and all full worlds match independent frozen idle states at the existing10-digit precision.
+
+### Fresh checks and honest failure provenance
+
+- Focused **56/56**; full **463/463**,56files,0failed/0skipped, maximum2workers under `heavy`.
+- `tsc --noEmit` exit0; `next build` exit0 under `heavy`. Only the existing edge-runtime/static-generation warning remains.
+- `node --check` on the CJS runner passed. Shellcheck is inapplicable to JavaScript; no shell script or skill changed.
+- The first focused run was55/56, not a valid product RED: the new test compared idle time0 with reduced-motion rest. Actual tailTip[0]0.7669033772632601 exactly matched the frozen idle0; wrong rest expected0.78. Selecting the correct frozen idle sample fixed only the test. The new architectural controls pass without an application change; no artificial defect was inserted.
+- An internal metadata collector initially assumed T0's117source files. Current A1 has119(compiler+renderer added); the collector now derives its count from the pre-edit seal. This was not a functional test failure or a source change.
+- All119application files, package manifests/lockfile, historical PNG/JSON/gzip and frozen fixture retain their bytes. Only the evidence README was intentionally updated among pre-sealed paths. Fixture SHA remains `e63f0eeb1fd77754159c9267b6a4ed17f5268addf1b58c4eb987516c6000b6cc`.
+- Compact new evidence: [followup-checks.json](followup-checks.json). No historical measurement, screenshot or original native receipt was rewritten.
+
+## Publication and final boundary
+
+The owner explicitly authorized the A1 feature branch push, one PR into main, and `gh pr merge --merge` (no squash/rebase). GitHub checks are intentionally absent: external project CI/CD was not claimed as observed, and fresh local full-suite/TypeScript/build evidence is the owner's explicit merge exception. Empty checks are not green CI. An approved A1 issue and exactly one `type:feature` PR label are separately authorized; the owner selected a closing issue reference.
+
+Original native approval remains867853a→f6a0002, excluding T4 evidence, original closure docs and these follow-ups. That authority is burned and was not queried/reused. Test/doc/tooling-only follow-ups did not trigger another native review under repository policy. Original shared-frame item3 verification remains recorded above; follow-up Risk: none (no application contract changes).
+
+No application fixes, poses/coins/dependencies/precision changes, production/Dokploy operation, force push or local coat-backup publication. All21unrelated untracked files remain protected. Exact follow-up and merge commit IDs are recorded by Git/PR delivery and the local delivery receipt, not invented as self-referential commit content.
