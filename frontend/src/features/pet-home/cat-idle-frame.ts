@@ -1,7 +1,7 @@
 import type { Object3D } from "three";
 import type { CatPart } from "@/features/pet-home/cat-anatomy";
 import { resolveCatPartPose, type CatPartNode } from "@/features/pet-home/cat-part-tree";
-import { CAT_IDLE_PART_IDS, sampleCatIdleMotion } from "@/features/pet-home/cat-idle-motion";
+import { CAT_IDLE_PART_IDS, sampleCatIdleMotion, type CatIdleMotion } from "@/features/pet-home/cat-idle-motion";
 import type { NeedVisualCues } from "@/features/pet-home/need-visuals";
 
 export type CatIdleFrame = {
@@ -9,6 +9,8 @@ export type CatIdleFrame = {
   meshes: ReadonlyMap<string, Object3D>;
   nodes: ReadonlyMap<string, CatPartNode>;
   resolved: ReadonlyMap<string, CatPart>;
+  /** Optional rigid-rig route; absent preserves the existing mesh-tree contract. */
+  applyMotion?: (motion: CatIdleMotion) => void;
   elapsedSeconds: number;
   deltaSeconds: number;
   cues: NeedVisualCues;
@@ -27,13 +29,17 @@ export function applyCatIdleFrame(input: CatIdleFrame): number {
   const motion = sampleCatIdleMotion(input.elapsedSeconds, cues, {
     seed: input.seed, reducedMotion: input.reducedMotion,
   });
-  for (const id of CAT_IDLE_PART_IDS) {
-    const mesh = input.meshes.get(id), node = input.nodes.get(id), resolved = input.resolved.get(id);
-    if (!mesh || !node || !resolved) continue;
-    const pose = resolveCatPartPose(node, resolved, motion[id]);
-    mesh.position.set(...pose.position);
-    mesh.rotation.set(...pose.rotation);
-    mesh.scale.set(...pose.scale);
+  if (input.applyMotion) {
+    input.applyMotion(motion);
+  } else {
+    for (const id of CAT_IDLE_PART_IDS) {
+      const mesh = input.meshes.get(id), node = input.nodes.get(id), resolved = input.resolved.get(id);
+      if (!mesh || !node || !resolved) continue;
+      const pose = resolveCatPartPose(node, resolved, motion[id]);
+      mesh.position.set(...pose.position);
+      mesh.rotation.set(...pose.rotation);
+      mesh.scale.set(...pose.scale);
+    }
   }
   const t = input.elapsedSeconds * cues.idleSpeed;
   const yaw = input.reducedMotion || orbiting ? yawBias

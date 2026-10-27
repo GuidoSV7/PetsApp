@@ -6,6 +6,10 @@ import { applyNeedDirtToCoat, needVisualCues } from "@/features/pet-home/need-vi
 
 const patterns = ["solid", "tabby", "tuxedo", "calico", "pointed"] as const;
 const counts = [0, 12, 8, 4, 12];
+const head = CAT_ANATOMY.find(p => p.id === "head")!;
+const eyes = CAT_ANATOMY.filter(p => p.role === "eye");
+const eyeTop = Math.max(...eyes.map(p => p.position[1] - head.position[1] + p.args[1] / 2));
+const eyeOuterX = Math.max(...eyes.map(p => Math.abs(p.position[0] - head.position[0]) + p.args[0] / 2));
 
 describe("coat pattern contract", () => {
   it("uses the exact append-only backend identifiers and order", () => {
@@ -67,7 +71,7 @@ describe("coat pattern contract", () => {
     for (const p of strokes) {
       expect(p.size[0]).toBeGreaterThanOrEqual(.032);
       const lower = p.center[1] - (Math.abs(Math.sin(p.rotation[2])) * p.size[0] + Math.abs(Math.cos(p.rotation[2])) * p.size[1]) / 2;
-      expect(lower).toBeGreaterThan(.14);
+      expect(lower).toBeGreaterThan(eyeTop);
     }
   });
   it("replaces the two thin facial bars with four wider horizontal bands outside the eyes", () => {
@@ -75,7 +79,7 @@ describe("coat pattern contract", () => {
     expect(bands).toHaveLength(4);
     for (const p of bands) {
       expect(p.size).toEqual([.07, .04]);
-      expect(Math.abs(p.center[0]) - p.size[0] / 2).toBeGreaterThan(.185);
+      expect(Math.abs(p.center[0]) - p.size[0] / 2).toBeGreaterThan(eyeOuterX);
     }
   });
   it("puts two horizontal bands on each front leg instead of hidden body bars", () => {

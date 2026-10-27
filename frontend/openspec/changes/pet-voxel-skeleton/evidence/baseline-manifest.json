@@ -1,0 +1,313 @@
+{
+  "base": "867853a291b907d32c453f962c17d9db137f9f8a",
+  "browser": "153.0.8010.12",
+  "renderer": "Chromium SwiftShader; not mobile/GPU performance evidence",
+  "sourceSeal": {
+    "frontend/src/app/_components/NotificationsProvider.tsx": "4740d3aec4b7e4d74d84de6298ccaacd5e20b667245196c6fc755b0693d8ae64",
+    "frontend/src/app/_components/TopNotification.tsx": "cebf73d6eb7e0460322e9fd504374d3c1b8a288f7c7e818c35a5ddebd88c956a",
+    "frontend/src/app/_components/auth/AuthDemoModal.tsx": "3807ad72449050d2d905221b81c7ed4aa9293cc425ac7e272cbc2fe5cce5c23f",
+    "frontend/src/app/_components/auth/auth-modal.module.css": "5397042ca1b079f29f8155be17fd2a0f5cb85d0e215fb1a3d61470a03a6b7079",
+    "frontend/src/app/_components/auth/auth-types.ts": "78548ef901533e12eda0747129f676868c2fc9d3a651ee2b032f639343aab718",
+    "frontend/src/app/_components/home/HomeHeader.tsx": "c53ab4d83826f83e60974ecaa576f45cfc525aa2b771f168a6771d04f704e7f5",
+    "frontend/src/app/_components/home/HomePage.tsx": "598063a5645c939823c3da5f015270c38b45bf5b132d9b10dd9c1adbbfda2586",
+    "frontend/src/app/_components/notification.module.css": "a76557cd3852b1d4069b3f102198d53dde9a93cc5a556c4b5410386ffc7633d9",
+    "frontend/src/app/_lib/petsapp-api.ts": "048d79110e609ae8da42e187a036f8f0462c5b3d099ff6af13d810e865112d37",
+    "frontend/src/app/account/page.tsx": "f9bd9d0dc5564282866eff485a68703291e3280dda6139ca23f982fbafcc4058",
+    "frontend/src/app/admin/AdminLayout.tsx": "32f3ed3749bb503083f987bcf6904adb7181cfae0f4a58e04d01a2068050f075",
+    "frontend/src/app/admin/_components/customers/AdminUserDetailModal.tsx": "0162aebd0b560981e851d78962525e2ec51b1eb732e86a7a4d3cba76fd13a0c4",
+    "frontend/src/app/admin/_components/customers/AdminUserDetailView.tsx": "2fb7e5ce0e6b8fa1ed69b25fb5f344d42ec00c7de081f170c2c2081e31a36cf7",
+    "frontend/src/app/admin/_components/customers/CustomersKpiCards.tsx": "58243382643b1e0257ac5b5960166b9aa1b735c9c6bd07938c01daf074dfc395",
+    "frontend/src/app/admin/_components/customers/CustomersListTable.tsx": "82b8b0294afd43bce59ca2372f2e0145c5780ccf3a6b7de648f3a2305a745004",
+    "frontend/src/app/admin/_components/customers/admin-user-detail-modal.module.css": "de7fb2e86be54f0e0bc367eb5bbf5bd539c3ed598f379343e2d31e0d8c59579a",
+    "frontend/src/app/admin/_components/customers/customer-detail.module.css": "8d344c6b747121f6fc6c418250e2e9b0f69b368160b75c08a83619099ef64408",
+    "frontend/src/app/admin/_components/customers/customers-kpi-cards.module.css": "f583210ad0324830d526eac0d4a365769c9263c239eaadfac6babc91a835ee04",
+    "frontend/src/app/admin/_components/customers/customers-list.module.css": "9710f073a85153af2eab510199d8e7b48763bff78d88c2634a45b4de6f990099",
+    "frontend/src/app/admin/_components/design-3d/AdminDesign3DPage.tsx": "83b12339feca81cbf1dc4989b7f6fedaff3810daac9562f2186466c9de1ba721",
+    "frontend/src/app/admin/_components/design-3d/admin-design-3d.module.css": "b8ecb3a628e016ff3e3930afcb5d5097341919dfaa66e7e6bad42ce614efbddf",
+    "frontend/src/app/admin/_components/settings/AdminSettingsPage.tsx": "4a0a937215e77b1d2fcb7f6d5ef0a46aa353fb2b7bb6a0404d79f20b31444de6",
+    "frontend/src/app/admin/_components/settings/admin-settings.module.css": "3e9ca83a5f68620d38ca1c7b20b9f14e77493be94a421b49e8b6474df704ad0c",
+    "frontend/src/app/admin/_components/shared/AdminPageHeader.tsx": "6088b251445c957c3bceeb161a2597f2df2dcaf77d14342448d501a1bde3e134",
+    "frontend/src/app/admin/_components/shared/admin-page-header.module.css": "f484048b52c1bf12d7185df2f30dadd19f60d5b5816a584fb414a57d4ebd3f56",
+    "frontend/src/app/admin/_utils/iconMaskStyle.ts": "ecd7207072c548eb3b7129e7b5a6aa355c98de838e3d07e4fd27bf53126a6870",
+    "frontend/src/app/admin/admin-styles.module.css": "543f822adedcd68c6b872db92f2a04545224d658c9b1a34719b9a34904dffaf6",
+    "frontend/src/app/admin/customers/[id]/page.tsx": "2180d41545b4f7b57e9593dd1c5c14bcabe0889057bea71cae3e8a0fc46f8fcc",
+    "frontend/src/app/admin/customers/page.tsx": "27ea0a715085d599af8e45f630ae23db116efb24735f4d21e84439c214723a0f",
+    "frontend/src/app/admin/design-3d/page.tsx": "56ea416e1a9c87cf110f7e15510c902d35292b177f6c2f0d1d635c497231b561",
+    "frontend/src/app/admin/layout.tsx": "0b723e147c485989b12a0c914225a308ead668c1d502174241b0e563db7fc85d",
+    "frontend/src/app/admin/page.tsx": "9864ef1c9a4b78be996ecf3b3e6a2a916763b4575dfa26998aada147b2984b7d",
+    "frontend/src/app/admin/settings/page.tsx": "a271c4069ffe79436fb4520f2c62dd5b31ba02ac441fe574d2e1b1d9d14ee6cc",
+    "frontend/src/app/demoAuth.ts": "67d14011530e0f05ea8e92d016ed07cf255bf26065517ac91b97a34393b2e95a",
+    "frontend/src/app/favicon.ico": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932",
+    "frontend/src/app/globals.css": "79a25cc233167945af7a22604dd6ca9d87bc7a9c180c2f66a5bf6ca115a49c39",
+    "frontend/src/app/home.module.css": "7295a80fa3293e677acf77adedd70bef75a271f44beef944c7a3fc081d1172d3",
+    "frontend/src/app/layout.tsx": "8005e44510e302a002f64131fdd7422128896efead33f01c34d489d4b36953a5",
+    "frontend/src/app/login/LoginPage.tsx": "008bcb152e9b6db6ac9c2d8582d152aa5c7e27ba182058d063440c5e2d1b9646",
+    "frontend/src/app/login/login.module.css": "3adb3a4390e029c012d4630af5bd2e44a375f06e4f24d653ef88760ecb224cfc",
+    "frontend/src/app/login/page.tsx": "e263793a485d084e00a06852526fcc576b3ba55ebfa8fcef5d94db4810e30025",
+    "frontend/src/app/opengraph-image.tsx": "0c80ee6a19b2cd86f8aa1572c840d27d89533506dc3eaaf8d7cfa5b6b65a70af",
+    "frontend/src/app/page.tsx": "5f050921e2f216bb0b834346b82528619caae8a1172bf4f68742e7883b0900d3",
+    "frontend/src/app/petsapp-api/[...path]/route.ts": "c276453cc15978e442f044f3fad0b59c2a0e7d981daa31062d073b78a66daca8",
+    "frontend/src/app/providers.tsx": "ee05e471bc8d93e6dca45cfa9130697dcd5df870d7829ca5ca7c851422926c78",
+    "frontend/src/app/robots.ts": "1f7907ea1ab97b69c0d600df20dd26a37eee99998e6e78c9867c5fbb61b87bfd",
+    "frontend/src/app/sitemap.ts": "c1afe0d85d0b4d209da60db79dfd6543f7633c02a39bc5ee011651518cb93d6b",
+    "frontend/src/app/theme/RouteThemeProvider.tsx": "a2c1b268ee8557881ea3fb490ebc1f71afd4ed7dd4322665f42025104f0b73ac",
+    "frontend/src/app/twitter-image.tsx": "fd106ef8a183efb0eb1f9dd8954db65f962a3edac7ca1ded5387166fb13c4ec3",
+    "frontend/src/components/layout/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/components/ui/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/components/ui/BrandMark.tsx": "256fc7e06407e985c95b4253201bc06232804e783f5a1bb828739917780ed5dc",
+    "frontend/src/config/site.ts": "22f6744a2a7baeaf961a4bb87f4696e0477eb61508d199e36e3a3a4684ccb6bc",
+    "frontend/src/features/README.md": "50b1acee3856a1d32694f599fa195068c99424b3050a25fb2d16dff5d631bf25",
+    "frontend/src/features/admin/admin-brand-settings.ts": "0b5652010ce979af163a485ca1659cb8b72f0ea701befaad1a154c35b00e6a96",
+    "frontend/src/features/admin/cat-design-settings.ts": "e187c3e5c9d92f64d7ba3a8226b6db3a13c040233d76ed8c6efe82eec1ca559c",
+    "frontend/src/features/admin/resolve-cat-design.ts": "b9b3e067c0b229bd301781e93f7365f2337dec5b6e31fae808679361d58bfce4",
+    "frontend/src/features/auth/api/auth.service.ts": "0c52ae5de2e05b68a9b296ccc5489c345882b045fe2cd0b43658b3ce9e34d7e7",
+    "frontend/src/features/auth/components/AuthDemoModal.tsx": "f9894746c87aacf249c1df19776c5c365143acf334de8a8fd360a19265aa7daf",
+    "frontend/src/features/auth/components/FreighterSignInButton.tsx": "04a4852f2e39177e819d7c111ca9fb89211f2ee01886f046b7b48e718e5c4ab3",
+    "frontend/src/features/auth/components/GoogleSignInButton.tsx": "2fc2055d6f92431e7499be44dc0fb277433dceb20abf7ddb82bd21539e19cdf3",
+    "frontend/src/features/auth/components/auth-modal.module.css": "bf35b42bf0af12111cd5564c484a4b8c860499305125f1ce1dca66808f2bf90e",
+    "frontend/src/features/auth/google-auth-config.ts": "03b38020965ee85505f68f6f0597727a312b682640e4bc960bed4194034f0672",
+    "frontend/src/features/auth/stores/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/features/auth/types/auth.types.ts": "48a9bd0f0c5a0d486e1ff8ff2bd537978e906a367f20a431e6568f22a4c01993",
+    "frontend/src/features/auth/utils/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/features/pet-home/api/pet.service.ts": "4b5f0686f4aa71d1c3badf629e2f201dca4a9bc9a633087b9096df3484ea6180",
+    "frontend/src/features/pet-home/cat-anatomy.ts": "b4a8a7eca2011e31c7285f1975cf25c540213362392ce026718e9b89b3a32e4d",
+    "frontend/src/features/pet-home/cat-idle-frame.ts": "06c109dc5a89b8f3e5d3adb771dc3ee2ccd9c4d16c16a6b4f57d08c908d8dbfe",
+    "frontend/src/features/pet-home/cat-idle-motion.ts": "4f010911c1f3945565281c36e7c53209d27e7a6c169af1a7f14e3cc1c672fd5f",
+    "frontend/src/features/pet-home/cat-part-tree.ts": "c2587de0a7102cf7bb197e8a52d5d0160637240d423418901f97abe09570fe1c",
+    "frontend/src/features/pet-home/coat-from-image.ts": "8b0627b88a0f29a0f9448ef32357d3226b804d2540fc0626389f33d33583bdae",
+    "frontend/src/features/pet-home/coat-patterns.ts": "e3d4f1a7399cfbd56aa5f56670d4461955980632f3e6012eff49cc1a19ec92dd",
+    "frontend/src/features/pet-home/components/CameraCoatCapture.tsx": "3bc43531b53cfd71cc972d36dfb0967677377b1a73a8b39fe5351d5cec245045",
+    "frontend/src/features/pet-home/components/Cat3DModel.tsx": "34b4876b126b2c6cb62e00b33aa29c2dad80599c7e28f7ec59404568ac29b39e",
+    "frontend/src/features/pet-home/components/Cat3DViewer.tsx": "013b5117e7f28f5270311891b9413dd987b1fe95f24c72b89793ce49e0323ef6",
+    "frontend/src/features/pet-home/components/CoinBalance.tsx": "f28d3912d8de8a8a2d3c22bb430fc4ba1dd29be07299e2061e3220d8f1183fa6",
+    "frontend/src/features/pet-home/components/GoldCoinIcon.tsx": "9d156c857e8b39734e5350ed08e399e0d38c1e431b6a548a2c6baa3ac0af5c13",
+    "frontend/src/features/pet-home/components/PersonalizeStrip.tsx": "def542f09f36c4c93efd69f6db927b08003d241c69145f19f1cc61322b5f1f6f",
+    "frontend/src/features/pet-home/components/PetHomeStage.tsx": "1eea122c366d8a97c2a9ec119704db1e6c207d3d4c1090f2853f1ce810b26dc2",
+    "frontend/src/features/pet-home/components/PetNameEditor.tsx": "baa56a9162acdc765cdf795fd4d33fbd90b7be1a43e9e4f0436168ce5152e9c4",
+    "frontend/src/features/pet-home/components/pet-home.module.css": "cb006c57a699c6b35e87e8506bfb49ee8f46dab4d034d6fe99ea346ab8ba8ca7",
+    "frontend/src/features/pet-home/extract-coat-colors.ts": "ff1fe33621387bb05d2c71574feee3779d9c207e862cc8b75450a53288d8f2ee",
+    "frontend/src/features/pet-home/index.ts": "62e829f84eb112329e37948ca84a795b074f97ad7e42c33e41f3b873df0bc062",
+    "frontend/src/features/pet-home/need-visuals.ts": "365ec2daca2ffe9d5cd575a3041a7882f0c557f0af3fd3ad8f1df9d54149c846",
+    "frontend/src/features/pet-home/pet-coins.ts": "836e6d67cc5e0bb26030f445425ed46cb6e1db1c7bd2d6e43cac7507d1751a6d",
+    "frontend/src/features/pet-home/pet-customize.ts": "130732caaac3ab1b994e42437e92ebbc2bd14495d393a1b6ba4f215e9e6350a0",
+    "frontend/src/features/pet-home/pet-interaction.ts": "f54c244e4bee559eef8d6988a529cb091d243e17556296cff970cd6c0def13f8",
+    "frontend/src/features/pet-home/pet-layout.ts": "a7cd427388ed0d8dcfa08e7fa7ebb1925d4da3069185ff2e453fcd509637bdcd",
+    "frontend/src/features/pet-home/pet-purr.ts": "1fd9d0d820a6251d7d4624f21a5d674328c0eeddb3901673b4b00762137c24df",
+    "frontend/src/features/pet-home/pet-render-quality.ts": "c945d9f0638719b95ad947a08c5ae48fa071acd29751f6da5978b1b356414707",
+    "frontend/src/features/pet-home/pet-stats.ts": "8eb8674bb55b8f5fef083a841f99838a7a84caec2a4f61328eff275c03ed56fd",
+    "frontend/src/features/pet-home/pet-status.ts": "45be1bc45508b9aa696027d64b7ae241bd70e75c54956bfa880e5055bb667b61",
+    "frontend/src/features/pet-home/use-reduced-motion.ts": "c5b297402267fe5a2c6ed042e3cf1788b9ea322dd6e31e38b107aefa8f850a64",
+    "frontend/src/features/pollar/LoginGateModal.tsx": "46a55c57615928d2abe658668d2a0f239966c010f5c8c3ee34b511627d00082f",
+    "frontend/src/features/pollar/PollarAppProvider.tsx": "b2e6f4c150cdb6b34717492136dd6b200493ebc25cb76ec06a47013751873ca8",
+    "frontend/src/features/pollar/PollarHomePage.tsx": "706b6c9639607bf79f7107f64f002f7dbfa01867687856e23f26548728374504",
+    "frontend/src/features/pollar/index.ts": "cc1068cc8c337e7b62781b1f667fff8d38128efddaa1b2aa7d0185b586d6822e",
+    "frontend/src/features/pollar/login-gate.module.css": "13eee16e5a01b2b8874f40a4ce078d45209003370cf53de550f8c672dffab7eb",
+    "frontend/src/features/pollar/pollar-config.ts": "814ec0cdf44d481da31eaee28403c910445f43a957c28c9d9e74efca627ca15d",
+    "frontend/src/features/pollar/pollar-display-name.ts": "1ced8530bf51e4b64abca29ed84d1cfad88bcc142324c900cd53023358143271",
+    "frontend/src/features/pollar/usePollarLoginBusy.ts": "ab65e4deacf92d9594e3c9774032e0af55c1100b0b7571ac0d3ea6027931a958",
+    "frontend/src/features/public-marketing/api/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/features/public-marketing/components/JsonLdOrganization.tsx": "a4a3457d3818dd776549ffb057d720fb6ac274581b55498f8f787642b4bc114d",
+    "frontend/src/features/public-marketing/index.ts": "a39df571b8c2ff5b0ea6575bc44c78cf662931e9a958a7705a21f7d27804d778",
+    "frontend/src/features/public-marketing/share-metadata.ts": "83c51b1e9ce26307f0628200a17508a53256c8c128607464df470a7343de8af9",
+    "frontend/src/features/public-marketing/stores/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/features/public-marketing/types/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/features/public-marketing/utils/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/hooks/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "frontend/src/lib/api-auth-policy.ts": "faeaeb7b41e2475dd07026023e9a8128463174991b0c0175b96088e1064636de",
+    "frontend/src/lib/axios.ts": "b6c5fd65c0a261b19e9945a6e5d868977b11ed08c617f9bed4ac24d0a5e90e0c",
+    "frontend/src/lib/errors.ts": "051ab36ddc782180b3a80ffaa1c88c0ed585eb8cf4062b400e35c9f6b4fa8571",
+    "frontend/src/lib/petsapp-api-origin.ts": "7b9d5a94f3050dbda9ff55538dff254033305b32ee78adb28ae703d33cdc1e5b",
+    "frontend/src/lib/query-client.ts": "f8b40e1d2a2b30e9b8bfa4e8c890de3fdbfc887fe1725da47b7013a67cf7b96f",
+    "frontend/src/stores/auth-session.ts": "6eab5f070b922bc87c5d19c4aa68717dc8b35afea1741ad142e0b1527d758679",
+    "frontend/src/types/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "fixture": "frontend/test/fixtures/pet-skeleton/legacy-world.json.gz",
+  "fixtureSha256": "e63f0eeb1fd77754159c9267b6a4ed17f5268addf1b58c4eb987516c6000b6cc",
+  "cases": [
+    {
+      "id": "solid-100",
+      "drawCalls": 71,
+      "idleTimes": [
+        0,
+        0.375,
+        0.7853981633974483,
+        1.0853981633974483,
+        3.724999999999943,
+        6.0399999999998935
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-solid-100-canvas.png",
+        "home": "baseline-solid-100-home.png"
+      }
+    },
+    {
+      "id": "solid-0",
+      "drawCalls": 71,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-solid-0-canvas.png",
+        "home": "baseline-solid-0-home.png"
+      }
+    },
+    {
+      "id": "tabby-100",
+      "drawCalls": 95,
+      "idleTimes": [
+        0,
+        0.375,
+        0.7853981633974483,
+        1.0853981633974483,
+        3.724999999999943,
+        6.0399999999998935
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-tabby-100-canvas.png",
+        "home": "baseline-tabby-100-home.png"
+      }
+    },
+    {
+      "id": "tabby-0",
+      "drawCalls": 95,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-tabby-0-canvas.png",
+        "home": "baseline-tabby-0-home.png"
+      }
+    },
+    {
+      "id": "tuxedo-100",
+      "drawCalls": 87,
+      "idleTimes": [
+        0,
+        0.375,
+        0.7853981633974483,
+        1.0853981633974483,
+        3.724999999999943,
+        6.0399999999998935
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-tuxedo-100-canvas.png",
+        "home": "baseline-tuxedo-100-home.png"
+      }
+    },
+    {
+      "id": "tuxedo-0",
+      "drawCalls": 87,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-tuxedo-0-canvas.png",
+        "home": "baseline-tuxedo-0-home.png"
+      }
+    },
+    {
+      "id": "calico-100",
+      "drawCalls": 79,
+      "idleTimes": [
+        0,
+        0.375,
+        0.7853981633974483,
+        1.0853981633974483,
+        3.724999999999943,
+        6.0399999999998935
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-calico-100-canvas.png",
+        "home": "baseline-calico-100-home.png"
+      }
+    },
+    {
+      "id": "calico-0",
+      "drawCalls": 79,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-calico-0-canvas.png",
+        "home": "baseline-calico-0-home.png"
+      }
+    },
+    {
+      "id": "pointed-100",
+      "drawCalls": 95,
+      "idleTimes": [
+        0,
+        0.375,
+        0.7853981633974483,
+        1.0853981633974483,
+        3.724999999999943,
+        6.0399999999998935
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-pointed-100-canvas.png",
+        "home": "baseline-pointed-100-home.png"
+      }
+    },
+    {
+      "id": "pointed-0",
+      "drawCalls": 95,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ],
+      "pixelFiles": {
+        "canvas": "baseline-pointed-0-canvas.png",
+        "home": "baseline-pointed-0-home.png"
+      }
+    },
+    {
+      "id": "admin-tabby-0",
+      "drawCalls": 95,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ]
+    },
+    {
+      "id": "admin-pointed-0",
+      "drawCalls": 95,
+      "idleTimes": [
+        0,
+        0.375,
+        1.7453292519943298,
+        2.4119959186609967,
+        2.4849999999999692,
+        11.555000000000407
+      ]
+    }
+  ],
+  "frozenBeforeProductionChanges": true
+}

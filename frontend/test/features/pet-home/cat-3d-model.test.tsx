@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
-import { CAT_ANATOMY, getCatPart } from "@/features/pet-home/cat-anatomy";
+import { CAT_ANATOMY } from "@/features/pet-home/cat-anatomy";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
 import { resolveCatAnatomy } from "@/features/admin/resolve-cat-design";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
@@ -26,7 +26,8 @@ function scene(overrides = {}) {
 }
 function world(mesh: Element): Matrix4 {
   const ancestors: Element[] = [];
-  for (let p: Element | null = mesh; p?.tagName.toLowerCase() === "mesh"; p = p.parentElement) ancestors.unshift(p);
+  // Model-space controls still exclude only the unnamed outer uniform wrapper.
+  for (let p: Element | null = mesh; p && ["mesh", "group"].includes(p.tagName.toLowerCase()) && p.getAttribute("name"); p = p.parentElement) ancestors.unshift(p);
   return ancestors.reduce((matrix, el) => matrix.multiply(new Matrix4().compose(
     new Vector3(...vector(el, "position", [0, 0, 0]) as [number, number, number]),
     new Quaternion().setFromEuler(new Euler(...vector(el, "rotation", [0, 0, 0]) as [number, number, number])),
@@ -54,21 +55,29 @@ describe("actual Model scene hierarchy", () => {
   });
   it("renders each base part once with box geometry", () => {
     const { document } = scene();
-    expect(document.querySelectorAll("mesh")).toHaveLength(33);
-    expect(document.querySelectorAll("boxgeometry")).toHaveLength(33);
-    expect(document.querySelectorAll("meshstandardmaterial")).toHaveLength(33);
+    expect(document.querySelectorAll("mesh")).toHaveLength(39);
+    expect(document.querySelectorAll("boxgeometry")).toHaveLength(39);
+    expect(document.querySelectorAll("meshstandardmaterial")).toHaveLength(39);
+    for (const part of CAT_ANATOMY) expect(document.querySelectorAll(`mesh[name="${part.id}"]`)).toHaveLength(1);
   });
-  it("nests head children, eye pupils and inner ears inside their carriers", () => {
+  it("binds all33 originals directly to their exact rigid owners, with no mesh ancestors", () => {
     const { mesh } = scene();
-    for (const [child, parent] of [["eyeL", "head"], ["pupilL", "eyeL"], ["earL", "head"], ["earInnerL", "earL"], ["chest", "body"], ["tailTip", "tailMid"], ["padFL", "pawFL"]]) {
-      expect(mesh(child).parentElement?.closest("mesh"), child).toBe(mesh(parent));
+    const owners: Record<string, readonly string[]> = {
+      torso: ["body", "chest"], head: ["head", "cheekL", "cheekR", "muzzle", "eyeL", "eyeR", "pupilL", "pupilR", "nose", "philtrum", "whiskerL1", "whiskerL2", "whiskerR1", "whiskerR2"],
+      earL: ["earL", "earInnerL"], earR: ["earR", "earInnerR"], tailBase: ["tailBase"], tailMid: ["tailMid"], tailTip: ["tailTip"],
+      shoulderFL: ["legFL"], shoulderFR: ["legFR"], wristFL: ["pawFL", "padFL"], wristFR: ["pawFR", "padFR"], hipBL: ["hipL"], hipBR: ["hipR"], ankleBL: ["pawBL"], ankleBR: ["pawBR"],
+    };
+    expect(Object.values(owners).flat().sort()).toEqual(CAT_ANATOMY.map(p => p.id).sort());
+    for (const [owner, ids] of Object.entries(owners)) for (const id of ids) {
+      expect(mesh(id).parentElement?.getAttribute("name"), id).toBe("joint-" + owner);
+      expect(mesh(id).parentElement?.closest("mesh"), id).toBeNull();
     }
   });
-  it("uses base-table child-minus-parent offsets rather than world positions", () => {
+  it("preserves all33 complete model-space rest matrices instead of obsolete mesh-local TRS", () => {
     const { mesh } = scene();
-    for (const [child, parent] of [["eyeL", "head"], ["earInnerL", "earL"], ["chest", "body"]]) {
-      const expected = getCatPart(child)!.position.map((v, axis) => v - getCatPart(parent)!.position[axis]);
-      expect(vector(mesh(child), "position", []), child).toEqual(expected);
+    for (const part of CAT_ANATOMY) {
+      const expected = new Matrix4().makeTranslation(...part.position);
+      world(mesh(part.id)).elements.forEach((v, i) => expect(v, `${part.id}[${i}]`).toBeCloseTo(expected.elements[i], 12));
     }
   });
   it("composes parent translation once instead of cancelling it in children", () => {

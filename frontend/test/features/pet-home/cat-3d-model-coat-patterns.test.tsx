@@ -9,6 +9,7 @@ import { CAT_ANATOMY } from "@/features/pet-home/cat-anatomy";
 import { buildCatPartTree, resolveCatPartPose, type CatPartNode } from "@/features/pet-home/cat-part-tree";
 import { CAT_IDLE_PART_IDS, sampleCatIdleMotion } from "@/features/pet-home/cat-idle-motion";
 import * as idleFrame from "@/features/pet-home/cat-idle-frame";
+import * as skeletonModule from "@/features/pet-home/cat-skeleton";
 import { defaultCatDesign, type CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { resolveCatAnatomy } from "@/features/admin/resolve-cat-design";
 import { COAT_PATTERNS, getCoatPatternBoxes, deriveTabbyStripeColor, type PetCoatInput } from "@/features/pet-home/coat-patterns";
@@ -67,9 +68,9 @@ function scene(coat: PetCoatInput = colors, needs: PetNeeds = clean, tunables = 
 }
 function assertPatches(doc: ParentNode, pattern: typeof COAT_PATTERNS[number], expected: Map<string, Matrix4>) {
   const boxes = getCoatPatternBoxes(pattern);
-  expect(doc.querySelectorAll("mesh")).toHaveLength(33 + boxes.length);
-  expect(doc.querySelectorAll("boxgeometry")).toHaveLength(33 + boxes.length);
-  expect(doc.querySelectorAll("meshstandardmaterial")).toHaveLength(33 + boxes.length);
+  expect(doc.querySelectorAll("mesh")).toHaveLength(39 + boxes.length);
+  expect(doc.querySelectorAll("boxgeometry")).toHaveLength(39 + boxes.length);
+  expect(doc.querySelectorAll("meshstandardmaterial")).toHaveLength(39 + boxes.length);
   for (const box of boxes) {
     const patch = mesh(doc, box.id);
     expect(patch, box.id).not.toBeNull();
@@ -112,7 +113,7 @@ describe("real Cat3DModel coat boxes (S2/S4/S5)", () => {
   it.each([undefined, null, "zebra"])("preserves colors-only solid for absent/unknown pattern %s", pattern => {
     const input = { ...colors, pattern } as unknown as PetCoatInput;
     expect(scene(input).body.innerHTML).toBe(scene({ ...colors, pattern: "solid" }).body.innerHTML);
-    expect(scene(input).querySelectorAll("mesh")).toHaveLength(33);
+    expect(scene(input).querySelectorAll("mesh")).toHaveLength(39);
   });
 });
 
@@ -163,6 +164,7 @@ it("retains keyed anchors, idle origin/seed/registry, ear tic and tail hinges ac
   const container = document.createElement("div");
   const root = createRoot(container);
   const spy = vi.spyOn(idleFrame, "applyCatIdleFrame");
+  const compile = vi.spyOn(skeletonModule, "buildCatSkeleton");
   const render = async (pattern: typeof COAT_PATTERNS[number]) => {
     await act(async () => root.render(<Cat3DModel colors={{ ...colors, pattern }} needs={zero} design={tuned} orbiting />));
   };
@@ -172,6 +174,7 @@ it("retains keyed anchors, idle origin/seed/registry, ear tic and tail hinges ac
     container.querySelectorAll("mesh,group").forEach(attachThreeSetters);
     frame.current!({ clock: { getElapsedTime: () => 100 } }, 0);
     const initial = spy.mock.calls.at(-1)![0];
+    expect(compile).toHaveBeenCalledTimes(1);
     const cues = needVisualCues(zero);
     // Find a deterministic actual ear-tic sample without copying the sampler's PRNG.
     let ticTime = 0;
@@ -188,6 +191,8 @@ it("retains keyed anchors, idle origin/seed/registry, ear tic and tail hinges ac
       expect(input.elapsedSeconds).toBeCloseTo(ticTime);
       expect(input.meshes).toBe(initial.meshes);
       expect([...input.meshes.keys()].sort()).toEqual([...CAT_IDLE_PART_IDS].sort());
+      for (const id of CAT_IDLE_PART_IDS) expect(input.meshes.get(id), id).toBe(anchors.get(id));
+      expect(compile).toHaveBeenCalledTimes(1);
       for (const part of CAT_ANATOMY) expect(mesh(container, part.id), part.id).toBe(anchors.get(part.id));
       const expected = expectedWorld(zero, tuned, ticTime, initial.seed);
       assertPatches(container, pattern, expected);
@@ -196,5 +201,6 @@ it("retains keyed anchors, idle origin/seed/registry, ear tic and tail hinges ac
   } finally {
     await act(async () => root.unmount());
     spy.mockRestore();
+    compile.mockRestore();
   }
 });
