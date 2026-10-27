@@ -12,7 +12,7 @@ import {
 
 const { ExtractJwt, Strategy } = passportJwt;
 
-export type JwtPayload = { sub: string; email: string };
+export type JwtPayload = { sub: string; email: string | null };
 
 /**
  * Bearer when the request carries an Authorization header, otherwise the

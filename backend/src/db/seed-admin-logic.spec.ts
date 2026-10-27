@@ -35,7 +35,7 @@ describe('seedSuperAdmin', () => {
 
   it('is idempotent when the email already exists', async () => {
     const users = new InMemoryUserRepository();
-    await users.create({
+    const before = await users.create({
       email: 'admin@pets.app',
       password: 'hashed:original',
       name: 'Existing',
@@ -45,15 +45,19 @@ describe('seedSuperAdmin', () => {
     const result = await seedSuperAdmin(
       users,
       {
-        email: 'admin@pets.app',
+        email: '  ADMIN@Pets.App ',
         password: 'password123',
         name: 'Root Admin',
       },
       hashPassword,
     );
 
-    expect(result.status).toBe('already_exists');
-    if (result.status !== 'already_exists') return;
+    expect(result).toEqual({
+      status: 'already_exists',
+      userId: before.id,
+      email: 'admin@pets.app',
+    });
+    expect(await users.findById(before.id)).toEqual(before);
 
     const row = await users.findByEmail('admin@pets.app');
     expect(row!.password).toBe('hashed:original');

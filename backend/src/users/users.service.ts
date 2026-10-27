@@ -1,6 +1,8 @@
 import {
   Inject,
   Injectable,
+  BadRequestException,
+  ConflictException,
   NotFoundException,
   UnauthorizedException,
   Logger,
@@ -94,6 +96,17 @@ export class UsersService {
 
   update(id: string, updateData: UpdateUserInput) {
     return traceWrite(this.logger, 'user_updated', { id }, async () => {
+      // Omitted email is a profile-only patch. NULL/empty are not omission,
+      // and an email-only PATCH must not convert a wallet account.
+      if (updateData.email !== undefined) {
+        const user = await this.requirePublic(id);
+        if (updateData.email === null || updateData.email.trim() === '') {
+          throw new BadRequestException('Email cannot be removed');
+        }
+        if (user.email === null) {
+          throw new ConflictException('Credential conversion is not supported');
+        }
+      }
       // Explicit mapping: nothing else reaches the repository.
       const updatedUser = await this.users.update(id, {
         name: updateData.name,
@@ -123,6 +136,9 @@ export class UsersService {
       const user = await this.users.findById(id);
       if (!user) throw userNotFound(id);
 
+      if (user.password === null) {
+        throw new ConflictException('PASSWORD_NOT_CONFIGURED');
+      }
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         throw new UnauthorizedException('Incorrect password');

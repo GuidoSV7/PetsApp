@@ -43,6 +43,13 @@
       "when": 1792291000002,
       "tag": "0005_free_pet_care",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792291000003,
+      "tag": "0006_stellar_user_identity",
+      "breakpoints": true
     }
   ]
 }

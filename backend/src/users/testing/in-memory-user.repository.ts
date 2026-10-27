@@ -35,6 +35,8 @@ const COLUMNS = [
 
 /** Column defaults applied by `create` for omitted (`undefined`) values. */
 const DEFAULTS = {
+  email: null,
+  password: null,
   role: UserRole.MEMBER,
   isBlocked: false,
   isActive: true,
@@ -109,7 +111,7 @@ export class InMemoryUserRepository implements UserRepository {
           (row) =>
             (!search ||
               likeMatch(row.name, `%${search}%`) ||
-              likeMatch(row.email, `%${search}%`)) &&
+              (row.email !== null && likeMatch(row.email, `%${search}%`))) &&
             (includeInactive !== false || row.isActive),
         )
         .sort((a, b) => (a.id < b.id ? 1 : -1))
@@ -147,7 +149,8 @@ export class InMemoryUserRepository implements UserRepository {
   }
 
   /** Same SQLSTATE as Postgres (23505), so `pgErrorCode` reads the fake alike. */
-  private assertEmailFree(email: string, ownId?: string): void {
+  private assertEmailFree(email: string | null, ownId?: string): void {
+    if (email === null) return;
     if (this.rows.some((r) => r.email === email && r.id !== ownId)) {
       throw Object.assign(
         new Error('duplicate key value violates unique constraint on "email"'),
@@ -161,8 +164,10 @@ export class InMemoryUserRepository implements UserRepository {
     const nullable = <T>(value: unknown, check: (v: unknown) => T) =>
       value === null ? null : check(value);
     return {
-      email: requireVarchar(values.email, 'email', 255),
-      password: requireVarchar(values.password, 'password', 255),
+      email: nullable(values.email, (v) => requireVarchar(v, 'email', 255)),
+      password: nullable(values.password, (v) =>
+        requireVarchar(v, 'password', 255),
+      ),
       name: requireVarchar(values.name, 'name', 120),
       role: requireEnum(values.role, Object.values(UserRole), 'role'),
       isBlocked: requireBoolean(values.isBlocked, 'isBlocked'),

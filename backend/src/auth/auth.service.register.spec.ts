@@ -50,8 +50,11 @@ describe('AuthService register (in-memory repositories)', () => {
 
     const stored = await users.findByEmail('ana@example.com');
     expect(stored).not.toBeNull();
-    expect(stored!.password).not.toBe('secret-1');
-    expect(await bcrypt.compare('secret-1', stored!.password)).toBe(true);
+    if (!stored || stored.password === null) {
+      throw new Error('Expected registered password');
+    }
+    expect(stored.password).not.toBe('secret-1');
+    expect(await bcrypt.compare('secret-1', stored.password)).toBe(true);
     expect(result).toEqual({
       user: {
         id: stored!.id,

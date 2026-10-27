@@ -44,7 +44,7 @@ describe('free care migration', () => {
       await readFile(join(migrationsFolder, 'meta/_journal.json'), 'utf8'),
     );
     expect(journal.entries[5]).toEqual(entry);
-    expect(journal.entries).toHaveLength(6);
+    expect(journal.entries.slice(0, 6)).toHaveLength(6);
     expect(entry.when).toBeGreaterThan(journal.entries[4].when);
   });
 
@@ -91,7 +91,16 @@ describe('free care migration', () => {
       const before = (await client.query(rowsQuery)).rows;
       const migrationsBefore = (await client.query(journalQuery)).rows;
       const lockBefore = (await client.query('SHOW lock_timeout')).rows;
-      await migrate(fixture.db, { migrationsFolder });
+      // Freeze this historical proof at 0005, even as the live journal grows.
+      await copyFile(
+        join(migrationsFolder, entry.tag + '.sql'),
+        join(folder, entry.tag + '.sql'),
+      );
+      await writeFile(
+        join(folder, 'meta/_journal.json'),
+        JSON.stringify({ ...journal, entries: journal.entries.slice(0, 6) }),
+      );
+      await migrate(fixture.db, { migrationsFolder: folder });
       expect((await client.query(rowsQuery)).rows).toEqual(before);
       expect((await client.query(coinsDefaultQuery)).rows).toEqual([
         { column_default: '0' },
@@ -110,7 +119,7 @@ describe('free care migration', () => {
       expect((await client.query('SHOW lock_timeout')).rows).toEqual(
         lockBefore,
       );
-      await migrate(fixture.db, { migrationsFolder });
+      await migrate(fixture.db, { migrationsFolder: folder });
       expect((await client.query(rowsQuery)).rows).toEqual(after);
       expect((await client.query(journalQuery)).rows).toEqual(migrationsAfter);
     } finally {

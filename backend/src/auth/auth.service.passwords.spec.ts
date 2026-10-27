@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UserRole } from '../users/enums/user-role.enum.js';
 import { USER_REPOSITORY } from '../users/ports/user-repository.port.js';
 import { InMemoryUserRepository } from '../users/testing/in-memory-user.repository.js';
@@ -46,6 +46,50 @@ describe('AuthService profile and passwords (in-memory repositories)', () => {
     service = module.get(AuthService);
   });
 
+  it.each(['change', 'verify'] as const)(
+    'rejects passwordless %s before bcrypt without mutation',
+    async (operation) => {
+      const user = await addUser({ email: null, password: null });
+      const compare = vi.spyOn(bcrypt, 'compare');
+      const hash = vi.spyOn(bcrypt, 'hash');
+      const update = vi.spyOn(users, 'update');
+      try {
+        const result = operation === 'change'
+          ? service.changePassword(user, 'secret1', 'brand-new-pass')
+          : service.verifyPassword(user, 'secret1');
+
+        await expect(result).rejects.toMatchObject({
+          message: 'PASSWORD_NOT_CONFIGURED',
+          status: 409,
+        });
+        expect(compare).not.toHaveBeenCalled();
+        expect(hash).not.toHaveBeenCalled();
+        expect(update).not.toHaveBeenCalled();
+        expect(await users.findById(user.id)).toEqual(user);
+        expect(await users.findMany()).toHaveLength(1);
+      } finally {
+        compare.mockRestore();
+        hash.mockRestore();
+        update.mockRestore();
+      }
+    },
+  );
+
+  it('keeps a nullable email in the session profile without credentials', async () => {
+    const user = await addUser({ email: null, password: null });
+    const profile = service.getProfile(user);
+
+    expect(profile).toEqual({
+      id: user.id,
+      name: 'Ana',
+      email: null,
+      role: UserRole.MEMBER,
+      roles: [UserRole.MEMBER],
+      country: 'CO',
+    });
+    expect(profile).not.toHaveProperty('password');
+  });
+
   it('maps the profile to its six public fields, roles included', async () => {
     const user = await addUser();
 
@@ -70,7 +114,10 @@ describe('AuthService profile and passwords (in-memory repositories)', () => {
 
     const stored = await users.findById(user.id);
     expect(result).toEqual({ message: 'Password updated successfully' });
-    expect(await bcrypt.compare('brand-new-pass', stored!.password)).toBe(true);
+    if (!stored || stored.password === null) {
+      throw new Error('Expected stored password');
+    }
+    expect(await bcrypt.compare('brand-new-pass', stored.password)).toBe(true);
     expect(stored).toMatchObject({ profileImage: 'ana.png', name: 'Ana' });
   });
 

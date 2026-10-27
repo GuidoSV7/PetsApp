@@ -38,8 +38,8 @@ export const users = pgTable(
   'users',
   {
     id: uuidId(),
-    email: varchar('email', { length: 255 }).notNull(),
-    password: varchar('password', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }),
+    password: varchar('password', { length: 255 }),
     name: varchar('name', { length: 120 }).notNull(),
     isBlocked: boolean('is_blocked').notNull().default(false),
     isActive: boolean('is_active').notNull().default(true),
@@ -113,4 +113,65 @@ export const petStates = pgTable(
   ],
 );
 
-export const schema = { users, roles, userRoles, petStates };
+/** Schema only: wallet signup stays unavailable until the coin ledger exists. */
+export const userStellarIdentities = pgTable(
+  'user_stellar_identities',
+  {
+    id: uuidId(),
+    userId: uuid('user_id').notNull(),
+    network: varchar('network', { length: 16 }).notNull(),
+    address: varchar('address', { length: 56 }).notNull(),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    pk('pk_user_stellar_identities', t.id),
+    fk('fk_stellar_identity_user', t.userId, users.id),
+    unique('uq_stellar_identity_user').on(t.userId),
+    unique('uq_stellar_identity_network_address').on(t.network, t.address),
+  ],
+);
+
+/** Store hashes/binding metadata, never signed XDR, cookies or JWTs. */
+export const stellarAuthChallenges = pgTable(
+  'stellar_auth_challenges',
+  {
+    id: uuidId(),
+    purpose: varchar('purpose', { length: 5 }).notNull(),
+    network: varchar('network', { length: 16 }).notNull(),
+    address: varchar('address', { length: 56 }).notNull(),
+    transactionHash: varchar('transaction_hash', { length: 64 }).notNull(),
+    flowHash: varchar('flow_hash', { length: 64 }).notNull(),
+    userId: uuid('user_id'),
+    sessionHash: varchar('session_hash', { length: 64 }),
+    expiresAt: ts('expires_at').notNull(),
+    failedAttempts: integer('failed_attempts').notNull().default(0),
+    consumedAt: ts('consumed_at'),
+    createdAt: ts('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    pk('pk_stellar_auth_challenges', t.id),
+    fk('fk_stellar_challenge_user', t.userId, users.id),
+  ],
+);
+
+/** Shared short-lived volume counters; keys contain only scoped hashes. */
+export const stellarAuthAttempts = pgTable(
+  'stellar_auth_attempts',
+  {
+    key: varchar('key', { length: 128 }).notNull(),
+    windowStartedAt: ts('window_started_at').notNull(),
+    expiresAt: ts('expires_at').notNull(),
+    count: integer('count').notNull().default(0),
+  },
+  (t) => [pk('pk_stellar_auth_attempts', t.key)],
+);
+
+export const schema = {
+  users,
+  roles,
+  userRoles,
+  petStates,
+  userStellarIdentities,
+  stellarAuthChallenges,
+  stellarAuthAttempts,
+};

@@ -6,6 +6,38 @@ import { MISSING_ID, pause, userData } from './user-repository.fixtures.js';
 
 export function userWritesContract(repo: () => UserRepository): void {
   describe('create', () => {
+    it('matches ordinary SQL NULL uniqueness and nullable search semantics', async () => {
+      const first = await repo().create(userData({
+        email: null, password: null, name: 'Wallet One',
+      }));
+      const second = await repo().create(userData({
+        email: null, password: null, name: 'Wallet Two',
+      }));
+      expect(first).toMatchObject({ email: null, password: null, roles: ['member'] });
+      expect(second.id).not.toBe(first.id);
+      expect(await repo().findMany({ search: 'not-present' })).toEqual([]);
+      const matched = await repo().findMany({ search: 'One' });
+      expect(matched.map((row) => row.id)).toEqual([first.id]);
+      expect(matched[0]).not.toHaveProperty('password');
+      expect(await repo().findByEmail('null')).toBeNull();
+      expect(await repo().update(first.id, {
+        email: undefined, password: undefined,
+      })).toEqual(first);
+      expect(await repo().update(first.id, {
+        email: '', password: '',
+      })).toMatchObject({ email: '', password: '' });
+      expect(await repo().update(first.id, {
+        email: null, password: null,
+      })).toEqual(first);
+      expect(await repo().findMany()).toHaveLength(2);
+    });
+
+    it('uses SQL NULL defaults for omitted nullable credentials', async () => {
+      const created = await repo().create({ name: 'Schema-only fixture' });
+      expect(created).toMatchObject({ email: null, password: null, roles: ['member'] });
+      expect(await repo().findById(created.id)).toEqual(created);
+    });
+
     it('applies the column defaults and returns the full row', async () => {
       const created = await repo().create(userData());
 
@@ -88,8 +120,6 @@ export function userWritesContract(repo: () => UserRepository): void {
       const attempt = (overrides: Record<string, unknown>) =>
         repo().create(userData(overrides));
 
-      await expect(attempt({ email: null })).rejects.toThrow();
-      await expect(attempt({ password: null })).rejects.toThrow();
       await expect(attempt({ name: null })).rejects.toThrow();
       await expect(attempt({ role: 'owner' })).rejects.toThrow();
       await expect(attempt({ country: 'COL' })).rejects.toThrow();
@@ -188,7 +218,6 @@ export function userWritesContract(repo: () => UserRepository): void {
         repo().update(created.id, patch as never);
 
       await expect(attempt({ name: null })).rejects.toThrow();
-      await expect(attempt({ email: null })).rejects.toThrow();
       await expect(attempt({ role: 'owner' })).rejects.toThrow();
       expect(await repo().findById(created.id)).toEqual(created);
     });

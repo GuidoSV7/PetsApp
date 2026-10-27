@@ -52,7 +52,7 @@ export async function seedSuperAdmin(
     return {
       status: 'already_exists',
       userId: existing.id,
-      email: existing.email,
+      email,
     };
   }
 
@@ -63,5 +63,5 @@ export async function seedSuperAdmin(
     role: UserRole.SUPER_ADMIN,
   });
 
-  return { status: 'created', userId: created.id, email: created.email };
+  return { status: 'created', userId: created.id, email };
 }

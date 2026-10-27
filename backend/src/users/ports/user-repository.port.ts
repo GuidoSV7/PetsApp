@@ -27,8 +27,10 @@ export interface UserListFilter {
 export interface UserRepository {
   /**
    * `undefined` values are ignored and the stored row comes back with its
-   * defaults. Rejects on a duplicate email (unique violation, the raw
-   * database error), on NOT NULL violations and on an unknown role.
+   * defaults. Nullable email/password default to NULL; multiple NULL emails
+   * are allowed. This low-level method is not a wallet signup transaction.
+   * Rejects on a duplicate non-null email (unique violation, the raw database
+   * error), on NOT NULL violations and on an unknown role.
    */
   create(data: UserData): Promise<UserRow>;
   /** Rejects on a malformed uuid (Postgres 22P02). */

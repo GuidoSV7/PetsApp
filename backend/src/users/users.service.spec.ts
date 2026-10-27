@@ -23,6 +23,88 @@ describe('UsersService (in-memory repository)', () => {
   const notFound = (id: string) =>
     new NotFoundException(`User with id ${id} not found`);
 
+  it('rejects password-gated deletion without bcrypt or mutation when password is absent', async () => {
+    const stored = await repo.create(userData({ email: null, password: null }));
+    const compare = vi.spyOn(bcrypt, 'compare');
+    const update = vi.spyOn(repo, 'update');
+    try {
+      await expect(service.delete(stored.id, 'secret')).rejects.toMatchObject({
+        message: 'PASSWORD_NOT_CONFIGURED',
+        status: 409,
+      });
+      expect(compare).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+    } finally {
+      compare.mockRestore();
+      update.mockRestore();
+    }
+    expect(await repo.findById(stored.id)).toEqual(stored);
+  });
+
+  it.each([null, '', '   '])(
+    'rejects explicit email erasure (%j) without any profile mutation',
+    async (email) => {
+      const user = await repo.create(userData());
+      const update = vi.spyOn(repo, 'update');
+      try {
+        await expect(service.update(user.id, {
+          name: 'No change', email,
+        })).rejects.toMatchObject({ status: 400, message: 'Email cannot be removed' });
+        expect(update).not.toHaveBeenCalled();
+        expect(await repo.findById(user.id)).toEqual(user);
+      } finally {
+        update.mockRestore();
+      }
+    },
+  );
+
+  it.each([
+    { email: null, status: 400, message: 'Email cannot be removed' },
+    { email: '', status: 400, message: 'Email cannot be removed' },
+    { email: '   ', status: 400, message: 'Email cannot be removed' },
+    { email: 'new@example.com', status: 409, message: 'Credential conversion is not supported' },
+  ])('rejects incomplete wallet credential PATCH ($email) without mutation', async ({ email, status, message }) => {
+    const wallet = await repo.create(userData({ email: null, password: null }));
+    const update = vi.spyOn(repo, 'update');
+    try {
+      await expect(service.update(wallet.id, {
+        email, name: 'No change',
+      })).rejects.toMatchObject({ status, message });
+      expect(update).not.toHaveBeenCalled();
+      expect(await repo.findById(wallet.id)).toEqual(wallet);
+      expect(await repo.findMany()).toHaveLength(1);
+    } finally {
+      update.mockRestore();
+    }
+  });
+
+  it('keeps nullable public profiles and allows wallet name/country edits with omitted email', async () => {
+    const wallet = await repo.create(userData({ email: null, password: null }));
+    const profile = await service.getUserProfile(wallet.id);
+    const complete = await service.findOneComplete(wallet.id);
+    const listed = await service.findAllComplete('Ada');
+    expect(profile).toMatchObject({ id: wallet.id, email: null });
+    expect(complete).toMatchObject({ id: wallet.id, email: null });
+    expect(listed).toEqual([complete]);
+    for (const result of [profile, complete, ...listed]) {
+      expect(result).not.toHaveProperty('password');
+    }
+    const updated = await service.update(wallet.id, { name: 'Wallet', country: 'CO' });
+    expect(updated).toMatchObject({ email: null, name: 'Wallet', country: 'CO' });
+    expect(updated).not.toHaveProperty('password');
+    expect(await repo.findById(wallet.id)).toEqual({ ...wallet, name: 'Wallet', country: 'CO' });
+  });
+
+  it('preserves existing nonempty email replacement and nullable non-credential patch semantics', async () => {
+    const user = await repo.create(userData({ country: 'CO', profileImage: 'old.png' }));
+    await service.update(user.id, {
+      email: 'other@example.com', country: null, profileImage: '', name: undefined,
+    });
+    expect(await repo.findById(user.id)).toEqual({
+      ...user, email: 'other@example.com', country: null, profileImage: '',
+    });
+  });
+
   describe('profile', () => {
     it('maps the profile with userName, without credentials', async () => {
       const user = await repo.create(userData());

@@ -79,7 +79,7 @@ export class AuthService {
     };
 
     const user = await this.userRepository.findByEmail(normalizeEmail(email));
-    if (!user) return rejected('invalid_credentials');
+    if (!user || user.password === null) return rejected('invalid_credentials');
     if (!user.isActive) return rejected('inactive', user.id);
     if (user.isBlocked) return rejected('blocked', user.id);
 
@@ -236,6 +236,9 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
   ): Promise<{ message: string }> {
+    if (user.password === null) {
+      throw new ConflictException('PASSWORD_NOT_CONFIGURED');
+    }
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password,
@@ -275,6 +278,9 @@ export class AuthService {
     user: UserRow,
     password: string,
   ): Promise<{ verified: true }> {
+    if (user.password === null) {
+      throw new ConflictException('PASSWORD_NOT_CONFIGURED');
+    }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Incorrect password');

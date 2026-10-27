@@ -1,7 +1,7 @@
 /** Profile of the authenticated user: only their own, non-sensitive data. */
 export class UserProfileDto {
   id: string;
-  email: string;
+  email: string | null;
   userName: string;
   role: string;
   roles: string[];

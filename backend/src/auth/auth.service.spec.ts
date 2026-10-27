@@ -57,6 +57,26 @@ describe('AuthService login (in-memory repositories)', () => {
     vi.clearAllMocks();
   });
 
+  it('rejects an email lookup with no password generically before bcrypt or mutation', async () => {
+    const user = await addUser({ password: null });
+    const compare = vi.spyOn(bcrypt, 'compare');
+    const update = vi.spyOn(users, 'update');
+    try {
+      await expect(service.login({
+        email: 'Ana@Example.com ',
+        password: 'secret1',
+      })).rejects.toMatchObject({ message: INVALID_CREDENTIALS, status: 401 });
+      expect(compare).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+      expect(jwt.sign).not.toHaveBeenCalled();
+      expect(await users.findById(user.id)).toEqual(user);
+      expect(await users.findMany()).toHaveLength(1);
+    } finally {
+      compare.mockRestore();
+      update.mockRestore();
+    }
+  });
+
   it('logs in a member and answers the session user plus the token', async () => {
     const user = await addUser();
 

@@ -11,7 +11,7 @@ and roles/permissions on PostgreSQL through Drizzle ORM.
 | `src/users` | `UsersService`, `/users/me` (own profile) and `/admin/users` (administration). Port `UserRepository` with a Drizzle adapter and an in-memory adapter verified by the same contract spec. |
 | `src/roles` | Role catalog (`admin`, `super_admin`, `member` plus custom roles) with a permission list from `permission-catalog.ts`, `user_roles` join, role rank (`role-rank.ts`). Port `RoleRepository` with Drizzle and in-memory adapters. |
 | `src/database` | `DatabaseModule` (pg pool + Drizzle, global), SSL and credential resolution, Postgres error helpers. |
-| `src/db` | Drizzle schema (`users`, `roles`, `user_roles`) and inferred row types. |
+| `src/db` | Drizzle schema (users, roles, pets and Stellar identity/auth metadata) and inferred row types. |
 | `src/config` | CORS policy, trust-proxy and cookie-parser setup, env parsing helpers. |
 | `src/logging` | Structured log helpers (`traceWrite`). |
 | `src/testing` | Postgres column semantics for in-memory fakes and the isolated PostgreSQL test harness. |
@@ -39,6 +39,52 @@ adapters, contracts, fixtures).
 | `GET` | `/admin/roles` | admin |
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
+
+### Nullable-user / Stellar schema foundation (0006)
+
+`0006_stellar_user_identity.sql` permits NULL in `users.email` and
+`users.password`, retaining the ordinary UNIQUE constraint on non-null emails.
+It creates `user_stellar_identities` (one identity per user and one owner per
+network/address), `stellar_auth_challenges` and `stellar_auth_attempts`.
+No existing users, credentials, role assignments or pet rows are updated or
+backfilled. The migration uses a transaction-local five-second lock timeout;
+historical migrations0000–0005 remain unchanged.
+
+This is **schema and compatibility only**, not wallet login or signup. No Stellar
+routes or enable flags are introduced here. Complete wallet signup must wait for
+0008 and create user + identity + member role + zero coin balance in one
+transaction, with rollback proof before activation. Do not expose a partial
+signup using the now-nullable user repository. Email/Google input contracts and
+roles, blocking and activation behavior remain unchanged; JWT identity stays
+`sub = users.id`. Public profiles may carry `email: null`, never a placeholder
+email or password hash.
+
+For a stored user without a password:
+
+- Email login returns the existing generic `401 Invalid credentials`, without
+  invoking bcrypt or revealing the alternative login method.
+- Authenticated change-password, verify-password and password-gated account
+  deactivation return `409 PASSWORD_NOT_CONFIGURED`, without bcrypt or mutation.
+- Profile updates omit an unchanged email. Explicit NULL or empty/whitespace
+  email is rejected with400 (`Email cannot be removed`); a nonempty email PATCH
+  on an email-less account is rejected with409
+  (`Credential conversion is not supported`). Name/country edits remain allowed.
+
+There are no credential triggers or cross-table CHECK constraints. Ordinary SQL
+can insert multiple NULL-email users; that schema fact is not an application
+credential guarantee. There is no unlink, password-delete or account-conversion
+flow. Any future feature adding credential removal must bring its own database
+guarantee. The pending SEP-10 unit owns validation, browser/session binding,
+atomic challenge consumption, limits and retention; these tables alone implement
+none of those runtime policies and store no signed XDR, cookies or JWTs.
+
+Migration tests use isolated PostgreSQL databases, compare complete legacy
+users/pets/roles (including0/5/37 pet balances and timestamps), and prove safe
+reapplication. Historical free-care coverage stops at0005; the0006 upgrade proof
+stops at0006. Do not roll back to a backend that assumes non-null credentials
+after wallet users exist. This change does not authorize production migrations
+or activation; the mixed-version exception for free care below does not apply
+to future wallet/ownership rollout.
 
 ### Free pet care
 

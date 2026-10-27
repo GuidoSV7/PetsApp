@@ -51,9 +51,11 @@ describe('DrizzleUserRepository (PostgreSQL)', () => {
     ).rejects.toThrow('Invalid role');
     expect(await code(repo.create(userData({ country: 'COL' })))).toBe('22001');
     expect(await code(repo.findById('nope'))).toBe('22P02');
-    expect(await code(repo.update(created.id, { email: null } as never))).toBe(
+    const beforeRejectedUpdate = await repo.findById(created.id);
+    expect(await code(repo.update(created.id, { name: null } as never))).toBe(
       '23502',
     );
+    expect(await repo.findById(created.id)).toEqual(beforeRejectedUpdate);
   });
 
   it('links the user to the role catalog through user_roles', async () => {
