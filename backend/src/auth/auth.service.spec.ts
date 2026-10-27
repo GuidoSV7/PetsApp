@@ -121,9 +121,7 @@ describe('AuthController route surface', () => {
     Object.getOwnPropertyNames(AuthController.prototype)
       .filter((name) => name !== 'constructor')
       .map((name) => {
-        const handler = (AuthController.prototype as Record<string, unknown>)[
-          name
-        ] as object;
+        const handler = Reflect.get(AuthController.prototype, name) as object;
         return {
           path: Reflect.getMetadata('path', handler) as string | undefined,
           method: Reflect.getMetadata('method', handler) as number | undefined,

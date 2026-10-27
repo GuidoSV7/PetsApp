@@ -40,6 +40,22 @@ adapters, contracts, fixtures).
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
 
+### Free pet care
+
+New guest pets start with **0 coins**. Feeding, playing, sleeping, bathing,
+petting and every valid rename are free; existing balances remain unchanged.
+The `coins` field remains in the guest API response. Existing name validation,
+needs, mood, action effects and rename counters are unchanged. A stored legacy
+`broke` status is returned as `idle` by the DTO mapper without a read-time write.
+No account or authentication endpoint changes are introduced.
+
+`0005_free_pet_care.sql` changes only the `coins` column default to 0, after
+`SET LOCAL lock_timeout = '5s';` and a statement breakpoint. It has no UPDATE
+or backfill, and preserves every existing row. Its journal timestamp is strictly
+after 0004. Migration runs at backend startup as usual. The short mixed rollout
+window is accepted: an old instance may still create a pet with 5 coins or charge
+for feeding. No write drain or separate migration release is required.
+
 ### Pet coat patterns
 
 Pet endpoints use the existing UUID `X-Pet-Guest-Key` header. `GET /pet/state`

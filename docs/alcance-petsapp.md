@@ -11,10 +11,26 @@ Webapp donde cada usuario cuida un gato virtual 3D al estilo Pou, con una landin
 - **Cuentas y admin.** Registro y login con cookie de sesión y roles, panel admin de usuarios (`GET/PATCH /admin/users`, `toggle-block`), cuenta mínima de miembro (`/account`) y proxy same-origin `/petsapp-api` hacia el backend.
 - **Landing pública.**
 - **Mascota (backend).** Un gato por clave de invitado: el navegador guarda la clave en `localStorage` y la manda en el header `X-Pet-Guest-Key`. Cuatro necesidades de 0 a 100 (hambre, diversión, energía, higiene), cinco acciones de cuidado (`feed`, `play`, `sleep`, `bathe`, `pet`), nombre editable y monedas.
-- **Monedas.** Se empieza con 5. Alimentar cuesta 5 y renombrar (desde el segundo cambio) también cuesta. Hoy no hay forma de ganarlas.
+- **Cuidado gratuito.** Alimentar, jugar, dormir, bañar, acariciar y renombrar no cuestan monedas. Las mascotas nuevas empiezan con 0; los saldos existentes se conservan. El saldo y el “+” no se muestran en el home hasta que exista la compra de monedas.
 - **Gato voxel por código.** 33 piezas con ids fijos y jerarquía padre-hijo, parpadeo, cola y orejas en reposo, señales visuales de las necesidades, resolución adaptativa al dispositivo y sombra de contacto.
 - **Pelaje.** Tres colores más un patrón (liso, atigrado, esmoquin, calicó, siamés) guardados en el backend, con sugerencia de colores desde la cámara.
 - **Admin Diseño 3D.** Vista previa local de proporciones del gato; los ajustes quedan en el navegador.
+
+## Economía y cuentas — decidido el 26/10/2026
+
+- El cuidado es gratis: alimentar, jugar, dormir, bañar, acariciar y renombrar no
+  cuestan monedas.
+- Las monedas son saldo de tienda: 1 moneda = 1 USDC. Viven en la base de datos, no
+  son un token en la red y no se cambian de vuelta a USDC. Sirven solo para la tienda.
+- Sin monedas iniciales: las mascotas nuevas empiezan con 0; los saldos existentes se
+  conservan.
+- Comprar monedas (feature futuro): USDC por la red Stellar a la cuenta de PetsApp con
+  un memo que identifica al usuario. Cada pago se acredita una sola vez.
+- Login con Freighter (feature futuro): se suma al login con email, con adaptador
+  propio sobre `@stellar/freighter-api` y verificación SEP-10 en el backend.
+- Las monedas pertenecen a una cuenta, no a un invitado.
+
+La asociación del saldo de tienda a cuentas y las features futuras de esta sección no se implementan con este cambio. El cuidado conserva la clave de invitado y la estructura actual de la API, incluido `coins`; no se migran ni reinician saldos existentes.
 
 ## Incluye — planeado, en orden
 
@@ -59,4 +75,4 @@ Los colores del gato no usan esta paleta: salen de los presets de pelaje (`pet-c
 
 - Antes de B1: tamaño del visor, cámara y gestos táctiles.
 - Antes de B2: inventario atado a una cuenta y paso de invitado a cuenta.
-- Economía: cómo se ganan monedas y si los objetos virtuales se pagan con monedas, con USDC en Stellar o solo comprando el producto físico.
+- Antes de la tienda: asociación del saldo a cuentas y diseño de compras de monedas con acreditación única, según la decisión de economía y cuentas anterior.

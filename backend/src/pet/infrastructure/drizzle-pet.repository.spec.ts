@@ -79,6 +79,17 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
     ).toEqual([{ coat_pattern: 'zebra' }]);
   });
 
+  it.each([0, 5, 37])('persists explicit balance %s instead of substituting a default', async (coins) => {
+    const repo = await fresh();
+    const snapshot = { ...initialSnapshot(), coins };
+    const created = await repo.create(GUEST, snapshot);
+    expect(created.coins).toBe(coins);
+    expect((await repo.findByGuestKey(GUEST))?.coins).toBe(coins);
+    const updated = await repo.update(GUEST, { ...snapshot, statusKey: 'petted' });
+    expect(updated.coins).toBe(coins);
+    expect((await repo.findByGuestKey(GUEST))?.coins).toBe(coins);
+  });
+
   it('updates coins and needs for the same guest', async () => {
     const repo = await fresh();
     await repo.create(GUEST, initialSnapshot());
