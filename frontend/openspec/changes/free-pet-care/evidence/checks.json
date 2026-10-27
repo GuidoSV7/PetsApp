@@ -323,5 +323,52 @@
     "protectedFiles": 69,
     "preexistingUntracked": 26
   },
-  "delivery": "Owner selected local-only: no issue, PR, push, merge or deploy."
+  "delivery": "Owner selected local-only: no issue, PR, push, merge or deploy.",
+  "independent": {
+    "status": "PASS",
+    "candidate": "9f90fbd95a8a720890ef38c8c73542729e258515",
+    "backend": {
+      "tests": 55,
+      "files": 6,
+      "exit": 0
+    },
+    "frontend": {
+      "tests": 63,
+      "files": 3,
+      "exit": 0
+    },
+    "backendTypesExit": 0,
+    "scratchOnlyBoundaryProbes": 2,
+    "blockers": [],
+    "environment": {
+      "node": "24.22.1",
+      "backendVitest": "4.1.12",
+      "frontendVitest": "3.2.7",
+      "copiedDependencies": true,
+      "isolatedHome": true,
+      "ownerExplicitlyAcceptedException": true,
+      "noInstallsReported": true,
+      "noRepositoryMutationReported": true
+    },
+    "scratchArchivedAndRemoved": true
+  },
+  "nativeAssessment": {
+    "nativeRisk": "unassessable",
+    "reason": "Provider requires explicit declaration of preexisting untracked files",
+    "escalationItem": 1,
+    "independentVerifierRequired": true,
+    "reviewDueReturned": false,
+    "continuationReturned": false,
+    "reviewStarted": false,
+    "authorityCreated": false,
+    "approvalClaimed": false
+  },
+  "finalCleanup": {
+    "ownedPortsUnbound": 6,
+    "browserWorkspacesAbsent": 3,
+    "verifierScratchRemoved": true,
+    "parentDatabasePrefixQueryRemaining": [],
+    "failedRunCacheResidualRemoved": true,
+    "originalCleanupReportsAloneInsufficient": true
+  }
 }

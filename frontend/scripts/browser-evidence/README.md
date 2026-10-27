@@ -21,7 +21,7 @@ This runner requires the host `pgtest-db` helper and the isolated test cluster o
 
 A test-only row starts with hunger10, zero coins and a legacy `broke` status. Reading it must leave its stored row unchanged and return neutral `idle`. Three UI feeds must return hunger28/46/64 with coins0, followed by three valid renames and a reload of the same guest. Assertions cover persisted name/count/hunger/coins, absent balance/plus/insufficient-funds copy, intact brand/logout, no horizontal overflow, working nonblank WebGL and no JS/network errors. A separate real API creation checks the unchanged initial needs and coins0.
 
-`EVIDENCE_DIRECTORY` contains `browser.json`, mobile/desktop home and canvas screenshots, owned server logs, and `cleanup.json`. The runner closes owned servers/browser/client, drops only its disposable database and removes its workspace on every outcome. It never targets production or modifies A1 evidence.
+`EVIDENCE_DIRECTORY` contains `browser.json`, mobile/desktop home and canvas screenshots, owned server logs, and `cleanup.json`. Cleanup is attempted on every outcome: close owned servers/browser/client, drop only the disposable database and remove the workspace. Confirm owned ports and workspace absence as a final audit: one failed development-server run left `.next` cache residue despite its cleanup report. Remove only that run's owned workspace after confirming its servers stopped. The runner never targets production or modifies A1 evidence.
 
 ## Run A1's historical after phase
 
