@@ -51,21 +51,76 @@ describe('PetService (drizzle)', () => {
   it('persists feed across getOrCreate', async () => {
     await service.getOrCreate(GUEST);
     const fed = await service.applyAction(GUEST, 'feed');
-    expect(fed.coins).toBe(STARTING_COINS - 5);
+    expect(fed.coins).toBe(0);
     expect(fed.needs.hunger).toBe(90);
     const again = await service.getOrCreate(GUEST);
     expect(again.coins).toBe(fed.coins);
     expect(again.needs.hunger).toBe(90);
   });
 
-  it('marks broke without spending when out of coins', async () => {
+  it('repeated feeding remains free at zero coins', async () => {
     await service.getOrCreate(GUEST);
     for (let i = 0; i < 6; i++) {
       await service.applyAction(GUEST, 'feed');
     }
     const state = await service.applyAction(GUEST, 'feed');
-    expect(state.statusKey).toBe('broke');
+    expect(state.statusKey).toBe('fed');
+    expect(state.needs.hunger).toBe(100);
     expect(state.coins).toBe(0);
+  });
+
+  it.each([0, 5, 37])(
+    'reads legacy broke balance %s as idle without saving',
+    async (coins) => {
+      const repo = new DrizzlePetRepository(testDb.db);
+      await service.getOrCreate(GUEST);
+      await testDb.client.query(
+        'UPDATE pet_states SET coins=$1, status_key=$2 WHERE guest_key=$3',
+        [coins, 'broke', GUEST],
+      );
+      const before = await repo.findByGuestKey(GUEST);
+      const state = await service.getOrCreate(GUEST);
+      expect(state).toEqual({
+        coins,
+        needs: before!.needs,
+        coat: before!.coat,
+        statusKey: 'idle',
+        name: 'Michi',
+        renameCount: 0,
+        mood: 'Feliz',
+      });
+      expect(await repo.findByGuestKey(GUEST)).toEqual(before);
+      const fed = await service.applyAction(GUEST, 'feed');
+      expect(fed).toEqual({
+        ...state,
+        needs: { ...state.needs, hunger: 90 },
+        statusKey: 'fed',
+      });
+      expect(await service.getOrCreate(GUEST)).toEqual(fed);
+    },
+  );
+
+  it('rejects invalid actions and names without changing persisted state', async () => {
+    await service.rename(GUEST, 'Luna');
+    const repo = new DrizzlePetRepository(testDb.db);
+    const before = await repo.findByGuestKey(GUEST);
+    await expect(service.applyAction(GUEST, 'dance')).rejects.toMatchObject({
+      response: {
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Unknown care action: dance',
+      },
+    });
+    for (const name of [' ', 'a'.repeat(17), ' Luna ']) {
+      await expect(service.rename(GUEST, name)).rejects.toMatchObject({
+        response: {
+          statusCode: 400,
+          error: 'Bad Request',
+          message: 'Invalid pet name',
+        },
+      });
+      expect(await repo.findByGuestKey(GUEST)).toEqual(before);
+    }
   });
 
   it('applies coat colors', async () => {
@@ -167,7 +222,7 @@ describe('PetService (drizzle)', () => {
     expect(named.coins).toBe(STARTING_COINS);
   });
 
-  it('renames for free once, then charges five coins', async () => {
+  it('renames repeatedly for free', async () => {
     await service.getOrCreate(GUEST);
     const first = await service.rename(GUEST, 'Luna');
     expect(first.name).toBe('Luna');
@@ -177,6 +232,9 @@ describe('PetService (drizzle)', () => {
     const second = await service.rename(GUEST, 'Nube');
     expect(second.name).toBe('Nube');
     expect(second.renameCount).toBe(2);
-    expect(second.coins).toBe(STARTING_COINS - 5);
+    expect(second.coins).toBe(0);
+    const third = await service.rename(GUEST, 'Sol');
+    expect(third).toEqual({ ...second, name: 'Sol', renameCount: 3 });
+    expect(await service.getOrCreate(GUEST)).toEqual(third);
   });
 });

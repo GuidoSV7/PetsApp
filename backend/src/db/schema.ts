@@ -90,7 +90,7 @@ export const petStates = pgTable(
   {
     id: uuidId(),
     guestKey: varchar('guest_key', { length: 64 }).notNull(),
-    coins: integer('coins').notNull().default(5),
+    coins: integer('coins').notNull().default(0),
     hunger: integer('hunger').notNull().default(72),
     fun: integer('fun').notNull().default(80),
     energy: integer('energy').notNull().default(65),

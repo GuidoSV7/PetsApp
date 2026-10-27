@@ -79,30 +79,78 @@ describe('pet-rules', () => {
 
   it('starts with frontend defaults', () => {
     const snap = initialSnapshot();
-    expect(STARTING_COINS).toBe(5);
-    expect(snap.coins).toBe(5);
+    expect(STARTING_COINS).toBe(0);
+    expect(snap.coins).toBe(0);
     expect(snap.needs.hunger).toBe(72);
     expect(snap.statusKey).toBe('idle');
     expect(snap.name).toBe(DEFAULT_PET_NAME);
     expect(snap.renameCount).toBe(0);
   });
 
-  it('feed spends coins and raises hunger', () => {
+  it('feed is free and raises hunger', () => {
     const result = applyCare(initialSnapshot(), 'feed');
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.snapshot.coins).toBe(STARTING_COINS - COIN_COSTS.feed);
+    expect(result.snapshot.coins).toBe(0);
     expect(result.snapshot.needs.hunger).toBe(90);
     expect(result.snapshot.statusKey).toBe('fed');
   });
 
-  it('feed refuses when broke', () => {
-    const broke = { ...initialSnapshot(), coins: 3 };
-    const result = applyCare(broke, 'feed');
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.snapshot.coins).toBe(3);
-    expect(result.snapshot.statusKey).toBe('broke');
+  it.each([0, 5, 37])(
+    'repeats every action without changing balance %s',
+    (coins) => {
+      let snapshot = {
+        ...initialSnapshot(),
+        coins,
+        needs: { hunger: 10, fun: 10, energy: 10, hygiene: 10 },
+      };
+      for (const hunger of [28, 46, 64]) {
+        const result = applyCare(snapshot, 'feed');
+        expect(result).toEqual({
+          ok: true,
+          snapshot: {
+            ...snapshot,
+            needs: { ...snapshot.needs, hunger },
+            statusKey: 'fed',
+          },
+        });
+        if (result.ok) snapshot = result.snapshot;
+      }
+      for (const action of ['play', 'sleep', 'bathe', 'pet'] as const) {
+        for (let i = 0; i < 3; i++) {
+          const result = applyCare(snapshot, action);
+          expect(result).toEqual({
+            ok: true,
+            snapshot: {
+              ...snapshot,
+              needs: rules.applyNeeds(snapshot.needs, action),
+              statusKey:
+                action === 'sleep'
+                  ? 'slept'
+                  : action === 'bathe'
+                    ? 'bathed'
+                    : 'petted',
+            },
+          });
+          if (result.ok) snapshot = result.snapshot;
+        }
+      }
+      expect(snapshot.coins).toBe(coins);
+    },
+  );
+
+  it.each([
+    ['play', { hunger: 72, fun: 96, energy: 61, hygiene: 78 }, 'petted'],
+    ['sleep', { hunger: 72, fun: 80, energy: 85, hygiene: 78 }, 'slept'],
+    ['bathe', { hunger: 72, fun: 80, energy: 65, hygiene: 96 }, 'bathed'],
+    ['pet', { hunger: 72, fun: 88, energy: 65, hygiene: 78 }, 'petted'],
+  ] as const)('preserves %s effects and status', (action, needs, statusKey) => {
+    const snapshot = initialSnapshot();
+    expect(applyCare(snapshot, action)).toEqual({
+      ok: true,
+      snapshot: { ...snapshot, needs, statusKey },
+    });
+    expect(snapshot).toEqual(initialSnapshot());
   });
 
   it('play and pet do not mint coins', () => {
@@ -135,7 +183,7 @@ describe('pet-rules', () => {
     ).toBe('Bajo');
   });
 
-  it('first rename is free and later renames cost coins', () => {
+  it('first and later renames are free', () => {
     const first = applyRename(initialSnapshot(), 'Luna');
     expect(first.ok).toBe(true);
     if (!first.ok) return;
@@ -149,24 +197,31 @@ describe('pet-rules', () => {
     if (!second.ok) return;
     expect(second.snapshot.name).toBe('Nube');
     expect(second.snapshot.renameCount).toBe(2);
-    expect(second.snapshot.coins).toBe(STARTING_COINS - RENAME_COST);
+    expect(second.snapshot.coins).toBe(0);
   });
 
-  it('paid rename refuses when broke', () => {
-    const named = {
-      ...initialSnapshot(),
-      name: 'Luna',
-      renameCount: 1,
-      coins: 3,
-    };
-    const result = applyRename(named, 'Nube');
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.reason).toBe('broke');
-    expect(result.snapshot.name).toBe('Luna');
-    expect(result.snapshot.coins).toBe(3);
-    expect(result.snapshot.statusKey).toBe('broke');
-  });
+  it.each([0, 5, 37])(
+    'renames repeatedly without changing balance %s',
+    (coins) => {
+      let snapshot = { ...initialSnapshot(), coins };
+      for (const [index, name] of ['Luna', 'Nube', 'Sol'].entries()) {
+        const result = applyRename(snapshot, name);
+        expect(result).toEqual({
+          ok: true,
+          snapshot: {
+            ...snapshot,
+            name,
+            renameCount: index + 1,
+            statusKey: 'renamed',
+          },
+        });
+        if (result.ok) snapshot = result.snapshot;
+      }
+      expect(RENAME_COST).toBe(0);
+      expect(COIN_COSTS.feed).toBe(0);
+      expect(rules.renameCostFor(snapshot.renameCount)).toBe(0);
+    },
+  );
 
   it('rejects blank or unchanged names', () => {
     expect(normalizePetName('   ')).toBeNull();
@@ -175,5 +230,16 @@ describe('pet-rules', () => {
     expect(same.ok).toBe(false);
     if (same.ok) return;
     expect(same.reason).toBe('invalid');
+    expect(same.snapshot).toEqual(initialSnapshot());
+    for (const name of [' ', 'a'.repeat(17)]) {
+      const snapshot = { ...initialSnapshot(), renameCount: 2 };
+      expect(applyRename(snapshot, name)).toEqual({
+        ok: false,
+        reason: 'invalid',
+        snapshot,
+      });
+    }
+    expect(normalizePetName('  Luna   Sol  ')).toBe('Luna Sol');
+    expect(normalizePetName('a'.repeat(16))).toBe('a'.repeat(16));
   });
 });

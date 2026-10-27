@@ -124,7 +124,16 @@ describe('coat pattern migration', () => {
       );
       const before = inserted.rows[0];
       const lockBefore = (await client.query('SHOW lock_timeout')).rows[0];
-      await migrate(fixture.db, { migrationsFolder });
+      // Freeze this historical upgrade at 0004, even when later migrations exist.
+      await copyFile(
+        join(migrationsFolder, newEntry.tag + '.sql'),
+        join(folder, newEntry.tag + '.sql'),
+      );
+      await writeFile(
+        join(folder, 'meta/_journal.json'),
+        JSON.stringify({ version: '7', dialect: 'postgresql', entries: [...legacyEntries, newEntry] }),
+      );
+      await migrate(fixture.db, { migrationsFolder: folder });
       const column = await client.query(
         "SELECT data_type, character_maximum_length, is_nullable, column_default FROM information_schema.columns WHERE table_name='pet_states' AND column_name='coat_pattern'",
       );

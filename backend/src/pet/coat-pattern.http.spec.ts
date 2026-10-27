@@ -21,7 +21,7 @@ const GUEST = '88888888-8888-4888-8888-888888888888';
 const MISSING = '99999999-9999-4999-8999-999999999999';
 const colors = { primary: '#AABBCC', secondary: '#DDEEFF', accent: '#123456' };
 const initial = {
-  coins: 5,
+  coins: 0,
   needs: { hunger: 72, fun: 80, energy: 65, hygiene: 78 },
   coat: {
     primary: '#8a8a8e',

@@ -5,7 +5,7 @@ export const DEFAULT_PET_NAME = "Michi";
 /** @deprecated Prefer DEFAULT_PET_NAME or the live API name. */
 export const PET_NAME = DEFAULT_PET_NAME;
 
-export const RENAME_COST = 5;
+export const RENAME_COST = 0;
 
 /** How long feedback speech (broke, fed, …) stays before returning to idle. */
 export const SPEECH_DISMISS_MS = 3500;
@@ -56,6 +56,6 @@ export const PET_STATUS = {
   renamed: petStatusText("renamed"),
 } as const;
 
-export function renameHint(renameCount: number): string {
-  return renameCount > 0 ? `${RENAME_COST} monedas` : "Gratis";
+export function renameHint(_renameCount: number): string {
+  return "Gratis";
 }

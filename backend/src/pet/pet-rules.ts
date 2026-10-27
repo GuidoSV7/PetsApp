@@ -1,14 +1,14 @@
 /** Care + coin rules for the virtual pet (mirrors frontend). */
 
-export const STARTING_COINS = 5;
+export const STARTING_COINS = 0;
 
 export const DEFAULT_PET_NAME = 'Michi';
 
-export const RENAME_COST = 5;
+export const RENAME_COST = 0;
 
 export const MAX_PET_NAME_LENGTH = 16;
 
-export const COIN_COSTS = { feed: 5 } as const;
+export const COIN_COSTS = { feed: 0 } as const;
 
 export const INITIAL_NEEDS = {
   hunger: 72,
@@ -136,7 +136,7 @@ export function normalizePetName(raw: string): string | null {
   return name;
 }
 
-/** First rename free; later renames cost RENAME_COST coins. */
+/** Valid renames are always free; preserve the stored shop balance. */
 export function applyRename(
   snapshot: PetSnapshot,
   rawName: string,
@@ -146,22 +146,12 @@ export function applyRename(
     return { ok: false, reason: 'invalid', snapshot };
   }
 
-  const paid = snapshot.renameCount > 0;
-  if (paid && snapshot.coins < RENAME_COST) {
-    return {
-      ok: false,
-      reason: 'broke',
-      snapshot: { ...snapshot, statusKey: 'broke' },
-    };
-  }
-
   return {
     ok: true,
     snapshot: {
       ...snapshot,
       name,
       renameCount: snapshot.renameCount + 1,
-      coins: paid ? snapshot.coins - RENAME_COST : snapshot.coins,
       statusKey: 'renamed',
     },
   };
@@ -172,25 +162,6 @@ export function applyCare(
   snapshot: PetSnapshot,
   action: CareAction,
 ): CareResult {
-  if (action === 'feed') {
-    if (snapshot.coins < COIN_COSTS.feed) {
-      return {
-        ok: false,
-        reason: 'broke',
-        snapshot: { ...snapshot, statusKey: 'broke' },
-      };
-    }
-    return {
-      ok: true,
-      snapshot: {
-        ...snapshot,
-        coins: snapshot.coins - COIN_COSTS.feed,
-        needs: applyNeeds(snapshot.needs, 'feed'),
-        statusKey: STATUS_FOR_ACTION.feed,
-      },
-    };
-  }
-
   return {
     ok: true,
     snapshot: {

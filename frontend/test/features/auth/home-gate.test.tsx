@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
+import { useEffect } from "react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({
@@ -9,9 +10,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/features/pet-home/components/PetHomeStage", () => ({
-  PetHomeStage: () => (
-    <section aria-label="Escenario de Michi">stage</section>
-  ),
+  PetHomeStage: ({ onCoinsChange }: { onCoinsChange?: (coins: number) => void }) => {
+    useEffect(() => { onCoinsChange?.(37); }, [onCoinsChange]);
+    return <section aria-label="Escenario de Michi">stage</section>;
+  },
 }));
 
 vi.mock("@/features/auth/components/GoogleSignInButton", () => ({
@@ -78,6 +80,9 @@ describe("HomePage auth gate", () => {
       expect(screen.getByLabelText("Escenario de Michi")).toBeTruthy(),
     );
     expect(screen.queryByLabelText("Iniciar sesión")).toBeNull();
+    expect(screen.queryByLabelText(/Monedas:/)).toBeNull();
+    expect(screen.queryByText("+")).toBeNull();
+    expect(screen.getByText("PetsApp")).toBeTruthy();
     expect(document.querySelector('[data-home-theme="room"]')).toBeTruthy();
     expect(
       screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),

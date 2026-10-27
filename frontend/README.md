@@ -56,6 +56,20 @@ stored bytes. Real sessions retain their existing behavior.
 Follow-up, not implemented here: validate the layout session against
 `/auth/profile` instead of relying only on localStorage.
 
+## Free pet care
+
+Feeding, playing, sleeping, bathing, petting and every rename are free.
+New pets start with zero coins; existing balances remain unchanged. Both home
+variants hide the coin counter and add affordance, while keeping the API `coins`
+field and balance propagation for the future store. The reusable `CoinBalance`
+component remains available but is not mounted by `HomeHeader`.
+
+A legacy `broke` status on GET is presented as neutral (`idle`) without writing
+pet state. A legacy `broke` POST response is rejected by the API client and uses
+the existing save-error UI, never successful care or rename feedback. Free care
+requires the updated backend; the client does not simulate successful writes or
+bypass backend validation.
+
 ## Voxel viewer FPS diagnostics
 
 The viewer starts at a client-device DPR ceiling and adapts its numeric Canvas

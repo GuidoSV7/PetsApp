@@ -11,7 +11,7 @@ type Props = {
   onSave: (name: string) => void | Promise<void>;
 };
 
-/** Inline editable pet name: first rename free, later ones cost coins. */
+/** Inline editable pet name; every rename is free. */
 export function PetNameEditor({
   name,
   renameCount,

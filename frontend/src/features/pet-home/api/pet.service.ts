@@ -44,12 +44,19 @@ type RawPetStateResponse = Omit<PetStateResponse, "coat"> & {
   coat: Omit<PetCoatState, "pattern"> & { pattern?: unknown };
 };
 
-/** Normalize reads only; writes retain backend validation and omission semantics. */
+/** Normalize response data without mutating it; writes retain backend validation. */
 function normalizePetState(state: RawPetStateResponse): PetStateResponse {
   return {
     ...state,
+    statusKey: state.statusKey === "broke" ? "idle" : state.statusKey,
     coat: { ...state.coat, pattern: normalizeCoatPattern(state.coat.pattern) },
   };
+}
+
+/** A legacy backend can return HTTP 200 for rejected care; never present it as success. */
+function normalizePetMutation(state: RawPetStateResponse): PetStateResponse {
+  if (state.statusKey === "broke") throw new Error("Pet action rejected");
+  return normalizePetState(state);
 }
 
 export async function fetchPetState(): Promise<PetStateResponse> {
@@ -67,7 +74,7 @@ export async function applyPetAction(
     {},
     { headers: guestHeaders() },
   );
-  return normalizePetState(data);
+  return normalizePetMutation(data);
 }
 
 export async function applyPetCoat(
@@ -82,7 +89,7 @@ export async function applyPetCoat(
   const { data } = await api.post<RawPetStateResponse>("/pet/coat", payload, {
     headers: guestHeaders(),
   });
-  return normalizePetState(data);
+  return normalizePetMutation(data);
 }
 
 export async function renamePet(name: string): Promise<PetStateResponse> {
@@ -91,5 +98,5 @@ export async function renamePet(name: string): Promise<PetStateResponse> {
     { name },
     { headers: guestHeaders() },
   );
-  return normalizePetState(data);
+  return normalizePetMutation(data);
 }

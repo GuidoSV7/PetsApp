@@ -21,7 +21,7 @@ import { createTestDb, type TestDb } from '../testing/postgres.js';
 
 const GUEST = '44444444-4444-4444-8444-444444444444';
 const initial = {
-  coins: 5,
+  coins: 0,
   needs: { hunger: 72, fun: 80, energy: 65, hygiene: 78 },
   coat: {
     primary: '#8a8a8e',
@@ -182,16 +182,16 @@ describe('model retirement through the real application', () => {
       statusKey: 'fed',
     };
     expect(fed.body).toEqual(fedState);
-    const broke = await http('post', '/pet/actions/feed', {}, true);
-    expect(broke.status).toBe(201);
-    const brokeState = { ...fedState, statusKey: 'broke' };
-    expect(broke.body).toEqual(brokeState);
+    const fedAgain = await http('post', '/pet/actions/feed', {}, true);
+    expect(fedAgain.status).toBe(201);
+    const cappedState = { ...fedState, needs: { ...fedState.needs, hunger: 100 } };
+    expect(fedAgain.body).toEqual(cappedState);
     expect((await http('post', '/pet/actions/unknown', {}, true)).status).toBe(
       400,
     );
     const unchanged = await http('get', '/pet/state', undefined, true);
     expect(unchanged.status).toBe(200);
-    expect(unchanged.body).toEqual(brokeState);
+    expect(unchanged.body).toEqual(cappedState);
   });
 
   it('preserves coat updates and rejects invalid colors without changing state', async () => {
@@ -222,7 +222,7 @@ describe('model retirement through the real application', () => {
     expect(unchanged.body).toEqual(coated);
   });
 
-  it('preserves free/paid/broke renames and rejection counters', async () => {
+  it('preserves free repeated renames and invalid-name rejection counters', async () => {
     const first = await http('post', '/pet/name', { name: 'Luna' }, true);
     expect(first.status).toBe(201);
     expect(first.body).toEqual({
@@ -233,23 +233,23 @@ describe('model retirement through the real application', () => {
     });
     const second = await http('post', '/pet/name', { name: 'Sol' }, true);
     expect(second.status).toBe(201);
-    const paid = {
+    const renamedTwice = {
       ...initial,
       name: 'Sol',
       renameCount: 2,
       coins: 0,
       statusKey: 'renamed',
     };
-    expect(second.body).toEqual(paid);
+    expect(second.body).toEqual(renamedTwice);
     const third = await http('post', '/pet/name', { name: 'Nube' }, true);
     expect(third.status).toBe(201);
-    const broke = { ...paid, statusKey: 'broke' };
-    expect(third.body).toEqual(broke);
+    const renamedThrice = { ...renamedTwice, name: 'Nube', renameCount: 3 };
+    expect(third.body).toEqual(renamedThrice);
     expect((await http('post', '/pet/name', { name: '' }, true)).status).toBe(
       400,
     );
     const unchanged = await http('get', '/pet/state', undefined, true);
     expect(unchanged.status).toBe(200);
-    expect(unchanged.body).toEqual(broke);
+    expect(unchanged.body).toEqual(renamedThrice);
   });
 });

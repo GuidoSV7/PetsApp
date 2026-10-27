@@ -119,6 +119,10 @@ export class PetService {
 
   private toDto(row: PetStateRow): PetStateDto {
     const snapshot = this.toSnapshot(row);
-    return { ...snapshot, mood: moodFromNeeds(snapshot.needs) };
+    return {
+      ...snapshot,
+      statusKey: snapshot.statusKey === 'broke' ? 'idle' : snapshot.statusKey,
+      mood: moodFromNeeds(snapshot.needs),
+    };
   }
 }
