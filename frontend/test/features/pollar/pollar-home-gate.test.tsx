@@ -4,6 +4,7 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { WalletType } from "@pollar/core";
+import { useEffect } from "react";
 
 const {
   state,
@@ -47,9 +48,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/features/pet-home/components/PetHomeStage", () => ({
-  PetHomeStage: () => (
-    <section aria-label="Escenario de Michi">stage</section>
-  ),
+  PetHomeStage: ({ onCoinsChange }: { onCoinsChange?: (coins: number) => void }) => {
+    useEffect(() => { onCoinsChange?.(37); }, [onCoinsChange]);
+    return <section aria-label="Escenario de Michi">stage</section>;
+  },
 }));
 
 vi.mock("@/components/ui/BrandMark", () => ({
@@ -134,6 +136,9 @@ describe("HomePage Pollar gate", () => {
       expect(screen.getByLabelText("Escenario de Michi")).toBeTruthy(),
     );
     expect(screen.queryByLabelText("Iniciar sesión")).toBeNull();
+    expect(screen.queryByLabelText(/Monedas:/)).toBeNull();
+    expect(screen.queryByText("+")).toBeNull();
+    expect(screen.getByText("PetsApp")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: /Cerrar sesión de Ada Lovelace/i }),
     ).toBeTruthy();

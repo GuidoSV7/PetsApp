@@ -1,5 +1,4 @@
 import BrandMark from "@/components/ui/BrandMark";
-import { CoinBalance } from "@/features/pet-home/components/CoinBalance";
 import estilosHome from "../../home.module.css";
 
 type Props = {
@@ -8,8 +7,8 @@ type Props = {
   onLogout?: () => void;
 };
 
-/** Home top bar: brand + coins + optional session controls. */
-export default function HomeHeader({ coins, userName, onLogout }: Props) {
+/** Shared home top bar: brand and optional session controls; coins stay in API state. */
+export default function HomeHeader({ userName, onLogout }: Props) {
   return (
     <header className={estilosHome.header}>
       <div className={estilosHome.headerInner}>
@@ -18,7 +17,6 @@ export default function HomeHeader({ coins, userName, onLogout }: Props) {
           <div className={estilosHome.tituloMarca}>PetsApp</div>
         </div>
         <div className={estilosHome.headerAcciones}>
-          {typeof coins === "number" ? <CoinBalance balance={coins} /> : null}
           {userName && onLogout ? (
             <button
               type="button"

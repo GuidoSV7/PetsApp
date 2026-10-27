@@ -254,7 +254,7 @@ describe("PetHomeStage (API-backed)", () => {
     ).toBe(false);
   });
 
-  it("spends coins and raises hunger when feeding via API", async () => {
+  it("preserves coins and raises hunger when feeding via API", async () => {
     await ready();
     fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
     await waitFor(() => {
@@ -263,30 +263,25 @@ describe("PetHomeStage (API-backed)", () => {
     expect(latestCoins).toBe(API_STARTING_COINS - API_FEED_COST);
   });
 
-  it("blocks feeding when broke and keeps balance", async () => {
+  it("allows repeated feeding at zero and keeps balance", async () => {
+    serverState.needs.hunger = 10;
     await ready();
-    const feeds = Math.floor(API_STARTING_COINS / API_FEED_COST);
-    for (let i = 0; i < feeds; i++) {
+    for (const hunger of [28, 46, 64]) {
       fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
-      await waitFor(() =>
-        expect(screen.getByText(PET_STATUS.fed)).toBeTruthy(),
-      );
+      await waitFor(() => expect(serverState.needs.hunger).toBe(hunger));
+      await waitFor(() => expect((screen.getByRole("button", { name: /Alimentar/i }) as HTMLButtonElement).disabled).toBe(false));
+      expect(screen.getByText(PET_STATUS.fed)).toBeTruthy();
+      expect(latestCoins).toBe(0);
     }
-    const leftover = API_STARTING_COINS - feeds * API_FEED_COST;
-    expect(latestCoins).toBe(leftover);
-    fireEvent.click(screen.getByRole("button", { name: /Alimentar/i }));
-    await waitFor(() => {
-      expect(screen.getByText(PET_STATUS.broke)).toBeTruthy();
-    });
-    expect(latestCoins).toBe(leftover);
+    expect(screen.queryByText(PET_STATUS.broke)).toBeNull();
   });
 
-  it("clears the broke speech after a few seconds", async () => {
+  it("clears action feedback speech after a few seconds", async () => {
     vi.useFakeTimers();
     serverState = {
       ...createApiPetState(),
       coins: 0,
-      statusKey: "broke",
+      statusKey: "fed",
     };
     render(
       <PetHomeStage
@@ -298,12 +293,12 @@ describe("PetHomeStage (API-backed)", () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByText(PET_STATUS.broke)).toBeTruthy();
+    expect(screen.getByText(PET_STATUS.fed)).toBeTruthy();
     await act(async () => {
       vi.advanceTimersByTime(SPEECH_DISMISS_MS);
     });
     expect(screen.getByText(PET_STATUS.idle)).toBeTruthy();
-    expect(screen.queryByText(PET_STATUS.broke)).toBeNull();
+    expect(screen.queryByText(PET_STATUS.fed)).toBeNull();
   });
 
   it("raises fun without minting coins when playing", async () => {
@@ -416,7 +411,7 @@ describe("PetHomeStage (API-backed)", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("renames for free once, then charges five coins", async () => {
+  it("renames for free on every save", async () => {
     await ready();
     fireEvent.click(screen.getByRole("button", { name: /Editar nombre/i }));
     expect(screen.getByText("Gratis")).toBeTruthy();
@@ -433,7 +428,7 @@ describe("PetHomeStage (API-backed)", () => {
     expect(screen.getByText(/Ahora se llama Luna/i)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: /Editar nombre/i }));
-    expect(screen.getByText(`${API_RENAME_COST} monedas`)).toBeTruthy();
+    expect(screen.getByText("Gratis")).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Nombre"), {
       target: { value: "Nube" },
     });

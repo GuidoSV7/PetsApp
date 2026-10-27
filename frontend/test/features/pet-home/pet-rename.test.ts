@@ -7,9 +7,11 @@ import {
 } from "@/features/pet-home/pet-status";
 
 describe("pet rename copy", () => {
-  it("hints free then paid", () => {
+  it("hints free for first and repeated renames", () => {
+    expect(RENAME_COST).toBe(0);
     expect(renameHint(0)).toBe("Gratis");
-    expect(renameHint(1)).toBe(`${RENAME_COST} monedas`);
+    expect(renameHint(1)).toBe("Gratis");
+    expect(renameHint(3)).toBe("Gratis");
   });
 
   it("builds renamed speech with the live name", () => {
