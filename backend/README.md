@@ -31,6 +31,7 @@ adapters, contracts, fixtures).
 | `GET` | `/auth/profile` | authenticated |
 | `POST` | `/auth/change-password` | authenticated |
 | `POST` | `/auth/verify-password` | authenticated |
+| `POST` | `/auth/stellar/challenge`, `/auth/stellar/verify` | public, origin-checked; Stellar flag off by default |
 | `GET` `PATCH` `DELETE` | `/users/me` | authenticated |
 | `GET` | `/admin/users`, `/admin/users/:id` | admin |
 | `PATCH` | `/admin/users/:id` | admin |
@@ -42,7 +43,33 @@ adapters, contracts, fixtures).
 
 ### Stellar testnet authentication (default OFF)
 
-This default-off foundation is not registered as an HTTP surface until the integration slice. No activation or publication is included.
+T2 adds SEP-10 login, independently of Pollar. It does **not**
+activate the feature, publish a transaction, fund a wallet, enable mainnet, or
+add private pet/bootstrap endpoints. Production flags remain off. Future testnet
+activation still needs separate owner authorization and the rollout conditions
+below; do not enable this unit while the remaining feature units are incomplete.
+
+#### HTTP contracts
+
+All new POSTs return200 on success. Public POSTs use the existing
+`AuthOriginGuard`. Cookie writes use the existing origin/CSRF policy, including
+Bearer precedence when both credentials
+are present. Remove an old Bearer on the frontend before using a wallet cookie.
+
+1. `POST /auth/stellar/challenge` accepts only `{ "address": "G..." }`.
+   It returns `{ challengeId, transaction, network_passphrase, expiresAt }`
+   and a five-minute HttpOnly browser-flow cookie. `expiresAt` is an ISO server
+   timestamp; `transaction` is a server-signed, sequence-zero SEP-10 envelope.
+2. Freighter signs that envelope inside the extension. Send
+   `{ challengeId, signedTxXdr, signerAddress }` to `POST /auth/stellar/verify`
+   with the same browser-flow cookie. `signerAddress` must identify the challenged
+   account; it does not authorize an owner or replace threshold verification.
+3. Verification returns only `{ user }`, using the existing session-user shape
+   (`id, name, email, role, roles, country`). There is **no JWT in the wallet
+   response body**. Only after the outer database commit does the backend issue
+   the existing HttpOnly session cookie, referring to `users.id`, not an address.
+   Wallet-only users have NULL credentials, member role and balance0; login
+   does not create a pet. A later login resolves the same identity/user.
 
 The login flow cookie is `petsapp_stellar_login`; linking uses the separate
 `petsapp_stellar_link`. Production uses their `__Host-` variants. Like the
@@ -94,6 +121,19 @@ become cleanup-eligible ten minutes after their expiry (roughly15minutes from
 issuance). With no traffic, cleanup resumes at the next accepted issuance; no
 new scheduler or Redis is added. Cleanup touches only transient auth tables,
 never users, identities, pets, balances or ledger history.
+
+| Error | Contract |
+| --- | --- |
+| 400 | Unsupported address/XDR, invalid DTO or extra fields; no crypto attempt spent on malformed XDR |
+| 401 | Invalid/expired proof, browser/session binding or recent authentication; no new session |
+| 403 | Foreign origin or wallet administrative access |
+| 409 | Consumed challenge or incompatible identity link |
+| 429 | Shared issuance limit, with integer `Retry-After` seconds; rejected issuance does not change stored counters |
+| 503 | Feature disabled/misconfigured or external verification unavailable |
+
+A lost verification response needs a new challenge; never replay a consumed
+proof to obtain another cookie. Identity uniqueness prevents duplicate signup.
+The general existing throttler remains in place in addition to these limits.
 
 #### Backend configuration (no activation in this change)
 
@@ -147,9 +187,9 @@ There are no credential triggers or cross-table CHECK constraints. Ordinary SQL
 can insert multiple NULL-email users; that schema fact is not an application
 credential guarantee. There is no unlink, password-delete or account-conversion
 flow. Any future feature adding credential removal must bring its own database
-guarantee. The pending SEP-10 unit owns validation, browser/session binding,
-atomic challenge consumption, limits and retention; these tables alone implement
-none of those runtime policies and store no signed XDR, cookies or JWTs.
+guarantee. The SEP-10 runtime described above owns validation, browser/session
+binding, atomic challenge consumption, limits and retention; these tables alone
+implement none of those policies and store no signed XDR, cookies or JWTs.
 
 Migration tests use isolated PostgreSQL databases, compare complete legacy
 users/pets/roles (including0/5/37 pet balances and timestamps), and prove safe

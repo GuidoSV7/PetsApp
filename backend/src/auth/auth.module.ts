@@ -11,6 +11,13 @@ import {
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { resolveJwtSecret } from './jwt-secret.js';
 import { UsersModule } from '../users/users.module.js';
+import { StellarAuthController } from './stellar-auth.controller.js';
+import { StellarAuthService } from './stellar-auth.service.js';
+import { StellarAuthConfig } from '../config/stellar-auth.config.js';
+import { STELLAR_AUTH_REPOSITORY } from './ports/stellar-auth-repository.port.js';
+import { STELLAR_WEBAUTH } from './ports/stellar-webauth.port.js';
+import { DrizzleStellarAuthRepository } from './infrastructure/drizzle-stellar-auth.repository.js';
+import { StellarWebAuthAdapter } from './infrastructure/stellar-webauth.adapter.js';
 
 @Module({
   imports: [
@@ -28,10 +35,14 @@ import { UsersModule } from '../users/users.module.js';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, StellarAuthController],
   providers: [
     AuthService,
     JwtStrategy,
+    StellarAuthService,
+    StellarAuthConfig,
+    { provide: STELLAR_AUTH_REPOSITORY, useClass: DrizzleStellarAuthRepository },
+    { provide: STELLAR_WEBAUTH, useClass: StellarWebAuthAdapter },
     GoogleAuthLibraryVerifier,
     {
       provide: GOOGLE_TOKEN_VERIFIER,
