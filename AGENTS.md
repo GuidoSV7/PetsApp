@@ -19,6 +19,23 @@ Operational skills live under `.cursor/skills/`. The agent does not use `.claude
 - Deploy / Dokploy: [DEPLOY.md](./DEPLOY.md).
 - Tests: while iterating, run only the affected specs by path; run full suites only before commit or push. When a suite is slow, or to speed up tests (isolation/pools, PGlite snapshots, Postgres templates, Playwright reuse), read `.claude/skills/test-speed/SKILL.md` first. This skill is versioned under `.claude/`; a local copy may also exist under `.cursor/skills/`.
 
+## Independent verification environment (permanent owner policy)
+
+Independent verification uses the verifier's isolated environment: isolated
+`HOME`, `TMPDIR` and caches, system-temporary scratch, and copied dependencies.
+This is the accepted verification environment; do not request a new exception
+for each task. Implementation, parent full suites, builds and real-browser
+checks continue to use the normal `HOME`.
+
+- No network installations, production access or shared application databases.
+- Never modify the source checkout from the verifier; work only on its own copy.
+- Use uniquely owned scratch and isolated test databases.
+- Preserve command output, exit codes and source identity before cleanup.
+- Remove all verifier-owned scratch and databases on completion, including
+  failures, and explicitly verify their absence.
+- This policy does not waive functional checks or authorize source changes,
+  publication, production operations or feature-flag activation.
+
 ## Commits and PRs
 
 Never add `Co-authored-by` for Claude or Cursor (including
