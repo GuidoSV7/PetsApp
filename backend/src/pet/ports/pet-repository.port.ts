@@ -2,6 +2,12 @@ import type { PetCoat, PetNeeds } from '../pet-rules.js';
 
 export const PET_REPOSITORY = Symbol('PET_REPOSITORY');
 
+/** Adoption revokes both current and archived guest keys; never treat as missing. */
+export class GuestPetUnavailableError extends Error {
+  readonly code = 'GUEST_PET_UNAVAILABLE';
+  constructor() { super('GUEST_PET_UNAVAILABLE'); }
+}
+
 export type PetStateRow = {
   id: string;
   guestKey: string;

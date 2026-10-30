@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestDb, type TestDb } from '../../testing/postgres.js';
+import { pgErrorCode } from '../../database/pg-error.util.js';
 import {
   INITIAL_NEEDS,
   STARTING_COINS,
@@ -41,6 +42,14 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
     const found = await repo.findByGuestKey(GUEST);
     expect(found?.id).toBe(created.id);
     expect(found?.coat.primary).toBe('#8a8a8e');
+  });
+
+  it('preserves the raw unique violation and complete row for an unadopted duplicate create', async () => {
+    const repo = await fresh();
+    const original = await repo.create(GUEST, { ...initialSnapshot(), coins: 37 });
+    const error = await repo.create(GUEST, initialSnapshot()).catch((e: unknown) => e);
+    expect(pgErrorCode(error)).toBe('23505');
+    expect(await repo.findByGuestKey(GUEST)).toEqual(original);
   });
 
   it('round-trips explicit patterns on both create and update', async () => {
@@ -88,6 +97,18 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
     const updated = await repo.update(GUEST, { ...snapshot, statusKey: 'petted' });
     expect(updated.coins).toBe(coins);
     expect((await repo.findByGuestKey(GUEST))?.coins).toBe(coins);
+  });
+
+  it.each(['current', 'archived'])('explicitly denies reads and stale writes for adopted %s keys', async (status) => {
+    const repo = await fresh();
+    const pet = await repo.create(GUEST, initialSnapshot());
+    const user = (await testDb.client.query("INSERT INTO users (name) VALUES ('Owner') RETURNING id")).rows[0];
+    await testDb.client.query('INSERT INTO user_pet_ownership (user_id,pet_id,status) VALUES ($1,$2,$3)', [user.id, pet.id, status]);
+    const before = (await testDb.client.query('SELECT * FROM pet_states WHERE id=$1', [pet.id])).rows;
+    await expect(repo.findByGuestKey(GUEST)).rejects.toMatchObject({ code: 'GUEST_PET_UNAVAILABLE' });
+    await expect(repo.update(GUEST, { ...initialSnapshot(), coins: 999, name: 'Stale' })).rejects.toMatchObject({ code: 'GUEST_PET_UNAVAILABLE' });
+    await expect(repo.create(GUEST, initialSnapshot())).rejects.toMatchObject({ code: 'GUEST_PET_UNAVAILABLE' });
+    expect((await testDb.client.query('SELECT * FROM pet_states WHERE id=$1', [pet.id])).rows).toEqual(before);
   });
 
   it('updates coins and needs for the same guest', async () => {

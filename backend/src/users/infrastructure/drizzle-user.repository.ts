@@ -12,7 +12,7 @@ import type { DrizzleDb } from '../../database/database.module.js';
 import { DRIZZLE } from '../../database/database.tokens.js';
 import { definedFields } from '../../database/update-patch.util.js';
 import { users } from '../../db/schema.js';
-import { UserRole } from '../enums/user-role.enum.js';
+import { createUserInTransaction, USER_COLUMNS as COLUMNS } from './user-persistence.js';
 import type {
   UserData,
   UserListFilter,
@@ -27,18 +27,6 @@ import {
   withRoles,
 } from '../../roles/infrastructure/role-rows.js';
 
-const COLUMNS = [
-  'email',
-  'password',
-  'name',
-  'isBlocked',
-  'isActive',
-  'profileImage',
-  'country',
-  'isVerified',
-  'lastLogin',
-] as const;
-
 /** Every column except the password hash. */
 const { password: _passwordHash, ...PUBLIC_COLUMNS } = getTableColumns(users);
 
@@ -47,14 +35,7 @@ export class DrizzleUserRepository implements UserRepository {
   constructor(@Inject(DRIZZLE) private readonly db: DrizzleDb) {}
 
   async create(data: UserData): Promise<UserRow> {
-    const role = data.role ?? UserRole.MEMBER;
-    assertKnownRole(role);
-    const values = definedFields(data, COLUMNS) as typeof users.$inferInsert;
-    return this.db.transaction(async (tx) => {
-      const [row] = await tx.insert(users).values(values).returning();
-      const assigned = await replaceUserRoles(tx, row.id, [role]);
-      return withRoles(row, assigned);
-    });
+    return this.db.transaction((tx) => createUserInTransaction(tx, data));
   }
 
   async findById(id: string): Promise<UserRow | null> {

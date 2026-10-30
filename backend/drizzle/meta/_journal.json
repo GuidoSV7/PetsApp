@@ -50,6 +50,20 @@
       "when": 1792291000003,
       "tag": "0006_stellar_user_identity",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792291000004,
+      "tag": "0007_user_pet_ownership",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792291000005,
+      "tag": "0008_user_coin_ledger",
+      "breakpoints": true
     }
   ]
 }

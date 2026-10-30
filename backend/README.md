@@ -50,11 +50,12 @@ No existing users, credentials, role assignments or pet rows are updated or
 backfilled. The migration uses a transaction-local five-second lock timeout;
 historical migrations0000–0005 remain unchanged.
 
-This is **schema and compatibility only**, not wallet login or signup. No Stellar
-routes or enable flags are introduced here. Complete wallet signup must wait for
-0008 and create user + identity + member role + zero coin balance in one
-transaction, with rollback proof before activation. Do not expose a partial
-signup using the now-nullable user repository. Email/Google input contracts and
+0006 alone is **schema and compatibility only**, not wallet login or signup.
+No Stellar routes or enable flags are introduced by this persistence work.
+0008 and the transaction helpers below now provide complete wallet signup
+persistence: user + identity + member role + zero coin balance in one commit.
+They do not verify a wallet or issue a session. Do not expose a partial signup
+using the nullable user repository. Email/Google input contracts and
 roles, blocking and activation behavior remain unchanged; JWT identity stays
 `sub = users.id`. Public profiles may carry `email: null`, never a placeholder
 email or password hash.
@@ -85,6 +86,126 @@ stops at0006. Do not roll back to a backend that assumes non-null credentials
 after wallet users exist. This change does not authorize production migrations
 or activation; the mixed-version exception for free care below does not apply
 to future wallet/ownership rollout.
+
+### Transactional account-pet persistence (0007/0008; no public routes)
+
+0007 adds `pet_claim_operations` and `user_pet_ownership`; 0008 adds
+`user_coin_balances` and `user_coin_entries`. Both use transaction-local
+`lock_timeout = '5s'`, with no data backfill or updates to old rows.
+0000–0006 and the historical migration tests remain unchanged. Isolated
+PostgreSQL tests apply each new prefix, reapply it and apply the full journal,
+comparing every legacy column and checking rollback on lock timeout.
+
+The database enforces one current pet per user, one owner per pet, integer
+nonnegative balances/credits and one legacy credit per pet. Composite foreign
+keys tie credits and archive operations to the same owner. No credential
+triggers, cross-table CHECKs or cascading deletes of pets/history are installed.
+
+#### Integration boundaries for the auth and private-API units
+
+The domain `WalletUserRepository` exposes:
+
+```typescript
+create(data: WalletSignup): Promise<UserRow>;
+findByIdentity(identity: WalletIdentity): Promise<UserRow | null>;
+// WalletIdentity = { network: 'testnet'; address: string }
+// WalletSignup = WalletIdentity & { name: string }
+```
+
+`create()` owns a transaction when used standalone. The SEP-10 infrastructure
+adapter must instead compose challenge consumption and signup/link in **one**
+outer transaction using the exported infrastructure helpers:
+
+```typescript
+withUserTransaction<T>(
+  db: DrizzleDb,
+  work: (tx: UserTransaction) => Promise<T>,
+): Promise<T>;
+createWalletUser(tx: UserTransaction, data: WalletSignup): Promise<UserRow>;
+linkWalletIdentity(tx: UserTransaction, userId: string, identity: WalletIdentity): Promise<UserRow>;
+findWalletUser(db: Pick<DrizzleDb, 'select' | 'insert' | 'delete'>, identity: WalletIdentity): Promise<UserRow | null>;
+```
+
+`UserTransaction` and Drizzle stay inside infrastructure. Never call an
+independently committing repository `create()` from that callback. Challenge
+consumption, identity uniqueness, the normal user/role creation invariants and
+zero balance must either all commit or all roll back. Real late-constraint
+failure tests include an outer challenge change/counter and prove no orphan
+user, identity, member assignment or balance. Verification, active/blocked and
+role checks, session/purpose binding and wallet-admin denial belong to the auth
+unit; these helpers alone confer no authentication authority. Identity linking
+is idempotent for the exact same owner/address and cannot replace or transfer
+an identity.
+
+`AccountPetRepository` exposes `bootstrap(userId, existingGuestKey?)`,
+`resolve(userId, operationId, choice)`, `operationStatus(userId, operationId)`,
+`readCurrent(userId)` and `mutateCurrent(userId, mutation)`. The authenticated
+server supplies `userId`; no client-selected owner, pet snapshot or balance is
+accepted. Private state omits the internal guest key. Mutations are typed care,
+coat or rename commands and reuse `applyCare`, `applyCoat` and `applyRename`.
+Reads do not initialize pets; bootstrap uses `initialSnapshot` only when there
+is neither a current pet nor an existing guest. A missing supplied guest key
+never generates a guest as a lookup side effect.
+
+A conflict returns pending metadata with the operation and the two server-found
+pet IDs. Repeated preparation reuses the same pending operation. It changes no
+pet, ownership, archive, balance or credit. Only explicit `keep_account` or
+`keep_guest` resolves it. Both choices retain both complete pet rows/UUIDs;
+the incoming guest is in the user's custody even when archived. Archive
+metadata is separate from gameplay status. The server imports coins from the
+fresh locked guest row only: 37 + 5 becomes 42 with either choice, once.
+Retries return the stored confirmed result; another decision is rejected.
+Returning users and support recovery never re-credit legacy coins.
+
+Transactions lock the user, an existing operation when resolving, and sorted
+pet UUIDs before ownership changes. This also serializes empty/current-user
+state across devices. Every guest read/update and duplicate initialization
+locks the same pet row and checks fresh ownership: both current and archived
+keys explicitly reject with `GUEST_PET_UNAVAILABLE`, never missing/recreate.
+Unadopted guest contracts, including duplicate-create uniqueness errors, stay
+unchanged. Private mutations lock and select current only; they write neither
+canonical balance/ledger nor historical legacy coins. Archives are not normal
+mutation targets.
+
+Semantic errors are domain errors here, not HTTP exceptions. The private-API
+unit must map pending conflict to `409 PET_CONFLICT`, stale pairs to
+`409 PET_CONFLICT_STALE`, a different replayed decision to409 and adopted guest
+access to `403 GUEST_PET_UNAVAILABLE`. No controller, archive-list, activation,
+restore or new authentication endpoint is introduced here.
+
+#### Future specifically authorized support recovery — NOT a production runbook authorization
+
+There is no self-service recovery. A future support action needs explicit
+owner authorization for the exact user, archived pet, operator/ticket identity
+and reason before touching real data. This change has executed recovery only
+on disposable test databases; never run it on production as part of deployment.
+
+1. Obtain the authorized user's ID and archived pet UUID from trusted internal
+   records. Verify the ticket and operator identity; do not accept identifiers
+   from a public recovery endpoint. Record the prior claim/archive operation.
+2. Allocate one audit operation UUID for that authorized action. Invoke the
+   infrastructure adapter's internal `AccountPetRecovery.restoreArchived` with
+   `{ userId, petId, operationId, actor, reason }`. The normal account-pet port
+   deliberately excludes this method. Do not implement recovery with manual
+   UPDATEs or calls to bootstrap/adoption.
+3. The helper locks the user and both pets in stable order, verifies archived
+   ownership, records a `restore` operation with actor/reason and both pet IDs,
+   archives the former current pet and restores the target by changing only
+   ownership metadata. Its original archive provenance/timestamps remain on
+   the restored ownership row; every earlier operation remains retained.
+4. Confirm the returned operation/result and exactly one current pet. The pet
+   UUID and complete gameplay row must be unchanged; balance and ledger must
+   be unchanged. The isolated PostgreSQL regression proves those comparisons.
+5. If a response is lost, reuse the exact operation UUID, owner, target, actor
+   and reason. A replay returns the original result; changing its audit identity
+   is rejected. Never delete, recreate, credit, erase archived pets or remove
+   ledger/history to recover a pet.
+
+Activation still requires a separately authorized testnet rollout. Before any
+adoption, **every** backend must understand ownership and reject adopted guest
+keys; the earlier free-care mixed-version exception does not apply. Flags stay
+off. No production migrations, mainnet operations, credential removal, wallet
+verification or UI flows are authorized by this persistence unit.
 
 ### Free pet care
 
