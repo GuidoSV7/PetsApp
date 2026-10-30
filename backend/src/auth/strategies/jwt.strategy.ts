@@ -4,6 +4,8 @@ import type { Request } from 'express';
 import passportJwt from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { resolveJwtSecret } from '../jwt-secret.js';
+import { createHash } from 'node:crypto';
+import { assertStellarMember } from '../stellar-session.js';
 import { isProductionEnv, sessionCookieName } from '../session-cookie.js';
 import {
   USER_REPOSITORY,
@@ -12,7 +14,7 @@ import {
 
 const { ExtractJwt, Strategy } = passportJwt;
 
-export type JwtPayload = { sub: string; email: string | null };
+export type JwtPayload = { sub: string; email: string | null; method?: 'stellar'; iat?: number; exp?: number };
 
 /**
  * Bearer when the request carries an Authorization header, otherwise the
@@ -72,6 +74,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         'This account is blocked. Contact an administrator.',
       );
     }
-    return user;
+    if (payload.method === 'stellar') assertStellarMember(user);
+    // Non-enumerable metadata must not change existing profile/user responses.
+    return Object.defineProperty({ ...user }, 'authSession', {
+      value: {
+        issuedAt: payload.iat,
+        fingerprint: createHash('sha256').update(JSON.stringify(payload)).digest('hex'),
+        method: payload.method === 'stellar' ? 'stellar' : 'existing',
+      },
+      enumerable: false,
+    }) as typeof user & { authSession: import('../stellar-session.js').StellarSessionBinding };
   }
 }

@@ -44,6 +44,19 @@ adapters, contracts, fixtures).
 
 This default-off foundation is not registered as an HTTP surface until the integration slice. No activation or publication is included.
 
+The login flow cookie is `petsapp_stellar_login`; linking uses the separate
+`petsapp_stellar_link`. Production uses their `__Host-` variants. Like the
+existing session cookie they are host-only, Path=/, HttpOnly and SameSite=Lax,
+with Secure in production. Their 256-bit random values never enter storage;
+only purpose-scoped keyed hashes do. A successful issuance refreshes the
+five-minute cookie; failed requests do not set or clear cookies.
+
+Stellar login/link rejects admin and super_admin. A signed `method: "stellar"`
+claim is checked against reloaded current roles on every authenticated request,
+so a later promotion cannot turn a wallet cookie into an administrative session.
+Legacy email/Google JWTs, their response tokens, logout and profiles keep their
+existing contracts. Public profiles never include password or session metadata.
+
 #### Verification, shared limits and transient retention
 
 The direct, lockfile-pinned official `@stellar/stellar-sdk` dependency builds
