@@ -40,6 +40,40 @@ adapters, contracts, fixtures).
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
 
+### Stellar testnet authentication (default OFF)
+
+This default-off foundation is not registered as an HTTP surface until the integration slice. No activation or publication is included.
+
+#### Verification
+
+The direct, lockfile-pinned official `@stellar/stellar-sdk` dependency builds
+and verifies SEP-10. The backend compares the **complete** transaction-body hash,
+server signature, account, domains, network and strict server time bounds, then
+verifies client signatures against the existing account's high threshold.
+Server signatures and zero-weight signers cannot contribute client authority;
+a zero-weight master cannot authenticate alone, even at threshold0. Only an
+HTTP404 from the fixed testnet Horizon account endpoint selects the nonexistent
+account master-key path. Other HTTP failures, malformed account data, timeout
+or transport failures return503, never fake absence or spend crypto attempts.
+No challenge is submitted to Stellar and no user private key is requested.
+
+#### Backend configuration (no activation in this change)
+
+| Variable | Policy |
+| --- | --- |
+| `STELLAR_AUTH_ENABLED` | Absent/false by default; only literal `true` permits the feature |
+| `STELLAR_NETWORK_PASSPHRASE` | Defaults to `Test SDF Network ; September 2015`; any other value fails closed |
+| `STELLAR_HORIZON_URL` | Defaults to and only accepts `https://horizon-testnet.stellar.org` |
+| `STELLAR_HOME_DOMAIN` | Required canonical bare domain; not the client-supplied Host |
+| `STELLAR_WEB_AUTH_DOMAIN` | Required canonical bare domain for WebAuth |
+| `STELLAR_AUTH_SIGNING_SECRET` | Required dedicated SEP-10 service signer, backend secret only, separate per environment and from any payment account |
+| `STELLAR_AUTH_HMAC_SECRET` | Required dedicated shared backend key, at least32characters, identical across instances in an environment |
+
+Provision secrets only through backend secret configuration. Never commit/log
+them or expose them through `NEXT_PUBLIC`. The public service signing key may
+be configured for client verification. Invalid settings return a generic503
+without echoing values. Test keys are ephemeral synthetic fixtures only.
+
 ### Nullable-user / Stellar schema foundation (0006)
 
 `0006_stellar_user_identity.sql` permits NULL in `users.email` and
