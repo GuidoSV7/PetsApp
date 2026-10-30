@@ -1,8 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ACCOUNT_PET_REPOSITORY, AccountPetError, type AccountPetRepository } from './ports/account-pet-repository.port.js';
+import { ACCOUNT_PET_REPOSITORY, AccountPetError, type AccountPetRepository, type PetMutation } from './ports/account-pet-repository.port.js';
 import { AccountPetConfig } from './account-pet.config.js';
 import type { ClaimGuestDto } from './dto/claim-guest.dto.js';
 import { petStateDto } from '../pet/pet-state.mapper.js';
+import { isCoatPattern } from '../pet/pet-rules.js';
 
 @Injectable()
 export class AccountPetService {
@@ -43,6 +44,17 @@ export class AccountPetService {
       if (!current) throw new NotFoundException('PET_NOT_INITIALIZED');
       return petStateDto(current);
     });
+  }
+
+  mutate(userId: string, mutation: PetMutation) {
+    return this.execute(async () => {
+      if (mutation.kind === 'coat' && mutation.coat.pattern !== undefined && !isCoatPattern(mutation.coat.pattern)) {
+        throw new BadRequestException('Unknown coat pattern');
+      }
+      const current = await this.pets.mutateCurrent(userId, mutation);
+      this.logger.log('Account pet mutation confirmed');
+      return petStateDto(current);
+    }, mutation.kind === 'rename' ? 'Invalid pet name' : 'INVALID_PET_MUTATION');
   }
 
   private async execute<T>(work: () => Promise<T>, invalidMutation = 'INVALID_PET_MUTATION'): Promise<T> {

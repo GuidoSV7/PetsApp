@@ -6,10 +6,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createTestDb, type TestDb } from '../testing/postgres.js';
 import { DrizzlePetRepository } from '../pet/infrastructure/drizzle-pet.repository.js';
-import { initialSnapshot } from '../pet/pet-rules.js';
+import { initialSnapshot, applyCare, applyCoat, applyRename } from '../pet/pet-rules.js';
 import { DrizzleAccountPetRepository } from './infrastructure/drizzle-account-pet.repository.js';
 import { accountPetApp, accountPetSnapshot, INTERNAL_SECRET, ORIGIN } from './testing/account-pet-http-test-kit.js';
 
+const colors = { primary: '#112233', secondary: '#445566', accent: '#778899' };
 const error = (statusCode: number, label: string, message: unknown) => ({ statusCode, error: label, message });
 
 describe('account pet HTTP using real AppModule, guards, cookies, validation and PostgreSQL', () => {
@@ -163,6 +164,98 @@ describe('account pet HTTP using real AppModule, guards, cookies, validation and
     await repo.resolve(owner.user.id, next.operationId!, 'keep_guest');
     await rejected('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: 'keep_account' }, 409, error(409, 'Conflict', 'PET_CONFLICT_STALE'));
     await rejected('post', '/account/pet/claim-guest', { guestKey: third.guestKey }, 403, error(403, 'Forbidden', 'PET_UNAVAILABLE'), other.cookie);
+  });
+
+  it('current coat applies pattern and colors', async () => {
+    await new DrizzleAccountPetRepository(fixture.db).bootstrap(owner.user.id);
+    const response = await http('post', '/account/pet/coat', { ...colors, pattern: 'calico' });
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({ ...initialSnapshot(), coat: { ...colors, pattern: 'calico' }, statusKey: 'coated', mood: 'Feliz' });
+  });
+
+  it('current rename applies existing free name rules and increments once', async () => {
+    await new DrizzleAccountPetRepository(fixture.db).bootstrap(owner.user.id);
+    const response = await http('post', '/account/pet/name', { name: ' Luna ' });
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({ ...initialSnapshot(), name: 'Luna', renameCount: 1, statusKey: 'renamed', mood: 'Feliz' });
+  });
+
+  it('null pattern is rejected even though the existing DTO marks pattern optional', async () => {
+    await new DrizzleAccountPetRepository(fixture.db).bootstrap(owner.user.id);
+    await rejected('post', '/account/pet/coat', { ...colors, pattern: null }, 400, error(400, 'Bad Request', 'Unknown coat pattern'));
+  });
+
+  it('invalid or unchanged names reject without mutation', async () => {
+    await new DrizzleAccountPetRepository(fixture.db).bootstrap(owner.user.id);
+    for (const name of [' ', 'Michi']) await rejected('post', '/account/pet/name', { name }, 400, error(400, 'Bad Request', 'Invalid pet name'));
+  });
+
+  it.each([0, 5, 37])('current care/coat/name match guest rules at legacy %s without coin/ledger/archive overwrite', async coins => {
+    const { account, device, repo } = await conflict();
+    const pending = await repo.bootstrap(owner.user.id, device.guestKey);
+    await repo.resolve(owner.user.id, pending.operationId!, 'keep_account');
+    await fixture.client.query("UPDATE pet_states SET coins=$1,status_key='broke' WHERE id=$2", [coins, account.id]);
+    const before = await accountPetSnapshot(fixture);
+    const initial = { ...initialSnapshot(), coins: 42, name: 'Account', renameCount: 2 };
+    expect((await http('get', '/account/pet/state')).body).toEqual({ ...initial, mood: 'Feliz' });
+    let expected = initial;
+    for (const action of ['feed', 'play', 'sleep', 'bathe', 'pet'] as const) {
+      expected = applyCare(expected, action).snapshot;
+      const response = await http('post', `/account/pet/actions/${action}`, {});
+      expect(response.status).toBe(201);
+      expect(response.body).toEqual({ ...expected, mood: 'Feliz' });
+    }
+    expected = applyCoat(expected, { ...colors, pattern: 'pointed' });
+    expect((await http('post', '/account/pet/coat', { ...colors, pattern: 'pointed' })).body).toEqual({ ...expected, mood: 'Feliz' });
+    expected = applyCoat(expected, colors);
+    expect((await http('post', '/account/pet/coat', colors)).body).toEqual({ ...expected, mood: 'Feliz' });
+    expected = applyRename(expected, ' Luna ').snapshot;
+    expect((await http('post', '/account/pet/name', { name: ' Luna ' })).body).toEqual({ ...expected, mood: 'Feliz' });
+    const after = await accountPetSnapshot(fixture);
+    expect(after.pet_states.find(row => row.id === device.id)).toEqual(before.pet_states.find(row => row.id === device.id));
+    expect(after.pet_states.find(row => row.id === account.id)?.coins).toBe(coins);
+    for (const table of Object.keys(before).filter(table => table !== 'pet_states')) expect(after[table]).toEqual(before[table]);
+    await rejected('post', '/account/pet/coat', { ...colors, pattern: null }, 400, error(400, 'Bad Request', 'Unknown coat pattern'));
+    await rejected('post', '/account/pet/name', { name: 'Luna' }, 400, error(400, 'Bad Request', 'Invalid pet name'));
+    await rejected('post', '/account/pet/actions/dance', {}, 400, error(400, 'Bad Request', 'Unknown care action: dance'));
+  });
+
+  it.each([0, 5, 37])('canonical %s remains unchanged through repeated free care, coat and rename', async coins => {
+    const pet = await new DrizzlePetRepository(fixture.db).create(randomUUID(), { ...initialSnapshot(), coins });
+    await new DrizzleAccountPetRepository(fixture.db).bootstrap(owner.user.id, pet.guestKey);
+    const before = await accountPetSnapshot(fixture);
+    let expected = { ...initialSnapshot(), coins };
+    for (const action of ['feed', 'feed', 'play', 'sleep', 'bathe', 'pet'] as const) {
+      expected = applyCare(expected, action).snapshot;
+      const response = await http('post', `/account/pet/actions/${action}`, {});
+      expect({ status: response.status, body: response.body }).toEqual({ status: 201, body: { ...expected, mood: 'Feliz' } });
+    }
+    expected = applyCoat(expected, { ...colors, pattern: 'calico' });
+    expect((await http('post', '/account/pet/coat', { ...colors, pattern: 'calico' })).body).toEqual({ ...expected, mood: 'Feliz' });
+    expected = applyRename(expected, 'Luna').snapshot;
+    expect((await http('post', '/account/pet/name', { name: 'Luna' })).body).toEqual({ ...expected, mood: 'Feliz' });
+    expect((await http('get', '/account/pet/state')).body).toEqual({ ...expected, mood: 'Feliz' });
+    const after = await accountPetSnapshot(fixture);
+    expect(after.pet_states[0].coins).toBe(coins);
+    for (const table of Object.keys(before).filter(table => table !== 'pet_states')) expect(after[table]).toEqual(before[table]);
+  });
+
+  it('development-open global guard still requires a real JWT on every private route', async () => {
+    const before = await accountPetSnapshot(fixture);
+    const previous = { NODE_ENV: kit.values.NODE_ENV, CLIENT_SECRET: kit.values.CLIENT_SECRET };
+    kit.values.NODE_ENV = 'development'; kit.values.CLIENT_SECRET = undefined;
+    try {
+      for (const [method, path, body] of [
+        ['get', '/account/pet/state', undefined], ['get', `/account/pet/claims/${randomUUID()}`, undefined],
+        ['post', '/account/pet/claim-guest', {}], ['post', '/account/pet/actions/feed', {}],
+        ['post', '/account/pet/coat', colors], ['post', '/account/pet/name', { name: 'Luna' }],
+      ] as Array<['get' | 'post', string, object | undefined]>) {
+        const req = request(kit.app.getHttpServer())[method](path);
+        const response = await (body ? req.send(body) : req);
+        expect({ status: response.status, body: response.body }).toEqual({ status: 401, body: { statusCode: 401, message: 'Unauthorized' } });
+        expect(await accountPetSnapshot(fixture)).toEqual(before);
+      }
+    } finally { Object.assign(kit.values, previous); }
   });
 
   it('a valid Bearer chooses its own current pet ahead of another owner cookie', async () => {

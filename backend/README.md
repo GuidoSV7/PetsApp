@@ -47,7 +47,7 @@ adapters, contracts, fixtures).
 ### Private account pet API (default OFF; T5 integration contract)
 
 `ACCOUNT_PET_ENABLED` is an independent backend flag: **only the literal string
-`true` enables private reads, bootstrap and claim status**. Missing,
+`true` enables private reads, bootstrap, claim status and mutations**. Missing,
 false, uppercase, numeric or padded values fail closed with503
 `ACCOUNT_PET_DISABLED`. It has no dependency on SEP-10 signer, Horizon, Pollar
 or `STELLAR_AUTH_ENABLED`; email/Google users can use the same private API when
@@ -64,6 +64,9 @@ using the wallet cookie. Ownership comes only from the authenticated `users.id`.
 | POST | `/account/pet/claim-guest` | 200 confirmed result; see body rules below |
 | GET | `/account/pet/claims/:operationId` | 200 own minimal pending/confirmed status |
 | GET | `/account/pet/state` | 200 current gameplay DTO; never initializes |
+| POST | `/account/pet/actions/:action` | 201 current gameplay DTO, existing free care rules |
+| POST | `/account/pet/coat` | 201 current gameplay DTO, existing coat/pattern validation |
+| POST | `/account/pet/name` | 201 current gameplay DTO, existing free rename validation |
 
 Bootstrap accepts `{}` or `{ "guestKey": "<existing local UUID>" }`. Do not
 create a local key just to bootstrap. A nonexistent key is a lookup, not guest
@@ -99,7 +102,7 @@ member of the pair or mixing bootstrap and resolution yields400
 shared strict validation pipe. No owner, pet ID, snapshot or balance input is
 accepted. Both choices retain both full pet rows and one current pet; the other
 is archived invisibly. Both incorporate the fresh guest's legacy balance once:
-37 + 5 = 42.
+37 + 5 = 42. Care/coat/rename never modify historical coins or canonical money.
 
 Confirmed responses are `{ status: "confirmed", petId, coins, operationId? }`.
 `operationId` is present for a confirmed adoption/resolution, absent for simple
@@ -114,15 +117,17 @@ Claim status returns only `{ status: "pending", operationId }` while pending,
 or the confirmed response above. It does not list options or archives. Foreign
 or nonexistent operations return403 `PET_OPERATION_UNAVAILABLE`; a foreign
 adopted key returns403 `PET_UNAVAILABLE`, with no owner disclosure. Before
-bootstrap, current state return404 `PET_NOT_INITIALIZED`.
+bootstrap, current state/mutations return404 `PET_NOT_INITIALIZED`.
 Other semantic errors use the existing Nest envelope `{ statusCode, error,
 message }`. No auth/session cookie is issued by these endpoints.
 
-Private state have exactly the guest gameplay shape:
+Private state and successful mutations have exactly the guest gameplay shape:
 `{ coins, needs, coat, statusKey, name, renameCount, mood }`, without IDs, keys,
 owner metadata or timestamps. `coins` comes from the canonical user balance,
 not the historical pet row. Legacy `broke` is rendered as `idle`, without a
-read-time write.
+read-time write. Coat and name reuse the existing DTOs; omitted pattern is
+preserved, explicit null receives400 `Unknown coat pattern`, and unchanged or
+invalid names receive400 `Invalid pet name`.
 
 **Adopted guest-key revocation is unconditional, even with both flags OFF.**
 GET and every valid care/coat/name request on `/pet/*` for a current or archived

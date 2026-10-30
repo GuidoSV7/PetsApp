@@ -88,6 +88,21 @@ describe('T4 independent public HTTP persistence and security probes', () => {
    expect(await digest()).toBe(stored);
   } finally { await c.query('ROLLBACK'); c.release(); await adopt?.catch(()=>undefined); await write?.catch(()=>undefined); }
  });
+ it('confirmed lost-response status remains the stored result after another adoption and a rename',async () => {
+  const {body} = await setup(true);
+  const confirmed = await claim(a,body);
+  const another = await new DrizzlePetRepository(db.db).create(randomUUID(), {...initialSnapshot(),coins:5});
+  const next = await claim(a,{guestKey:another.guestKey});
+  expect(next.status).toBe(409);
+  const later = {body:{operationId:next.body.operationId,choice:'keep_account'}};
+  expect((await claim(b,later.body)).status).toBe(200);
+  expect((await post(b,'/account/pet/name',{name:'LaterName'})).status).toBe(201);
+  const before = await digest();
+  expect((await claim(b,body)).body).toEqual(confirmed.body);
+  const status = await request(a.app.getHttpServer()).get(`/account/pet/claims/${confirmed.body.operationId}`).set('Cookie',owner.cookie);
+  expect({status:status.status,body:status.body}).toEqual({status:200,body:confirmed.body});
+  expect(await digest()).toBe(before);
+ });
  it('literal flag and nullable choice are enforced over actual HTTP with no Stellar settings',async () => {
   const before = await digest();
   for (const value of [undefined,'TRUE','1','false',' true ']) {
