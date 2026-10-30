@@ -12,6 +12,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
 import { resolveJwtSecret } from './jwt-secret.js';
 import { UsersModule } from '../users/users.module.js';
 import { StellarAuthController } from './stellar-auth.controller.js';
+import { AccountStellarController } from './account-stellar.controller.js';
 import { StellarAuthService } from './stellar-auth.service.js';
 import { StellarAuthConfig } from '../config/stellar-auth.config.js';
 import { STELLAR_AUTH_REPOSITORY } from './ports/stellar-auth-repository.port.js';
@@ -35,7 +36,7 @@ import { StellarWebAuthAdapter } from './infrastructure/stellar-webauth.adapter.
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController, StellarAuthController],
+  controllers: [AuthController, StellarAuthController, AccountStellarController],
   providers: [
     AuthService,
     JwtStrategy,

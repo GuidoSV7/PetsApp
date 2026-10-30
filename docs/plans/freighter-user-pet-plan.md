@@ -203,7 +203,7 @@ Resolver la identidad a users.id y cargar ese usuario, roles y estado actuales. 
 
 ### Vincular desde /account
 
-- Exigir sesión válida y autenticación reciente. Para email, usar el mecanismo existente de comprobación de contraseña antes de emitir la prueba link.
+- Exigir sesión válida y autenticación reciente con una ventana de 5 minutos, aprobada por el owner. Para email, usar el mecanismo existente de comprobación de contraseña antes de emitir la prueba link.
 - Verificar nuevamente usuario/estado/rol y sesión al confirmar, no solo al preparar el desafío.
 - Rechazar una dirección de otro usuario o una segunda dirección. Repetir el vínculo ya existente mediante una nueva prueba válida es idempotente.
 - No asociar cuentas por nombre/email declarado ni fusionarlas.

@@ -32,6 +32,8 @@ adapters, contracts, fixtures).
 | `POST` | `/auth/change-password` | authenticated |
 | `POST` | `/auth/verify-password` | authenticated |
 | `POST` | `/auth/stellar/challenge`, `/auth/stellar/verify` | public, origin-checked; Stellar flag off by default |
+| `GET` | `/account/stellar` | explicit user JWT; own identity only |
+| `POST` | `/account/stellar/challenge`, `/account/stellar/verify` | explicit recent member JWT, origin-checked; link only |
 | `GET` `PATCH` `DELETE` | `/users/me` | authenticated |
 | `GET` | `/admin/users`, `/admin/users/:id` | admin |
 | `PATCH` | `/admin/users/:id` | admin |
@@ -43,7 +45,7 @@ adapters, contracts, fixtures).
 
 ### Stellar testnet authentication (default OFF)
 
-T2 adds SEP-10 login, independently of Pollar. It does **not**
+T2 adds SEP-10 login and linking, independently of Pollar. It does **not**
 activate the feature, publish a transaction, fund a wallet, enable mainnet, or
 add private pet/bootstrap endpoints. Production flags remain off. Future testnet
 activation still needs separate owner authorization and the rollout conditions
@@ -52,8 +54,9 @@ below; do not enable this unit while the remaining feature units are incomplete.
 #### HTTP contracts
 
 All new POSTs return200 on success. Public POSTs use the existing
-`AuthOriginGuard`. Cookie writes use the existing origin/CSRF policy, including
-Bearer precedence when both credentials
+`AuthOriginGuard`; private routes also require `JwtAuthGuard`, not merely the
+global guard's internal `X-Client-Secret` alternative. Cookie writes use the
+existing origin/CSRF policy, including Bearer precedence when both credentials
 are present. Remove an old Bearer on the frontend before using a wallet cookie.
 
 1. `POST /auth/stellar/challenge` accepts only `{ "address": "G..." }`.
@@ -77,6 +80,24 @@ existing session cookie they are host-only, Path=/, HttpOnly and SameSite=Lax,
 with Secure in production. Their 256-bit random values never enter storage;
 only purpose-scoped keyed hashes do. A successful issuance refreshes the
 five-minute cookie; failed requests do not set or clear cookies.
+
+`GET /account/stellar` returns `{ identity: null }` or
+`{ identity: { network: "testnet", address: "G..." } }` for the authenticated
+user only. To link, POST `{ address, password }` to
+`/account/stellar/challenge`, then the same verification fields above to
+`/account/stellar/verify`. The latter returns the identity shape and does not
+replace the current session. Email users must pass the **existing** password
+checker before issuance; wallet-only users need no password for an idempotent
+proof of their already-bound identity.
+
+Linking requires a valid member session with signed JWT `iat` strictly less
+than five minutes old (future/missing timestamps fail closed). Password checking
+does not refresh this timestamp. Confirmation rechecks user, active/blocked
+state, current roles, session/browser/purpose and recency. Both the challenge's
+five-minute expiry and the session's five-minute recency window must still hold;
+the latter may end earlier. A fresh proof of the same link is idempotent. Another
+owner or a second address yields409 without replacing, transferring or merging.
+There are no unlink, replacement, credential-conversion or archive routes.
 
 Stellar login/link rejects admin and super_admin. A signed `method: "stellar"`
 claim is checked against reloaded current roles on every authenticated request,
