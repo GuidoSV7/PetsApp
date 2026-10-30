@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import {
   applyCare,
   applyCoat,
@@ -7,18 +7,18 @@ import {
   isCareAction,
   isCoatPattern,
   isHexColor,
-  moodFromNeeds,
   type CareAction,
   type PetCoatInput,
-  type PetSnapshot,
 } from './pet-rules.js';
 import {
   PET_REPOSITORY,
+  GuestPetUnavailableError,
   type PetRepository,
   type PetStateRow,
 } from './ports/pet-repository.port.js';
+import { petSnapshot, petStateDto, type PetStateDto } from './pet-state.mapper.js';
 
-export type PetStateDto = PetSnapshot & { mood: string };
+export type { PetStateDto } from './pet-state.mapper.js';
 
 const GUEST_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -39,10 +39,10 @@ export class PetService {
 
   async getOrCreate(guestKey: string | undefined): Promise<PetStateDto> {
     const key = this.assertGuestKey(guestKey);
-    const existing = await this.pets.findByGuestKey(key);
-    if (existing) return this.toDto(existing);
-    const created = await this.pets.create(key, initialSnapshot());
-    return this.toDto(created);
+    const existing = await this.guestCall(this.pets.findByGuestKey(key));
+    if (existing) return petStateDto(existing);
+    const created = await this.guestCall(this.pets.create(key, initialSnapshot()));
+    return petStateDto(created);
   }
 
   async applyAction(
@@ -55,9 +55,9 @@ export class PetService {
     }
     const action: CareAction = actionRaw;
     const current = await this.requireRow(key);
-    const result = applyCare(this.toSnapshot(current), action);
-    const saved = await this.pets.update(key, result.snapshot);
-    return this.toDto(saved);
+    const result = applyCare(petSnapshot(current), action);
+    const saved = await this.guestCall(this.pets.update(key, result.snapshot));
+    return petStateDto(saved);
   }
 
   async setCoat(
@@ -76,14 +76,14 @@ export class PetService {
       throw new BadRequestException('Unknown coat pattern');
     }
     const current = await this.requireRow(key);
-    const next = applyCoat(this.toSnapshot(current), {
+    const next = applyCoat(petSnapshot(current), {
       primary: coat.primary.toLowerCase(),
       secondary: coat.secondary.toLowerCase(),
       accent: coat.accent.toLowerCase(),
       pattern: coat.pattern,
     });
-    const saved = await this.pets.update(key, next);
-    return this.toDto(saved);
+    const saved = await this.guestCall(this.pets.update(key, next));
+    return petStateDto(saved);
   }
 
   async rename(
@@ -92,37 +92,28 @@ export class PetService {
   ): Promise<PetStateDto> {
     const key = this.assertGuestKey(guestKey);
     const current = await this.requireRow(key);
-    const result = applyRename(this.toSnapshot(current), rawName);
+    const result = applyRename(petSnapshot(current), rawName);
     if (!result.ok && result.reason === 'invalid') {
       throw new BadRequestException('Invalid pet name');
     }
-    const saved = await this.pets.update(key, result.snapshot);
-    return this.toDto(saved);
+    const saved = await this.guestCall(this.pets.update(key, result.snapshot));
+    return petStateDto(saved);
   }
 
   private async requireRow(guestKey: string): Promise<PetStateRow> {
-    const existing = await this.pets.findByGuestKey(guestKey);
+    const existing = await this.guestCall(this.pets.findByGuestKey(guestKey));
     if (existing) return existing;
-    return this.pets.create(guestKey, initialSnapshot());
+    return this.guestCall(this.pets.create(guestKey, initialSnapshot()));
   }
 
-  private toSnapshot(row: PetStateRow): PetSnapshot {
-    return {
-      coins: row.coins,
-      needs: { ...row.needs },
-      coat: { ...row.coat },
-      statusKey: row.statusKey,
-      name: row.name,
-      renameCount: row.renameCount,
-    };
-  }
-
-  private toDto(row: PetStateRow): PetStateDto {
-    const snapshot = this.toSnapshot(row);
-    return {
-      ...snapshot,
-      statusKey: snapshot.statusKey === 'broke' ? 'idle' : snapshot.statusKey,
-      mood: moodFromNeeds(snapshot.needs),
-    };
+  private async guestCall<T>(result: Promise<T>): Promise<T> {
+    try {
+      return await result;
+    } catch (error) {
+      if (error instanceof GuestPetUnavailableError) {
+        throw new ForbiddenException('GUEST_PET_UNAVAILABLE');
+      }
+      throw error;
+    }
   }
 }

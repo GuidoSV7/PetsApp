@@ -43,6 +43,15 @@ adapters, contracts, fixtures).
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
 
+### Adopted guest access
+
+**Adopted guest-key revocation is unconditional, even with both flags OFF.**
+GET and every valid care/coat/name request on `/pet/*` for a current or archived
+adopted key return403 `GUEST_PET_UNAVAILABLE`, never missing/recreate/fallback.
+Unadopted guest routes retain their existing status, DTO, validation and free
+care contracts. There are no archive/list/activation/restore routes. The internal
+support recovery port remains separate and is not wired to HTTP.
+
 ### Stellar testnet authentication (default OFF)
 
 T2 adds SEP-10 login and linking, independently of Pollar. It does **not**
