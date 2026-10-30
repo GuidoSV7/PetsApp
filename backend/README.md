@@ -44,7 +44,7 @@ adapters, contracts, fixtures).
 
 This default-off foundation is not registered as an HTTP surface until the integration slice. No activation or publication is included.
 
-#### Verification
+#### Verification, shared limits and transient retention
 
 The direct, lockfile-pinned official `@stellar/stellar-sdk` dependency builds
 and verifies SEP-10. The backend compares the **complete** transaction-body hash,
@@ -56,6 +56,31 @@ HTTP404 from the fixed testnet Horizon account endpoint selects the nonexistent
 account master-key path. Other HTTP failures, malformed account data, timeout
 or transport failures return503, never fake absence or spend crypto attempts.
 No challenge is submitted to Stellar and no user private key is requested.
+
+| Control | Shared PostgreSQL policy |
+| --- | --- |
+| Challenge issuance per address | 5 per five-minute window, across login/link and instances |
+| Challenge issuance per IP | 30 per five-minute window; use configured trusted `req.ip`, never parse forwarded headers here |
+| Pending proofs | Replacement invalidates only the same flow/address/purpose |
+| Bad legitimate proofs | 3 per challenge; wrong browser/session/purpose does not spend them |
+| Consumption | Exactly one outer commit with signup/link; concurrent replay returns409 and no new cookie |
+
+The T2 repository composes the unchanged T3 transaction-local helpers below;
+it never calls standalone wallet `create()` during consumption. Late errors
+roll back the challenge, user, identity, member assignment and zero balance
+as one unit, preserving the shared five-second lock timeout.
+
+Identifiers in counters and browser/session bindings use domain-separated
+HMAC-SHA256, with a shared dedicated backend key across instances. IPs are not
+stored. Stored auth metadata contains no cookie, JWT, signed XDR, private key,
+service secret or request body. Logs contain event/purpose and successful user
+ID only, not credentials or proofs. Every accepted challenge issuance lazily
+cleans **at most100 expired counters and100 challenges** using locked,
+skip-locked batches. Counter windows expire after five minutes; challenge rows
+become cleanup-eligible ten minutes after their expiry (roughly15minutes from
+issuance). With no traffic, cleanup resumes at the next accepted issuance; no
+new scheduler or Redis is added. Cleanup touches only transient auth tables,
+never users, identities, pets, balances or ledger history.
 
 #### Backend configuration (no activation in this change)
 
