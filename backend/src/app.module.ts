@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { RolesModule } from './roles/roles.module.js';
 import { PetModule } from './pet/pet.module.js';
+import { AccountPetModule } from './account-pet/account-pet.module.js';
 import { GlobalAuthGuard } from './auth/guards/global-auth.guard.js';
 
 @Module({
@@ -20,6 +21,7 @@ import { GlobalAuthGuard } from './auth/guards/global-auth.guard.js';
     UsersModule,
     RolesModule,
     PetModule,
+    AccountPetModule,
   ],
   controllers: [AppController],
   providers: [

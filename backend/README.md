@@ -12,6 +12,7 @@ and roles/permissions on PostgreSQL through Drizzle ORM.
 | `src/roles` | Role catalog (`admin`, `super_admin`, `member` plus custom roles) with a permission list from `permission-catalog.ts`, `user_roles` join, role rank (`role-rank.ts`). Port `RoleRepository` with Drizzle and in-memory adapters. |
 | `src/database` | `DatabaseModule` (pg pool + Drizzle, global), SSL and credential resolution, Postgres error helpers. |
 | `src/db` | Drizzle schema (users, roles, pets and Stellar identity/auth metadata) and inferred row types. |
+| `src/account-pet` | Explicit user-JWT private pet/bootstrap API, current-only commands, pending/confirmed claim status, transactional repository port. |
 | `src/config` | CORS policy, trust-proxy and cookie-parser setup, env parsing helpers. |
 | `src/logging` | Structured log helpers (`traceWrite`). |
 | `src/testing` | Postgres column semantics for in-memory fakes and the isolated PostgreSQL test harness. |
@@ -43,7 +44,71 @@ adapters, contracts, fixtures).
 | `POST` | `/admin/roles` | super admin |
 | `PATCH` | `/admin/roles/:code` | super admin |
 
-### Adopted guest access
+### Private account pet API (default OFF; T5 integration contract)
+
+`ACCOUNT_PET_ENABLED` is an independent backend flag: **only the literal string
+`true` enables private reads, bootstrap and claim status**. Missing,
+false, uppercase, numeric or padded values fail closed with503
+`ACCOUNT_PET_DISABLED`. It has no dependency on SEP-10 signer, Horizon, Pollar
+or `STELLAR_AUTH_ENABLED`; email/Google users can use the same private API when
+separately enabled. This change does not authorize activation in any environment.
+
+Every `/account/pet/*` route requires an actual user JWT (existing HttpOnly
+session cookie or Bearer). An internal `X-Client-Secret` or development-open
+mode is never a user credential. Existing global cookie Origin/CSRF checks and
+Bearer precedence remain unchanged. T5 must clear old Bearer credentials before
+using the wallet cookie. Ownership comes only from the authenticated `users.id`.
+
+| Method | Path | Successful result |
+| --- | --- | --- |
+| POST | `/account/pet/claim-guest` | 200 confirmed result; see body rules below |
+| GET | `/account/pet/claims/:operationId` | 200 own minimal pending/confirmed status |
+| GET | `/account/pet/state` | 200 current gameplay DTO; never initializes |
+
+Bootstrap accepts `{}` or `{ "guestKey": "<existing local UUID>" }`. Do not
+create a local key just to bootstrap. A nonexistent key is a lookup, not guest
+creation. With no current pet, the existing guest is adopted without changing
+its UUID or gameplay row; with neither, a new private zero-balance pet is created.
+With current/no existing guest, the current pet is reused without writes.
+The internal guest key of a private pet is never returned.
+
+A conflict returns409 with this exact shape (IDs are server-found):
+
+```json
+{
+  "statusCode": 409,
+  "error": "Conflict",
+  "message": "PET_CONFLICT",
+  "operationId": "<operation UUID>",
+  "options": {
+    "keep_account": { "petId": "<current UUID>" },
+    "keep_guest": { "petId": "<device UUID>" }
+  }
+}
+```
+
+Preparation stores only durable pending metadata: no adoption, archive, gameplay,
+balance or ledger changes. Repeating bootstrap for that pair returns the same
+operation. The options label the two server-found pets; they do not expose guest
+keys, owners, archive data, credentials, timestamps or arbitrary snapshots.
+
+Confirmed responses are `{ status: "confirmed", petId, coins, operationId? }`.
+The operation ID is present for adoption, absent for current reuse or creation
+without an existing guest.
+
+Claim status returns only `{ status: "pending", operationId }` while pending,
+or the confirmed response above. It does not list options or archives. Foreign
+or nonexistent operations return403 `PET_OPERATION_UNAVAILABLE`; a foreign
+adopted key returns403 `PET_UNAVAILABLE`, with no owner disclosure. Before
+bootstrap, current state return404 `PET_NOT_INITIALIZED`.
+Other semantic errors use the existing Nest envelope `{ statusCode, error,
+message }`. No auth/session cookie is issued by these endpoints.
+
+Private state have exactly the guest gameplay shape:
+`{ coins, needs, coat, statusKey, name, renameCount, mood }`, without IDs, keys,
+owner metadata or timestamps. `coins` comes from the canonical user balance,
+not the historical pet row. Legacy `broke` is rendered as `idle`, without a
+read-time write.
 
 **Adopted guest-key revocation is unconditional, even with both flags OFF.**
 GET and every valid care/coat/name request on `/pet/*` for a current or archived
