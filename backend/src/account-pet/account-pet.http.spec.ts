@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
+import pg from 'pg';
+import { databaseUrl, readTestUrl } from '../testing/postgres-lifecycle.js';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { createTestDb, type TestDb } from '../testing/postgres.js';
@@ -83,6 +86,26 @@ describe('account pet HTTP using real AppModule, guards, cookies, validation and
     expect(await accountPetSnapshot(fixture)).toEqual(after);
   });
 
+  it.each(['keep_account', 'keep_guest'] as const)('%s keeps both full rows, archives one, credits 37+5 once, and replays exact decision/status', async choice => {
+    const { account, device, repo } = await conflict();
+    // T3 prepares a valid operation so a missing T4 resolution rule, not a missing route, is exercised.
+    const pending = await repo.bootstrap(owner.user.id, device.guestKey);
+    const pets = (await accountPetSnapshot(fixture)).pet_states;
+    const result = await http('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice });
+    expect(result.status).toBe(200);
+    expect(result.body).toEqual({ status: 'confirmed', operationId: pending.operationId, petId: choice === 'keep_account' ? account.id : device.id, coins: 42 });
+    const after = await accountPetSnapshot(fixture);
+    expect(after.pet_states).toEqual(pets);
+    expect(after.user_pet_ownership.filter(row => row.status === 'current')).toEqual([expect.objectContaining({ pet_id: result.body.petId })]);
+    expect(after.user_pet_ownership.filter(row => row.status === 'archived')).toEqual([expect.objectContaining({ archive_reason: choice, archive_operation_id: pending.operationId })]);
+    expect(after.user_coin_balances).toEqual([expect.objectContaining({ balance: 42 })]);
+    expect(after.user_coin_entries).toHaveLength(2);
+    expect((await http('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice })).body).toEqual(result.body);
+    expect((await http('get', `/account/pet/claims/${pending.operationId}`)).body).toEqual(result.body);
+    expect(await accountPetSnapshot(fixture)).toEqual(after);
+    await rejected('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: choice === 'keep_guest' ? 'keep_account' : 'keep_guest' }, 409, error(409, 'Conflict', 'PET_OPERATION_DECISION_MISMATCH'));
+  });
+
   it('status exposes only minimal own pending metadata', async () => {
     const { device, repo } = await conflict();
     const pending = await repo.bootstrap(owner.user.id, device.guestKey);
@@ -92,12 +115,54 @@ describe('account pet HTTP using real AppModule, guards, cookies, validation and
     expect({ status: result.status, body: result.body }).toEqual({ status: 200, body: { status: 'pending', operationId: pending.operationId } });
   });
 
+  it('a different already-confirmed decision rejects with 409 without mutation', async () => {
+    const { device, repo } = await conflict();
+    const pending = await repo.bootstrap(owner.user.id, device.guestKey);
+    await repo.resolve(owner.user.id, pending.operationId!, 'keep_account');
+    await rejected('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: 'keep_guest' }, 409, error(409, 'Conflict', 'PET_OPERATION_DECISION_MISMATCH'));
+  });
+
+  it('a stale pair rejects with 409 without partial effects', async () => {
+    const { device, repo, guests } = await conflict();
+    const pending = await repo.bootstrap(owner.user.id, device.guestKey);
+    const third = await guests.create(randomUUID(), initialSnapshot());
+    const next = await repo.bootstrap(owner.user.id, third.guestKey);
+    await repo.resolve(owner.user.id, next.operationId!, 'keep_guest');
+    await rejected('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: 'keep_account' }, 409, error(409, 'Conflict', 'PET_CONFLICT_STALE'));
+  });
+
   it('a foreign adopted key rejects without disclosure or transfer', async () => {
     const { device, repo } = await conflict();
     const pending = await repo.bootstrap(owner.user.id, device.guestKey);
     await repo.resolve(owner.user.id, pending.operationId!, 'keep_guest');
     const other = await kit.owner('Other');
     await rejected('post', '/account/pet/claim-guest', { guestKey: device.guestKey }, 403, error(403, 'Forbidden', 'PET_UNAVAILABLE'), other.cookie);
+  });
+
+  it('rejects incomplete choices, mixed bootstrap/decision and client authority without mutation', async () => {
+    for (const body of [{ choice: 'keep_guest' }, { operationId: randomUUID() }, { operationId: randomUUID(), choice: 'keep_guest', guestKey: randomUUID() }]) {
+      await rejected('post', '/account/pet/claim-guest', body, 400, error(400, 'Bad Request', 'INVALID_PET_CLAIM'));
+    }
+    await rejected('post', '/account/pet/claim-guest', { operationId: randomUUID(), choice: 'invalid' }, 400, error(400, 'Bad Request', ['choice must be one of the following values: keep_account, keep_guest']));
+    for (const [field, message] of [['guestKey', 'guestKey must be a UUID'], ['operationId', 'operationId must be a UUID']] as const) {
+      for (const value of [null, 'invalid']) await rejected('post', '/account/pet/claim-guest', { [field]: value }, 400, error(400, 'Bad Request', [message]));
+    }
+    for (const field of ['owner', 'userId', 'petId', 'coins', 'snapshot']) {
+      await rejected('post', '/account/pet/claim-guest', { [field]: 1 }, 400, error(400, 'Bad Request', [`property ${field} should not exist`]));
+    }
+  });
+
+  it('foreign operations/keys and stale pairs reject without disclosure or partial changes', async () => {
+    const { device, repo, guests } = await conflict();
+    const pending = await repo.bootstrap(owner.user.id, device.guestKey);
+    const other = await kit.owner('Other');
+    await rejected('get', `/account/pet/claims/${pending.operationId}`, undefined, 403, error(403, 'Forbidden', 'PET_OPERATION_UNAVAILABLE'), other.cookie);
+    await rejected('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: 'keep_guest' }, 403, error(403, 'Forbidden', 'PET_OPERATION_UNAVAILABLE'), other.cookie);
+    const third = await guests.create(randomUUID(), initialSnapshot());
+    const next = await repo.bootstrap(owner.user.id, third.guestKey);
+    await repo.resolve(owner.user.id, next.operationId!, 'keep_guest');
+    await rejected('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: 'keep_account' }, 409, error(409, 'Conflict', 'PET_CONFLICT_STALE'));
+    await rejected('post', '/account/pet/claim-guest', { guestKey: third.guestKey }, 403, error(403, 'Forbidden', 'PET_UNAVAILABLE'), other.cookie);
   });
 
   it('a valid Bearer chooses its own current pet ahead of another owner cookie', async () => {
@@ -129,6 +194,75 @@ describe('account pet HTTP using real AppModule, guards, cookies, validation and
     expect(bearer.status).toBe(401);
     expect(bearer.body).toEqual({ statusCode: 401, message: 'Unauthorized' });
     expect(await accountPetSnapshot(fixture)).toEqual(before);
+  });
+
+  it('racing owners and concurrent same-decision retries retain one owner/current and one credit', async () => {
+    const other = await kit.owner('Other');
+    const pet = await new DrizzlePetRepository(fixture.db).create(randomUUID(), { ...initialSnapshot(), coins: 5 });
+    const before = await accountPetSnapshot(fixture);
+    const results = await Promise.all([owner.cookie, other.cookie].map(cookie => http('post', '/account/pet/claim-guest', { guestKey: pet.guestKey }, cookie)));
+    expect(results.map(result => result.status).toSorted((a, b) => a - b)).toEqual([200, 403]);
+    expect(results.find(result => result.status === 403)?.body).toEqual(error(403, 'Forbidden', 'PET_UNAVAILABLE'));
+    const after = await accountPetSnapshot(fixture);
+    expect(after.pet_states).toEqual(before.pet_states);
+    expect(after.user_pet_ownership).toEqual([expect.objectContaining({ pet_id: pet.id, status: 'current' })]);
+    expect(after.user_coin_entries).toEqual([expect.objectContaining({ pet_id: pet.id, amount: 5 })]);
+    expect(after.user_coin_balances).toEqual([expect.objectContaining({ balance: 5 })]);
+    expect(after.pet_claim_operations).toEqual([expect.objectContaining({ user_id: after.user_pet_ownership[0].user_id, guest_pet_id: pet.id, status: 'confirmed' })]);
+    for (const table of ['users', 'user_stellar_identities', 'roles', 'user_roles', 'stellar_auth_attempts', 'stellar_auth_challenges']) expect(after[table]).toEqual(before[table]);
+    const winner = results[0].status === 200 ? owner : other;
+    const device = await new DrizzlePetRepository(fixture.db).create(randomUUID(), { ...initialSnapshot(), coins: 37 });
+    const pending = await new DrizzleAccountPetRepository(fixture.db).bootstrap(winner.user.id, device.guestKey);
+    const decisions = await Promise.all([1, 2].map(() => http('post', '/account/pet/claim-guest', { operationId: pending.operationId, choice: 'keep_guest' }, winner.cookie)));
+    expect(decisions.map(result => result.status)).toEqual([200, 200]);
+    expect(decisions[0].body).toEqual(decisions[1].body);
+    expect(decisions[0].body).toEqual({ status: 'confirmed', operationId: pending.operationId, petId: device.id, coins: 42 });
+    const final = await accountPetSnapshot(fixture);
+    expect(final.user_coin_entries).toHaveLength(2);
+    expect(final.user_pet_ownership.filter(row => row.status === 'current')).toHaveLength(1);
+    expect(final.user_coin_balances).toEqual([expect.objectContaining({ balance: 42 })]);
+  });
+
+  it('HTTP adoption and guest writes share a real cross-connection lock and revoke after commit', async () => {
+    const pet = await new DrizzlePetRepository(fixture.db).create(randomUUID(), { ...initialSnapshot(), coins: 5 });
+    await fixture.client.query('INSERT INTO user_coin_balances (user_id,balance) VALUES ($1,0)', [owner.user.id]);
+    const before = await accountPetSnapshot(fixture);
+    const name = (await fixture.client.query('SELECT current_database() AS name')).rows[0].name;
+    const connection = new pg.Client({ connectionString: databaseUrl(readTestUrl(), name), statement_timeout: 5000 });
+    await connection.connect();
+    async function blocked(fragment: string) {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        await connection.query('SELECT pg_stat_clear_snapshot()');
+        const result = await connection.query("SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND wait_event_type='Lock' AND query LIKE $1", [`%${fragment}%`]);
+        if (result.rowCount) return;
+        await delay(10);
+      }
+      throw new Error(`Expected blocked query ${fragment}`);
+    }
+    let claim: Promise<request.Response> | undefined;
+    let write: Promise<request.Response> | undefined;
+    try {
+      await connection.query('BEGIN');
+      await connection.query('SELECT * FROM user_coin_balances WHERE user_id=$1 FOR UPDATE', [owner.user.id]);
+      claim = http('post', '/account/pet/claim-guest', { guestKey: pet.guestKey }).then(value => value);
+      await blocked('update "user_coin_balances"');
+      write = request(kit.app.getHttpServer()).post('/pet/actions/feed').set('X-Pet-Guest-Key', pet.guestKey).send({}).then(value => value);
+      await blocked('from "pet_states"');
+      await connection.query('COMMIT');
+      const adopted = await claim;
+      expect(adopted.status).toBe(200);
+      const denied = await write;
+      expect({ status: denied.status, body: denied.body }).toEqual({ status: 403, body: error(403, 'Forbidden', 'GUEST_PET_UNAVAILABLE') });
+      const after = await accountPetSnapshot(fixture);
+      expect(after.pet_states).toEqual(before.pet_states);
+      expect(after.user_coin_balances).toEqual([expect.objectContaining({ balance: 5 })]);
+      expect(after.user_coin_entries).toEqual([expect.objectContaining({ pet_id: pet.id, amount: 5 })]);
+    } finally {
+      await connection.query('ROLLBACK');
+      await connection.end();
+      await claim?.catch(() => undefined);
+      await write?.catch(() => undefined);
+    }
   });
 
   it('disabled feature returns generic 503 independently of Stellar config without mutations', async () => {

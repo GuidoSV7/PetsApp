@@ -11,7 +11,13 @@ export class AccountPetService {
 
   claim(userId: string, dto: ClaimGuestDto) {
     return this.execute(async () => {
-      const result = await this.pets.bootstrap(userId, dto.guestKey);
+      const decision = dto.operationId !== undefined || dto.choice !== undefined;
+      if (decision && (!dto.operationId || !dto.choice || dto.guestKey !== undefined)) {
+        throw new BadRequestException('INVALID_PET_CLAIM');
+      }
+      const result = decision
+        ? await this.pets.resolve(userId, dto.operationId!, dto.choice!)
+        : await this.pets.bootstrap(userId, dto.guestKey);
       if (result.status === 'pending') {
         throw new ConflictException({
           statusCode: 409, error: 'Conflict', message: 'PET_CONFLICT',

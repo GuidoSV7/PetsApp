@@ -92,9 +92,23 @@ balance or ledger changes. Repeating bootstrap for that pair returns the same
 operation. The options label the two server-found pets; they do not expose guest
 keys, owners, archive data, credentials, timestamps or arbitrary snapshots.
 
+Resolve only with the pair `{ "operationId": "<UUID>", "choice": "keep_account" }`
+or `keep_guest`. Do not include `guestKey` in a resolution request. Missing one
+member of the pair or mixing bootstrap and resolution yields400
+`INVALID_PET_CLAIM`. Invalid UUIDs/choices and extra fields are rejected by the
+shared strict validation pipe. No owner, pet ID, snapshot or balance input is
+accepted. Both choices retain both full pet rows and one current pet; the other
+is archived invisibly. Both incorporate the fresh guest's legacy balance once:
+37 + 5 = 42.
+
 Confirmed responses are `{ status: "confirmed", petId, coins, operationId? }`.
-The operation ID is present for adoption, absent for current reuse or creation
-without an existing guest.
+`operationId` is present for a confirmed adoption/resolution, absent for simple
+current reuse or creation without an existing guest. Retrying a resolution with
+the same operation and exact choice returns its stored result, including the
+original coins, without further writes. A different decision yields409
+`PET_OPERATION_DECISION_MISMATCH`; a changed pair yields409 `PET_CONFLICT_STALE`.
+T5 must keep the guest key until confirmation, reuse operation/choice after a lost
+response, or query status; a network error is not proof of rollback.
 
 Claim status returns only `{ status: "pending", operationId }` while pending,
 or the confirmed response above. It does not list options or archives. Foreign
