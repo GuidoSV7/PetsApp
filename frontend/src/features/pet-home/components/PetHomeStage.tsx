@@ -6,10 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import {
   applyPetAction,
   applyPetCoat,
-  fetchPetState,
   renamePet,
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
+import { usePetGameplay } from "@/features/pet-home/api/use-pet-gameplay";
+import { PetClaimDialog } from "./PetClaimDialog";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
@@ -66,11 +67,13 @@ function isStatusKey(value: string): value is PetStatusKey {
 }
 
 type Props = {
+  /** Confirmed Nest owner; omit only for legacy/Pollar-only guest gameplay. */
+  ownerId?: string;
   onCoinsChange?: (coins: number) => void;
 };
 
 /** Reference-style care dashboard backed by the Nest pet API. */
-export function PetHomeStage({ onCoinsChange }: Props) {
+export function PetHomeStage({ ownerId, onCoinsChange }: Props) {
   const [statusKey, setStatusKey] = useState<PetStatusKey>("idle");
   const [pulse, setPulse] = useState(0);
   const [reactPulse, setReactPulse] = useState(0);
@@ -80,14 +83,11 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [petName, setPetName] = useState(DEFAULT_PET_NAME);
   const [renameCount, setRenameCount] = useState(0);
   const [ready, setReady] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [catDesign] = useState(defaultCatDesign);
   const purrRef = useRef(createPurrPlayer());
   const onCoinsChangeRef = useRef(onCoinsChange);
   onCoinsChangeRef.current = onCoinsChange;
-  const locked = busy || !ready;
   const needCues = needVisualCues(needs);
 
   useEffect(() => {
@@ -97,8 +97,9 @@ export function PetHomeStage({ onCoinsChange }: Props) {
 
   useEffect(() => {
     if (statusKey === "idle") return;
+    const current = gameplay.current;
     const timer = window.setTimeout(() => {
-      setStatusKey("idle");
+      if (current()) setStatusKey("idle");
     }, SPEECH_DISMISS_MS);
     return () => window.clearTimeout(timer);
   }, [statusKey]);
@@ -118,71 +119,22 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     if (bounce) setReactPulse((n) => n + 1);
   };
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const state = await fetchPetState();
-        if (!cancelled) {
-          applyState(state);
-          setLoadError(null);
-        }
-      } catch {
-        if (!cancelled) {
-          setReady(false);
-          setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const gameplay = usePetGameplay(ownerId, applyState);
+  const loadError = gameplay.error;
+  const locked = gameplay.busy || gameplay.blocked || !ready || !gameplay.current();
   const onRename = async (nextName: string) => {
-    if (locked) return;
-    setBusy(true);
-    try {
-      const state = await renamePet(nextName);
-      applyState(state);
-      setLoadError(null);
-    } catch {
-      setLoadError("No pudimos guardar el nombre.");
-    } finally {
-      setBusy(false);
-    }
+    if (!locked) await gameplay.mutate(target => renamePet(nextName, target), "No pudimos guardar el nombre.");
   };
-
   const runAction = async (
     action: "feed" | "play" | "sleep" | "bathe" | "pet",
     options?: { purr?: boolean; bounce?: boolean },
   ) => {
     if (locked) return;
-    setBusy(true);
-    try {
-      if (options?.purr) purrRef.current.play();
-      const state = await applyPetAction(action);
-      applyState(state, options?.bounce);
-      setLoadError(null);
-    } catch {
-      setLoadError("No pudimos guardar la acción.");
-    } finally {
-      setBusy(false);
-    }
+    if (options?.purr) purrRef.current.play();
+    await gameplay.mutate(target => applyPetAction(action, target), "No pudimos guardar la acción.", options?.bounce);
   };
-
   const onCoat = async (colors: PetCoatInput) => {
-    if (locked) return;
-    setBusy(true);
-    try {
-      const state = await applyPetCoat(colors);
-      applyState(state);
-      setLoadError(null);
-    } catch {
-      setLoadError("No pudimos guardar los colores.");
-    } finally {
-      setBusy(false);
-    }
+    if (!locked) await gameplay.mutate(target => applyPetCoat(colors, target), "No pudimos guardar los colores.");
   };
 
   return (
@@ -190,13 +142,15 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       className={styles.stage}
       aria-label={`Escenario de ${petName}`}
       data-layout={PET_LAYOUT_MODE}
-      data-ready={ready ? "true" : "false"}
+      data-ready={ready && gameplay.current() ? "true" : "false"}
       data-hunger-low={needCues.hungerLow ? "true" : "false"}
       data-fun-low={needCues.funLow ? "true" : "false"}
       data-energy-low={needCues.energyLow ? "true" : "false"}
       data-hygiene-low={needCues.hygieneLow ? "true" : "false"}
       style={petLayoutCssVars() as CSSProperties}
     >
+      {gameplay.dialog ? <PetClaimDialog choose={gameplay.choose} dismiss={gameplay.dismiss} /> : null}
+      {gameplay.retry ? <button type="button" disabled={gameplay.busy} onClick={gameplay.retryLoad}>Reintentar</button> : null}
       <div className={styles.stageCard}>
         <div
           className={styles.profileCard}

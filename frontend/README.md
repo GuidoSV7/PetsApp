@@ -150,6 +150,23 @@ the same serializers, normalization and free-care rules. Pollar alone never prov
 Nest ownership. Backend 401 requires reauthentication; 403/503/network errors never
 select guest mode, and adopted guest-key denials never create an alternate key.
 
+A conflict shows one dialog with **Conservar el de mi cuenta** and **Conservar el
+de este dispositivo**, explaining that the other cat is archived for support and
+unavailable in the app. There is no default or second confirmation. **Ahora no**
+or Escape preserves the key and offers **Reintentar**, without automatic reopening
+(including after remount). No archive list, selector or restoration UI is exposed.
+
+Before sending a choice, recovery metadata stores only the confirmed owner ID,
+original device key, operation ID and that explicit decision. It never authenticates
+or stores pet snapshots, balances or tokens. If a response is lost, retry/remount
+queries status and, if pending, sends the **same operation and choice**, without
+asking again. Confirmation retires only the matching original guest key; a newer
+device key is untouched. Stored operation results are confirmation only: gameplay
+and coins always come from a fresh CURRENT read, never a possibly archived replay.
+Stale-pair errors require explicit manual retry before preparing another conflict;
+foreign/unauthorized errors retain recovery metadata and never choose another pair.
+A changed device key blocks automatic recovery of an old decision.
+
 ## Free pet care
 
 Feeding, playing, sleeping, bathing, petting and every rename are free.

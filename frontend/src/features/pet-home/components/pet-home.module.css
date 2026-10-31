@@ -16,6 +16,18 @@
   min-height: 0;
 }
 
+.claimDialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 24px;
+  border: 1px solid #d7e6dc;
+  border-radius: 18px;
+  color: #1c2b22;
+  background: #fff;
+}
+
+.claimDialog::backdrop { background: rgba(20, 48, 34, 0.55); }
+.claimDialog button { display: block; width: 100%; margin-top: 12px; min-height: 44px; }
+
 .coinBalance {
   display: inline-flex;
   align-items: center;
