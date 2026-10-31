@@ -133,6 +133,23 @@ read `getPetsAppSession()?.user.id` for the confirmed owner. A Pollar address is
 that ID. Save, clear, logout and proof start invalidate the epoch. Do not use these
 primitives to infer authentication without a server profile.
 
+## Account pet rollout and recovery (default OFF)
+
+`NEXT_PUBLIC_ACCOUNT_PET_ENABLED` is a **public build-time rollout gate**: only the
+literal string `true` enables private gameplay. It is not authorization. Unset,
+`false`, or other spellings preserve existing email/Google and Pollar-only guest
+care in both homes, before any migration request. Wallet/cookie-only or remembered
+private owners instead see account-pet unavailability; they never adopt or load a
+guest while OFF. No real environment value or backend flag is enabled here.
+
+With the gate ON, a server-confirmed Nest `users.id` bootstraps through
+`POST /account/pet/claim-guest` before reading `/account/pet/state`. Bootstrap reads
+only an already stored valid guest key (or sends `{}`), never creates a guest just
+to claim. Care, presets/camera and names use private current-only endpoints with
+the same serializers, normalization and free-care rules. Pollar alone never proves
+Nest ownership. Backend 401 requires reauthentication; 403/503/network errors never
+select guest mode, and adopted guest-key denials never create an alternate key.
+
 ## Free pet care
 
 Feeding, playing, sleeping, bathing, petting and every rename are free.

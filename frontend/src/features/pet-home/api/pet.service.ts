@@ -18,10 +18,29 @@ export type PetStateResponse = {
 
 export type CareActionName = "feed" | "play" | "sleep" | "bathe" | "pet";
 
-function isUuid(value: string): boolean {
+export function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value,
   );
+}
+
+/** Inspect only: private bootstrap must never manufacture a guest. */
+export function readGuestKey(): string | null {
+  if (typeof window === "undefined") return null;
+  const key = window.localStorage.getItem(GUEST_STORAGE_KEY);
+  return key && isUuid(key) ? key : null;
+}
+
+export function retireGuestKey(key: string | null) {
+  if (key && readGuestKey() === key) window.localStorage.removeItem(GUEST_STORAGE_KEY);
+}
+
+export type PetRequestTarget = { private: true; signal: AbortSignal };
+function requestConfig(target?: PetRequestTarget) {
+  return target ? { signal: target.signal } : { headers: guestHeaders() };
+}
+function petPath(path: string, target?: PetRequestTarget) {
+  return `${target ? "/account/pet" : "/pet"}/${path}`;
 }
 
 /** Stable anonymous id for the home pet save. */
@@ -59,26 +78,26 @@ function normalizePetMutation(state: RawPetStateResponse): PetStateResponse {
   return normalizePetState(state);
 }
 
-export async function fetchPetState(): Promise<PetStateResponse> {
-  const { data } = await api.get<RawPetStateResponse>("/pet/state", {
-    headers: guestHeaders(),
-  });
+export async function fetchPetState(target?: PetRequestTarget): Promise<PetStateResponse> {
+  const { data } = await api.get<RawPetStateResponse>(petPath("state", target), requestConfig(target));
   return normalizePetState(data);
 }
 
 export async function applyPetAction(
   action: CareActionName,
+  target?: PetRequestTarget,
 ): Promise<PetStateResponse> {
   const { data } = await api.post<RawPetStateResponse>(
-    `/pet/actions/${action}`,
+    petPath(`actions/${action}`, target),
     {},
-    { headers: guestHeaders() },
+    requestConfig(target),
   );
   return normalizePetMutation(data);
 }
 
 export async function applyPetCoat(
   coat: PetCoatInput,
+  target?: PetRequestTarget,
 ): Promise<PetStateResponse> {
   const payload: PetCoatInput = {
     primary: coat.primary,
@@ -86,17 +105,15 @@ export async function applyPetCoat(
     accent: coat.accent,
   };
   if (Object.hasOwn(coat, "pattern")) payload.pattern = coat.pattern;
-  const { data } = await api.post<RawPetStateResponse>("/pet/coat", payload, {
-    headers: guestHeaders(),
-  });
+  const { data } = await api.post<RawPetStateResponse>(petPath("coat", target), payload, requestConfig(target));
   return normalizePetMutation(data);
 }
 
-export async function renamePet(name: string): Promise<PetStateResponse> {
+export async function renamePet(name: string, target?: PetRequestTarget): Promise<PetStateResponse> {
   const { data } = await api.post<RawPetStateResponse>(
-    "/pet/name",
+    petPath("name", target),
     { name },
-    { headers: guestHeaders() },
+    requestConfig(target),
   );
   return normalizePetMutation(data);
 }
