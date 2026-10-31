@@ -71,6 +71,21 @@ it available, and never restore authentication from a persisted wallet marker or
 address. Wallet sessions cannot supply admin/super_admin UI credentials. Existing
 email session persistence and token helpers are retained.
 
+### Public configuration and signing boundary
+
+Direct dependencies are pinned to `@stellar/freighter-api` **6.0.0** and
+`@stellar/stellar-sdk` **17.4.0**. Configure these public build-time trust roots
+independently of the wallet/challenge:
+
+- `NEXT_PUBLIC_STELLAR_AUTH_SERVER_ACCOUNT`: dedicated SEP-10 **public G address**.
+- `NEXT_PUBLIC_STELLAR_HOME_DOMAIN`: canonical home domain, without URL scheme/path.
+- `NEXT_PUBLIC_STELLAR_WEB_AUTH_DOMAIN`: canonical web-auth domain, without URL scheme/path.
+
+There are no usable default signer/domains; missing/invalid roots fail closed
+before connection/signing. The passphrase is fixed to `Test SDF Network ; September 2015`.
+No wallet-supplied Horizon/RPC URL, network configuration or challenge metadata
+becomes a trust root. Never put the backend signing secret in browser config.
+
 ### Hydration, linking and logout
 
 Home and `/account` confirm the profile with Nest before restoring a session.
