@@ -55,10 +55,11 @@ async function forwardRequest(req: NextRequest, segments: string[]) {
     const res = await fetchUndici(destination, init);
     const responseHeaders = new Headers();
     res.headers.forEach((valor, clave) => {
-      if (!HOP_HEADERS.has(clave.toLowerCase())) {
+      if (!HOP_HEADERS.has(clave.toLowerCase()) && clave.toLowerCase() !== "set-cookie") {
         responseHeaders.set(clave, valor);
       }
     });
+    for (const cookie of res.headers.getSetCookie()) responseHeaders.append("set-cookie", cookie);
     return new NextResponse(Buffer.from(await res.arrayBuffer()), {
       status: res.status,
       headers: responseHeaders,

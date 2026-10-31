@@ -71,6 +71,29 @@ it available, and never restore authentication from a persisted wallet marker or
 address. Wallet sessions cannot supply admin/super_admin UI credentials. Existing
 email session persistence and token helpers are retained.
 
+### Hydration, linking and logout
+
+Home and `/account` confirm the profile with Nest before restoring a session.
+A wallet login clears both previous Bearer keys **before** requesting that profile;
+no wallet JWT is stored. A local address/marker never authenticates. Existing email
+and Google responses/tokens retain their contract and Bearer precedence. Invalid
+sessions show reauthentication instead of silently switching the Nest owner to a guest.
+
+Both home branches and `/account` call Nest logout and disconnect local adapter
+state even offline. Owner epochs invalidate pending authentication/profile work;
+proof HTTP is aborted on owner changes. Query clients cancel and clear caches on
+session changes. An intentional logout also fences immediate same-runtime cookie
+rehydration after navigation; a failed network request cannot guarantee server-side
+cookie deletion. Disconnect alone does not revoke extension permissions or log out
+Nest. Pollar Google/unrelated Pollar sessions remain independent of Nest identity.
+
+For the dependent pet integration, `getSessionEpoch()`, `subscribeSession(listener)`
+(returning unsubscribe) and `invalidateSessionOwner()` are exported by the existing
+session store. Capture an epoch before async work and discard results if it changes;
+read `getPetsAppSession()?.user.id` for the confirmed owner. A Pollar address is not
+that ID. Save, clear, logout and proof start invalidate the epoch. Do not use these
+primitives to infer authentication without a server profile.
+
 ## Free pet care
 
 Feeding, playing, sleeping, bathing, petting and every rename are free.

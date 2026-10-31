@@ -41,8 +41,10 @@ export async function signOutPetsAppUser() {
   await api.post("/auth/logout");
 }
 
-export async function fetchAuthProfile() {
-  const { data } = await api.get<PetsAppUserResponse>("/auth/profile");
+export async function fetchAuthProfile(signal?: AbortSignal) {
+  const { data } = signal
+    ? await api.get<PetsAppUserResponse>("/auth/profile", { signal })
+    : await api.get<PetsAppUserResponse>("/auth/profile");
   return data;
 }
 

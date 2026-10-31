@@ -1,4 +1,12 @@
 import { QueryClient } from "@tanstack/react-query";
+import { subscribeSession } from "@/stores/auth-session";
+
+export function bindSessionQueryClient(client: QueryClient) {
+  return subscribeSession(() => {
+    void client.cancelQueries();
+    client.clear();
+  });
+}
 
 export function createAppQueryClient() {
   return new QueryClient({

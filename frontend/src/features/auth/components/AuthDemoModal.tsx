@@ -15,7 +15,7 @@ import {
   signInPetsAppUser,
   registerPetsAppUser,
 } from "@/features/auth/api/auth.service";
-import { landingPathForRole, savePetsAppSession } from "@/stores/auth-session";
+import { getSessionEpoch, landingPathForRole, savePetsAppSession } from "@/stores/auth-session";
 import type {
   AuthModalMode,
   LoginRegisterResponse,
@@ -125,7 +125,8 @@ export default function AuthDemoModal({
   }, [paisDropdownAbierto]);
 
   /** Persists the session exactly as the API answered it and routes by role. */
-  const completarSesion = (respuesta: LoginRegisterResponse) => {
+  const completarSesion = (respuesta: LoginRegisterResponse, ownerEpoch: number) => {
+    if (getSessionEpoch() !== ownerEpoch) return;
     savePetsAppSession({
       token: respuesta.token,
       user: {
@@ -147,10 +148,11 @@ export default function AuthDemoModal({
 
     setMensajeAuth(null);
     setCargando(true);
+    const ownerEpoch = getSessionEpoch();
 
     try {
       if (modalMode === "sign-in") {
-        completarSesion(await signInPetsAppUser(correo, contrasena));
+        completarSesion(await signInPetsAppUser(correo, contrasena), ownerEpoch);
         return;
       }
 
@@ -172,6 +174,7 @@ export default function AuthDemoModal({
           name: nombreCompleto,
           country: paisSeleccionado.code,
         }),
+        ownerEpoch,
       );
     } catch (error) {
       setMensajeAuth(asPetsAppApiError(error).message);

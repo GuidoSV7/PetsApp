@@ -8,6 +8,7 @@ import { petsappPublicClientUrl } from "@/lib/petsapp-api-origin";
 const api = axios.create({
   baseURL: petsappPublicClientUrl(),
   timeout: 30_000,
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
