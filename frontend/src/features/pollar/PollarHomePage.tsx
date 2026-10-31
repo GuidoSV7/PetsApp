@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { WalletType } from "@pollar/core";
+import { useEffect, useRef, useState } from "react";
 import { usePollar } from "@pollar/react";
 import estilosHome from "@/app/home.module.css";
 import HomeHeader from "@/app/_components/home/HomeHeader";
@@ -9,13 +8,18 @@ import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 import { LoginGateModal } from "@/features/pollar/LoginGateModal";
 import { pollarDisplayName } from "@/features/pollar/pollar-display-name";
 import { usePollarLoginBusy } from "@/features/pollar/usePollarLoginBusy";
-import { clearSession } from "@/stores/auth-session";
+import { getPetsAppSession } from "@/stores/auth-session";
+import { usePetCoins } from "@/features/pet-home/api/use-pet-coins";
+import { useNestSession } from "@/features/auth/useNestSession";
 
 /** Home when Pollar is configured: modal gate, then pet stage. */
 export function PollarHomePage() {
   const { isAuthenticated, login, logout, wallet, getClient } = usePollar();
+  const nest = useNestSession();
   const { busy, error, clearError } = usePollarLoginBusy();
-  const [coins, setCoins] = useState<number | null>(null);
+  const { coins, onCoinsChange, clearCoins } = usePetCoins(nest.session?.user.id, nest.epoch);
+  const hadNestOwner = useRef(Boolean(getPetsAppSession()));
+  if (nest.session) hadNestOwner.current = true;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -23,15 +27,16 @@ export function PollarHomePage() {
     setMounted(true);
   }, []);
 
-  const userName = pollarDisplayName(getClient().getUserProfile(), wallet);
+  const userName = nest.session?.user.name ?? pollarDisplayName(getClient().getUserProfile(), wallet);
 
   const onLogout = () => {
-    clearSession();
-    setCoins(null);
+    clearCoins();
+    hadNestOwner.current = false;
+    void nest.logout();
     logout();
   };
 
-  if (!mounted) {
+  if (!mounted || !nest.ready || nest.busy) {
     return (
       <div className={estilosHome.contenedor}>
         <HomeHeader />
@@ -44,7 +49,7 @@ export function PollarHomePage() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!nest.session && !isAuthenticated) {
     return (
       <div className={estilosHome.contenedor}>
         <HomeHeader />
@@ -55,15 +60,15 @@ export function PollarHomePage() {
         </main>
         <LoginGateModal
           open
-          busy={busy}
-          error={error}
+          busy={busy || nest.busy}
+          error={error ?? nest.error}
           onGoogle={() => {
             clearError();
             login({ provider: "google" });
           }}
           onFreighter={() => {
             clearError();
-            login({ provider: WalletType.FREIGHTER });
+            void nest.loginFreighter();
           }}
         />
       </div>
@@ -81,7 +86,9 @@ export function PollarHomePage() {
         onLogout={onLogout}
       />
       <main id="inicio" className={estilosHome.main}>
-        <PetHomeStage onCoinsChange={setCoins} />
+        {!nest.session && hadNestOwner.current ? <p role="alert">Volvé a iniciar sesión para continuar.</p> :
+          <PetHomeStage key={nest.session ? `${nest.session.user.id}:${nest.epoch}` : `pollar:${wallet?.address ?? "session"}:${nest.epoch}`} ownerId={nest.session?.user.id} onCoinsChange={onCoinsChange} />}
+
       </main>
     </div>
   );

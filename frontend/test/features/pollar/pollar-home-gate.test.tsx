@@ -3,7 +3,6 @@
  */
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { WalletType } from "@pollar/core";
 import { useEffect } from "react";
 
 const {
@@ -12,6 +11,8 @@ const {
   logout,
   onAuthStateChange,
   getUserProfile,
+  nestProof,
+  nestLogout,
 } = vi.hoisted(() => {
   const login = vi.fn();
   const logout = vi.fn();
@@ -40,7 +41,7 @@ const {
       getUserProfile,
     }),
   };
-  return { state, login, logout, onAuthStateChange, getUserProfile };
+  return { state, login, logout, onAuthStateChange, getUserProfile, nestProof: vi.fn().mockResolvedValue(undefined), nestLogout: vi.fn().mockResolvedValue(undefined) };
 });
 
 vi.mock("next/navigation", () => ({
@@ -69,10 +70,18 @@ vi.mock("@pollar/react", () => ({
   PollarProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock("@/features/auth/api/auth.service", () => ({
+  fetchAuthProfile: vi.fn().mockRejectedValue(new Error("Authentication required")),
+  signOutPetsAppUser: nestLogout,
+}));
+vi.mock("@/features/stellar-auth/stellar-auth", () => ({ authenticateWithFreighter: nestProof }));
+
 import HomePage from "@/app/_components/home/HomePage";
+import { clearSession } from "@/stores/auth-session";
 
 describe("HomePage Pollar gate", () => {
   beforeEach(() => {
+    clearSession(); nestProof.mockClear(); nestLogout.mockClear();
     login.mockReset();
     logout.mockReset();
     onAuthStateChange.mockReset();
@@ -100,7 +109,7 @@ describe("HomePage Pollar gate", () => {
     expect(screen.queryByLabelText("Escenario de Michi")).toBeNull();
   });
 
-  it("calls Pollar login for Google and Freighter", async () => {
+  it("preserves Pollar Google while routing Freighter through independent Nest proof", async () => {
     render(<HomePage />);
     await waitFor(() =>
       expect(
@@ -112,7 +121,8 @@ describe("HomePage Pollar gate", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /Freighter/i }));
     expect(login).toHaveBeenCalledWith({ provider: "google" });
-    expect(login).toHaveBeenCalledWith({ provider: WalletType.FREIGHTER });
+    await waitFor(() => expect(nestProof).toHaveBeenCalledTimes(1));
+    expect(login).toHaveBeenCalledTimes(1);
   });
 
   it("shows the pet stage when Pollar is authenticated", async () => {
@@ -170,5 +180,6 @@ describe("HomePage Pollar gate", () => {
       screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
     );
     expect(logout).toHaveBeenCalled();
+    expect(nestLogout).toHaveBeenCalledTimes(1);
   });
 });

@@ -29,6 +29,11 @@ vi.mock("@/features/auth/components/AuthDemoModal", () => ({
 vi.mock("@/features/auth/api/auth.service", () => ({
   signInWithGoogle: vi.fn(),
   signOutPetsAppUser: vi.fn(),
+  fetchAuthProfile: vi.fn(async () => {
+    const session = getPetsAppSession();
+    if (!session) throw new Error("Authentication required");
+    return session.user;
+  }),
 }));
 
 vi.mock("@/components/ui/BrandMark", () => ({
@@ -38,6 +43,7 @@ vi.mock("@/components/ui/BrandMark", () => ({
 import HomePage from "@/app/_components/home/HomePage";
 import {
   clearSession,
+  getPetsAppSession,
   savePetsAppSession,
 } from "@/stores/auth-session";
 

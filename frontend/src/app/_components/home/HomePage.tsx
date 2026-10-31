@@ -3,22 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import estilosHome from "../../home.module.css";
 import HomeHeader from "./HomeHeader";
+import { usePetCoins } from "@/features/pet-home/api/use-pet-coins";
 import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 import { FreighterSignInButton } from "@/features/auth/components/FreighterSignInButton";
 import { GoogleSignInButton } from "@/features/auth/components/GoogleSignInButton";
 import AuthDemoModal from "@/features/auth/components/AuthDemoModal";
 import BrandMark from "@/components/ui/BrandMark";
 import estilosAuth from "@/features/auth/components/auth-modal.module.css";
-import {
-  signInWithGoogle,
-  signOutPetsAppUser,
-} from "@/features/auth/api/auth.service";
-import {
-  clearSession,
-  getPetsAppSession,
-  savePetsAppSession,
-  type PetsAppSessionData,
-} from "@/stores/auth-session";
+import { signInWithGoogle } from "@/features/auth/api/auth.service";
+import { getSessionEpoch, savePetsAppSession } from "@/stores/auth-session";
+import { useNestSession } from "@/features/auth/useNestSession";
 import { asPetsAppApiError } from "@/lib/errors";
 import type { AuthModalMode } from "@/features/auth/types/auth.types";
 import { isPollarConfigured } from "@/features/pollar/pollar-config";
@@ -32,28 +26,26 @@ export default function HomePage() {
   return <NestHomePage />;
 }
 
-/** Nest session gate: Google + Freighter (Freighter needs Pollar key to go live). */
+/** Nest session gate: email/Google plus independent, lazy Freighter proof. */
 function NestHomePage() {
-  const [session, setSession] = useState<PetsAppSessionData | null>(null);
-  const [ready, setReady] = useState(false);
-  const [coins, setCoins] = useState<number | null>(null);
+  const { session, epoch, ready, error: sessionError, busy: walletBusy, loginFreighter, logout } = useNestSession();
+  const { coins, onCoinsChange, clearCoins } = usePetCoins(session?.user.id, epoch);
   const [authError, setAuthError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [emailModal, setEmailModal] = useState<AuthModalMode | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    setSession(getPetsAppSession());
-    setReady(true);
   }, []);
 
   const onGoogleCredential = useCallback(async (idToken: string) => {
     setBusy(true);
     setAuthError(null);
+    const owner = getSessionEpoch();
     try {
       const data = await signInWithGoogle(idToken);
+      if (getSessionEpoch() !== owner) return;
       savePetsAppSession(data);
-      setSession(data);
     } catch (error) {
       setAuthError(asPetsAppApiError(error).message);
     } finally {
@@ -64,16 +56,14 @@ function NestHomePage() {
   const onLogout = async () => {
     setBusy(true);
     try {
-      await signOutPetsAppUser().catch(() => undefined);
+      await logout();
     } finally {
-      clearSession();
-      setSession(null);
-      setCoins(null);
+      clearCoins();
       setBusy(false);
     }
   };
 
-  if (!ready) {
+  if (!ready || walletBusy) {
     return (
       <div className={estilosHome.contenedor}>
         <HomeHeader />
@@ -97,24 +87,25 @@ function NestHomePage() {
               <h1 className={estilosHome.gateTitle}>PetsApp</h1>
               <p className={estilosHome.gateHint}>
                 Iniciá sesión con Google, Freighter o email para cuidar a Michi.
+                Si ya tenés una cuenta con email, ingresá con email y vinculá Freighter desde /account.
               </p>
             </div>
             <div className={estilosAuth.authStack}>
               <GoogleSignInButton
                 onCredential={(token) => void onGoogleCredential(token)}
-                disabled={busy}
+                disabled={busy || walletBusy}
               />
-              <FreighterSignInButton disabled={busy} />
+              <FreighterSignInButton disabled={busy || walletBusy} onConnect={() => void loginFreighter()} />
             </div>
-            {authError ? (
+            {authError || sessionError ? (
               <p className={estilosHome.gateError} role="alert">
-                {authError}
+                {authError ?? sessionError}
               </p>
             ) : null}
             <button
               type="button"
               className={estilosHome.gateEmail}
-              disabled={busy}
+              disabled={busy || walletBusy}
               onClick={() => setEmailModal("sign-in")}
             >
               Usar email y contraseña
@@ -126,7 +117,6 @@ function NestHomePage() {
           initialMode={emailModal ?? "sign-in"}
           onClose={() => {
             setEmailModal(null);
-            setSession(getPetsAppSession());
           }}
         />
       </div>
@@ -145,7 +135,7 @@ function NestHomePage() {
       />
 
       <main id="inicio" className={estilosHome.main}>
-        <PetHomeStage onCoinsChange={setCoins} />
+        <PetHomeStage key={`${session.user.id}:${epoch}`} ownerId={session.user.id} onCoinsChange={onCoinsChange} />
       </main>
     </div>
   );

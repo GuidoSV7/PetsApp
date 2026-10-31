@@ -167,6 +167,26 @@ Stale-pair errors require explicit manual retry before preparing another conflic
 foreign/unauthorized errors retain recovery metadata and never choose another pair.
 A changed device key blocks automatic recovery of an old decision.
 
+Owner epochs, current owner checks and mounted lifetimes fence bootstrap, status,
+GETs, every mutation, error/finalizer paths and coin callbacks independently of
+HTTP cancellation and React keys. Logout preserves unresolved guest references.
+Known-private owner/device markers only restrict guest access; without a confirmed
+Nest session they grant no access. After private flow begins, a lost cookie on a
+Pollar-enabled device shows unavailability instead of inventing a guest; sign in
+to Nest again to recover. Storage failure stops durable claim work before sending.
+
+Activation requires coordinated schema, all owner-aware backends, compatible
+frontend and separate owner approval before enabling flows in testnet. Backend
+`ACCOUNT_PET_ENABLED` remains independent: a backend 503 is not a guest fallback.
+Deploying an OFF legacy-mode build **after adoptions is not a safe rollback**;
+backend revocation must never be relaxed or old guest keys revived. Neither
+production nor mainnet activation is part of this implementation.
+
+The bounded authentication/private-pet frontend units do not complete whole T5/T7
+acceptance. Full differential/browser/build/independent gates and owner-operated
+real Freighter acceptance remain parent-owned; synthetic SDK/UI tests do not
+constitute real-extension acceptance.
+
 ## Free pet care
 
 Feeding, playing, sleeping, bathing, petting and every rename are free.
