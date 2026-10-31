@@ -86,6 +86,21 @@ before connection/signing. The passphrase is fixed to `Test SDF Network ; Septem
 No wallet-supplied Horizon/RPC URL, network configuration or challenge metadata
 becomes a trust root. Never put the backend signing secret in browser config.
 
+Freighter and the SDK load lazily outside the pet frame loop. Both home branches
+use our Nest `/auth/stellar/challenge` and `/auth/stellar/verify` flow, never Pollar
+login as proof of `users.id`. Before signing, the client verifies the server
+signature, expected source/client/domains, sequence 0, exactly the two allowed
+ManageData operations, nonce, no memo and strict five-minute time bounds/expiry.
+It passes only `address` and `networkPassphrase` to signing, rechecks account/network,
+and rejects changed returned transaction bodies. Nest remains authoritative for
+client signature weights/threshold, browser/purpose binding, single use and limits.
+No transaction is submitted to Stellar and no wallet funding is needed.
+
+Missing extension, denied permission, cancelled signature and wrong testnet are
+recoverable errors. Freighter requires a compatible browser extension/provider;
+ordinary mobile browsers can continue using email. No WalletConnect, private-key
+entry, wallet generation or Friendbot flow is included.
+
 ### Hydration, linking and logout
 
 Home and `/account` confirm the profile with Nest before restoring a session.
