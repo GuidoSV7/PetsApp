@@ -105,7 +105,7 @@ export default function AdminUserDetailView({
     try {
       await updateAdminUser(token, idUsuario, {
         name: nombreEdit,
-        email: correoEdit,
+        ...(usuario?.email === null && correoEdit === "" ? {} : { email: correoEdit }),
         country: paisEdit,
       });
       await recargar();
@@ -130,6 +130,7 @@ export default function AdminUserDetailView({
     recargar,
     router,
     showNotification,
+    usuario?.email,
   ]);
 
   const ejecutarToggleBloqueo = useCallback(async () => {
@@ -245,7 +246,7 @@ export default function AdminUserDetailView({
                 placeholder="correo@dominio.com"
               />
             ) : (
-              <p className={estilos.valorCampo}>{usuario.email}</p>
+              <p className={estilos.valorCampo}>{usuario.email ?? "Sin email · Freighter"}</p>
             )}
           </div>
           <div>

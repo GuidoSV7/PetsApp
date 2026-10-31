@@ -10,7 +10,7 @@ const ADMIN_ROLES: readonly SessionRole[] = ["admin", "super_admin"];
 export type SessionUser = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   role: SessionRole;
   roles: SessionRole[];
   country: string | null;
@@ -19,12 +19,31 @@ export type SessionUser = {
 };
 
 export type PetsAppSessionData = {
-  token: string;
+  token: string | null;
   user: SessionUser;
+  method?: "stellar";
 };
+
+// Wallet authentication is confirmed by the server, never recovered from a local marker.
+let cookieSession: PetsAppSessionData | null = null;
 
 const SESSION_KEY = "petsapp_session_v1";
 const LEGACY_SESSION_KEY = "petsapp_sesion_v1";
+
+let sessionEpoch = 0;
+const sessionListeners = new Set<() => void>();
+
+/** Capture before async work; discard its result if the epoch changed. */
+export function getSessionEpoch() { return sessionEpoch; }
+export function subscribeSession(listener: () => void) {
+  sessionListeners.add(listener);
+  return () => { sessionListeners.delete(listener); };
+}
+export function invalidateSessionOwner() {
+  sessionEpoch += 1;
+  for (const listener of sessionListeners) listener();
+  return sessionEpoch;
+}
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -45,16 +64,28 @@ export function landingPathForRole(role: SessionRole): string {
 
 export function savePetsAppSession(data: PetsAppSessionData) {
   if (typeof window === "undefined") return;
+  cookieSession = null;
+  if (data.method === "stellar" && data.token === null) {
+    clearSession();
+    if (
+      data.user.id && data.user.role === "member" &&
+      data.user.roles.length > 0 && data.user.roles.every((role) => role === "member")
+    ) cookieSession = data;
+    invalidateSessionOwner();
+    return;
+  }
   try {
     window.localStorage.setItem(SESSION_KEY, JSON.stringify(data));
     window.localStorage.removeItem(LEGACY_SESSION_KEY);
   } catch {
     /* storage unavailable */
   }
+  invalidateSessionOwner();
 }
 
 export function getPetsAppSession(): PetsAppSessionData | null {
   if (typeof window === "undefined") return null;
+  if (cookieSession) return cookieSession;
   try {
     const raw =
       window.localStorage.getItem(SESSION_KEY) ??
@@ -79,17 +110,19 @@ export function getSessionToken(): string | null {
 export function updateUserInSession(user: SessionUser) {
   const current = getPetsAppSession();
   if (!current) return;
-  savePetsAppSession({ token: current.token, user });
+  savePetsAppSession({ ...current, user });
 }
 
 export function clearSession() {
+  cookieSession = null;
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(SESSION_KEY);
   window.localStorage.removeItem(LEGACY_SESSION_KEY);
+  invalidateSessionOwner();
 }
 
-export function getSession(): { email: string; role: SessionRole } | null {
+export function getSession(): { email: string | null; role: SessionRole } | null {
   const s = getPetsAppSession();
   if (!s) return null;
-  return { email: normalizeEmail(s.user.email), role: s.user.role };
+  return { email: s.user.email === null ? null : normalizeEmail(s.user.email), role: s.user.role };
 }

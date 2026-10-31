@@ -5,7 +5,7 @@ export type PetsAppApiRole = "admin" | "super_admin" | "member";
 export type PetsAppUserResponse = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   role: PetsAppApiRole;
   roles: PetsAppApiRole[];
   country: string | null;
@@ -27,7 +27,7 @@ export type RegisterPayload = {
 /** `GET /users/me` (UserProfileDto in the API). */
 export type UserProfileResponse = {
   id: string;
-  email: string;
+  email: string | null;
   userName: string;
   role: PetsAppApiRole;
   roles: PetsAppApiRole[];
@@ -40,7 +40,7 @@ export type UserProfileResponse = {
 /** `GET /admin/users` and `GET /admin/users/:id` (CompleteUserDto). */
 export type AdminUserResponse = {
   id: string;
-  email: string;
+  email: string | null;
   userName: string;
   role: PetsAppApiRole;
   roles: PetsAppApiRole[];

@@ -65,7 +65,7 @@ export default function CustomersPage() {
     return usuarios.filter(
       (u) =>
         u.userName.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
+        (u.email ?? "").toLowerCase().includes(q) ||
         u.id.toLowerCase().includes(q),
     );
   }, [consulta, usuarios]);
@@ -87,7 +87,7 @@ export default function CustomersPage() {
       "id,userName,email,role,country,isBlocked,isVerified",
       ...usuariosFiltrados.map(
         (u) =>
-          `${u.id},"${u.userName.replace(/"/g, '""')}",${u.email},${u.role},${u.country ?? ""},${u.isBlocked},${u.isVerified}`,
+          `${u.id},"${u.userName.replace(/"/g, '""')}",${u.email ?? ""},${u.role},${u.country ?? ""},${u.isBlocked},${u.isVerified}`,
       ),
     ];
     const blob = new Blob([lineas.join("\n")], { type: "text/csv;charset=utf-8;" });

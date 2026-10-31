@@ -47,7 +47,7 @@ export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
                     <div className={estilos.celdaPrincipal}>{u.userName}</div>
                     <div className={estilos.celdaSecundaria}>{u.id}</div>
                   </td>
-                  <td className={estilos.celdaSecundaria}>{u.email}</td>
+                  <td className={estilos.celdaSecundaria}>{u.email ?? "Sin email · Freighter"}</td>
                   <td>{roleLabel(u.role)}</td>
                   <td className={estilos.celdaSecundaria}>{u.country ?? "—"}</td>
                   <td>

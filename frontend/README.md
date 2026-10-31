@@ -56,6 +56,21 @@ stored bytes. Real sessions retain their existing behavior.
 Follow-up, not implemented here: validate the layout session against
 `/auth/profile` instead of relying only on localStorage.
 
+## Freighter authentication (testnet; no activation performed)
+
+Admin customer search accepts a NULL email while retaining name/email/ID search,
+API order and CSV columns. Wallet-only customers display **Sin email · Freighter**;
+CSV uses an empty email cell. Saving their name/country omits an unchanged empty
+email rather than sending `email: ""`. Email customer edits retain their existing
+PATCH payload, including an unchanged non-NULL email.
+
+The session helpers accept a server-confirmed member session with
+`method: "stellar"`, `token: null` and a nullable email. They keep this session
+only in memory, clear both primary and legacy Bearer storage keys before making
+it available, and never restore authentication from a persisted wallet marker or
+address. Wallet sessions cannot supply admin/super_admin UI credentials. Existing
+email session persistence and token helpers are retained.
+
 ## Free pet care
 
 Feeding, playing, sleeping, bathing, petting and every rename are free.
