@@ -1,20 +1,17 @@
 "use client";
 
 import estilos from "./auth-modal.module.css";
-import { isPollarConfigured } from "@/features/pollar/pollar-config";
+import { isStellarConfigured } from "@/features/stellar-auth/config";
 
 type Props = {
-  /** When Pollar is live this is unused — PollarHomePage owns Freighter. */
+  /** Uses our independent Nest proof in either home branch. */
   onConnect?: () => void;
   disabled?: boolean;
 };
 
-/**
- * Freighter entry on the Nest home gate.
- * Without Pollar publishable key → gray Próximamente (same pattern as Google).
- */
+/** Freighter availability depends on our public trust roots, never Pollar. */
 export function FreighterSignInButton({ onConnect, disabled }: Props) {
-  if (!isPollarConfigured()) {
+  if (!isStellarConfigured()) {
     return (
       <button
         type="button"

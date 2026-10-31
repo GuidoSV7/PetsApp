@@ -13,7 +13,7 @@ type Props = {
 
 /**
  * Blocking login picker (Tinkazo-style): Google via Pollar, or Freighter.
- * Does not close itself — parent hides it when Pollar is authenticated.
+ * Does not close itself — parent observes Pollar or a server-confirmed Nest session.
  */
 export function LoginGateModal({
   open,
@@ -40,6 +40,7 @@ export function LoginGateModal({
         <h2 className={estilos.title}>Entrá para cuidar a Michi</h2>
         <p className={estilos.hint}>
           Continuá con Google o conectá tu billetera Freighter de Stellar.
+          Si ya tenés una cuenta con email, ingresá con email y vinculá Freighter desde /account.
         </p>
 
         <div className={estilos.actions}>

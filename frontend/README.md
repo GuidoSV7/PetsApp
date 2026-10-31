@@ -109,6 +109,15 @@ no wallet JWT is stored. A local address/marker never authenticates. Existing em
 and Google responses/tokens retain their contract and Bearer precedence. Invalid
 sessions show reauthentication instead of silently switching the Nest owner to a guest.
 
+`/account` displays the server identity and offers linking when none exists. If
+an email account already exists, sign in with email and link there instead of
+creating a separate wallet account. Email linking sends the current password to
+the existing protected link challenge, which reuses Nest's password checker.
+Nest enforces strictly less than five minutes since signed authentication;
+profile hydration and password entry **do not refresh recency**. Backend recency,
+permission/state and incompatible-link failures are shown without automatic retry
+or replacing the existing session. No unlink, replacement or account merge UI exists.
+
 Both home branches and `/account` call Nest logout and disconnect local adapter
 state even offline. Owner epochs invalidate pending authentication/profile work;
 proof HTTP is aborted on owner changes. Query clients cancel and clear caches on
