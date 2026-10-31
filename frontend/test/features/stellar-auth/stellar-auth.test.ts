@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Account, Keypair, Networks, Operation, TransactionBuilder, WebAuth } from "@stellar/stellar-sdk";
+import { Account, Keypair, Networks, Operation, TransactionBuilder, WebAuth, xdr, type Transaction } from "@stellar/stellar-sdk";
 import { authenticateWithFreighter, type Challenge } from "@/features/stellar-auth/stellar-auth";
 import type { WalletAdapter } from "@/features/stellar-auth/freighter";
 import { clearSession, getPetsAppSession, getSessionToken, savePetsAppSession } from "@/stores/auth-session";
@@ -31,6 +31,29 @@ beforeEach(() => {
 afterEach(() => { clearSession(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 describe("public Freighter authentication orchestration", () => {
+ it("reads real SDK envelope discriminants from .type and rejects fee-bump challenges before signing", async () => {
+   const inner = TransactionBuilder.fromXDR(challenge.transaction, Networks.TESTNET) as Transaction;
+   expect(xdr.TransactionEnvelope.fromXDR(challenge.transaction, "base64").type).toBe("envelopeTypeTx");
+   const feePayer = Keypair.random();
+   const feeBump = TransactionBuilder.buildFeeBumpTransaction(feePayer.publicKey(), "100", inner, Networks.TESTNET);
+   feeBump.sign(feePayer);
+   const feeBumpXdr = feeBump.toXDR();
+   expect(xdr.TransactionEnvelope.fromXDR(feeBumpXdr, "base64").type).toBe("envelopeTypeTxFeeBump");
+   const previous = { token: "existing-bearer", user: { ...user, id: "previous", email: "previous@example.test" } };
+   savePetsAppSession(previous);
+   localStorage.setItem("petsapp_sesion_v1", "existing-legacy-bearer");
+   const storedBefore = [...values];
+   challenge.transaction = feeBumpXdr;
+
+   await expect(authenticateWithFreighter({ adapter, config })).rejects.toThrow("Desafío Stellar inválido o vencido. Volvé a intentar.");
+   expect(http.post.mock.calls.map(([path]) => path)).toEqual(["/auth/stellar/challenge"]);
+   expect(http.post.mock.calls[0][1]).toEqual({ address: client.publicKey() });
+   expect(adapter.signTransaction).not.toHaveBeenCalled();
+   expect(http.get).not.toHaveBeenCalled();
+   expect(getPetsAppSession()).toEqual(previous);
+   expect([...values]).toEqual(storedBefore);
+ });
+
  it("proves through Nest then clears both old Bearers BEFORE profile and accepts the nullable server member", async () => {
    savePetsAppSession({ token: "old", user: { ...user, id: "previous", email: "old@example.test" } });
    localStorage.setItem("petsapp_sesion_v1", "legacy-old");
