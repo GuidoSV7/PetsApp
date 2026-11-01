@@ -89,14 +89,15 @@ describe("transfer breathing handoff", () => {
         checkHandoff(poseScene(profile.hunger, profile.design), breath, profile.name);
       });
     }
-    it(`${profile.name}: all eighty interior breath midpoints preserve both handoffs`, () => {
+    it(`${profile.name}: all eighty interior breath midpoints preserve both handoffs`, async () => {
       const rig = poseScene(profile.hunger, profile.design);
       let maxWorld = 0, maxRotation = 0;
       for (let interval = 0; interval < 80; interval++) {
         const result = checkHandoff(rig, 1 + (interval - 39.5) / 4000, profile.name);
         maxWorld = Math.max(maxWorld, result.maxWorld); maxRotation = Math.max(maxRotation, result.maxRotation);
+        await new Promise<void>(resolve => setImmediate(resolve));
       }
       console.info("breath-interpolation-bound", JSON.stringify({ profile: profile.name, midpoints: 80, maxWorld, maxRotation }));
-    });
+    }, 30_000); // Setup/assertion wall time only; simulation and CPU gates are unchanged.
   }
 });

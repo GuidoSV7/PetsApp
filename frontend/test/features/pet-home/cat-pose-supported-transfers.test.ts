@@ -31,7 +31,7 @@ const supportedEdges = CAT_POSE_EDGES.filter(edge =>
 
 describe("supported S↔Q/S↔L capability gate (S1/S4/S5/S6/S10/S12)", () => {
   for (const edge of supportedEdges) for (const profile of profiles) for (const breath of breathInputs(edge.from, edge.to)) {
-    it(`${edge.from}->${edge.to} ${profile.name}/${breath.name}: every fixed tick and quarter interpolation`, () => {
+    it(`${edge.from}->${edge.to} ${profile.name}/${breath.name}: every fixed tick and quarter interpolation`, async () => {
       const hunger = profile.hunger;
       const rig = poseScene(hunger, profile.design), prepared = rig.prepareEdge(edge.from, edge.to);
       const goals = feet.map(id => rig.boxes.get(id)!.getWorldPosition(new Vector3()));
@@ -74,8 +74,9 @@ describe("supported S↔Q/S↔L capability gate (S1/S4/S5/S6/S10/S12)", () => {
             expect(obb.containsPoint(hinge), `${context}/${joint}/${id} cap`).toBe(true);
           }
         }
+        if (alpha === 1) await new Promise<void>(resolve => setImmediate(resolve));
       }
-    });
+    }, 30_000); // Assertion/setup wall time, not simulated motion or the device CPU gate.
   }
 });
 

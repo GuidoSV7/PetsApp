@@ -1,6 +1,30 @@
 # T4a partial integration — not renderer acceptance
 
-## Current stable-sphinx calibration — bounded GREEN, T4 still partial
+## Current S↔F nominal transfers — bounded GREEN, T4 still partial
+
+The existing factory now compiles actual direct S→F/F→S tracks from calibrated
+stable F, with explicit neutral/F goal templates. Down: rear support until real
+belly contact34, then free rear/front FK and F front landing54. Up: release F
+front goals0, unfold with real belly support, land all neutral feet20, then rise.
+Both graph durations remain54ticks; no topology, Core/type, Bind sampling,
+static-F, S↔L compiler/math or global degree-table change.
+
+Dedicated GREEN48 includes finite XYZ and alpha1/exact endpoints across all four
+profiles and three breath families, plus actual supported/FK joint handoffs at
+five breaths and all80 interval midpoints. Original matrix SF24 (eight original
+cases plus16 breath variants), frozen supported36, stableF26, existing regression40,
+SL24 and immutable144 pass. Filtered cases are not passes;28 other original physical
+cases remain unaccepted. Initial RED48/eight physical REDs and one resolved Vitest
+RPC error are retained. Full current commands, identities, masks/phase boundaries,
+new diagnostic and footprint: [Sphinx transfers](sphinx-transfers.md).
+
+New evidence only:
+`.git/agent-evidence/a2-cat-poses-implementation/renderer-phase-5-sphinx-transfers/evidence/`.
+Physical interruptions/reactions, Q→F/F↔side and remaining lying poses,
+proximal/interbody clearance, raw-degree export, runtime/browser/phone gates
+remain pending. **Do not mount or infer all T4/owner acceptance.**
+
+## Previous stable-sphinx calibration — bounded GREEN, T4 still partial
 
 The same `prepareCatPoseSimulation` now supplies a resolved stable F base to
 Core and static rest-authored F goals to the actual passed Bind. Belly support,

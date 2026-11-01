@@ -73,7 +73,7 @@ describe("prepared stable sphinx physical calibration", () => {
         bodyFrontZ: Math.max(...["body", "chest"].flatMap(id => rig.corners(id).map(p => rig.root.worldToLocal(p).z))),
       }));
     });
-    it(`${profile.name}: normal-motion stable ticks and interpolation keep immutable contacts`, () => {
+    it(`${profile.name}: normal-motion stable ticks and interpolation keep immutable contacts`, async () => {
       const rig = poseScene(profile.hunger, profile.design), neutral = rest(rig);
       const simulation = rig.prepareStable("sphinx");
       check(rig, simulation.sample(), neutral);
@@ -85,8 +85,9 @@ describe("prepared stable sphinx physical calibration", () => {
           expect(rig.bind.contacts.copyGoalsInto(new Float64Array(12))).toEqual(goals);
           expect(rig.bind.contacts.goalRevision).toBe(revision);
         }
+        await new Promise<void>(resolve => setImmediate(resolve));
       }
-    });
+    }, 30_000); // Setup/assertion wall time only; simulation and CPU gates are unchanged.
     for (const lazyWorldUpdate of [false, true]) it(`${profile.name}: ${lazyWorldUpdate ? "cold" : "updated"} immutable nonidentity rest parent preserves model/world goals`, () => {
       const rig = poseScene(profile.hunger, profile.design, { position: [1.3, .4, -.7], yaw: .63, scale: 1.3, lazyWorldUpdate });
       const neutral = rest(rig), simulation = rig.prepareStable("sphinx");
