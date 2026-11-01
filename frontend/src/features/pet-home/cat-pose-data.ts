@@ -24,8 +24,10 @@ function definePose(id: CatPoseId, label: string, height: number,
 /** Initial rigid-FK authoring only: editor/contact/browser tuning is still required. */
 export const CAT_POSES: Readonly<Record<CatPoseId, CatPoseDefinition>> = Object.freeze({
   seated: definePose("seated", "Seated", 0, {}, [], ["FL", "FR", "BL", "BR"]),
-  standing: definePose("standing", "Quadruped", .14, {
-    "joint-torso": [60, 0, 0], "joint-neck": [-30, 0, 0], "joint-head": [-30, 0, 0],
+  standing: definePose("standing", "Quadruped", -.10, {
+    // The primitive torso already has its long axis along +Z. Raising the
+    // pelvis is a limb/hip articulation, not a 60-degree torso compensation.
+    "joint-torso": [0, 0, 0], "joint-neck": [0, 0, 0], "joint-head": [0, 0, 0],
     "joint-shoulderFL": [-55, 0, 0], "joint-shoulderFR": [-55, 0, 0],
     "joint-elbowFL": [15, 0, 0], "joint-elbowFR": [15, 0, 0],
     "joint-wristFL": [-20, 0, 0], "joint-wristFR": [-20, 0, 0],
@@ -34,12 +36,13 @@ export const CAT_POSES: Readonly<Record<CatPoseId, CatPoseDefinition>> = Object.
     "joint-ankleBL": [5, 0, 0], "joint-ankleBR": [5, 0, 0],
     "joint-tailBase": [0, 25, -15], "joint-tailMid": [15, 0, 0], "joint-tailTip": [20, 0, 0],
   }, limbs, ["FL", "FR", "BL", "BR"]),
-  loaf: definePose("loaf", "Loaf", -.10, {
-    "joint-torso": [35, 0, 0], "joint-neck": [-20, 0, 0], "joint-head": [-15, 0, 0],
-    "joint-shoulderFL": [-75, 0, 15], "joint-shoulderFR": [-75, 0, -15],
-    "joint-elbowFL": [100, 0, 0], "joint-elbowFR": [100, 0, 0],
-    "joint-hipBL": [-45, 0, 10], "joint-hipBR": [-45, 0, -10],
-    "joint-kneeBL": [70, 0, 0], "joint-kneeBR": [70, 0, 0],
+  loaf: definePose("loaf", "Loaf", -.24, {
+    // Belly is the original horizontal lower face: .20 - .25 - .24 = -.29.
+    // Fold limbs upward into the body; do not rotate a free paw through the floor.
+    "joint-shoulderFL": [150, 0, 0], "joint-shoulderFR": [150, 0, 0],
+    "joint-wristFL": [-150, 0, 0], "joint-wristFR": [-150, 0, 0],
+    "joint-hipBL": [150, 0, 0], "joint-hipBR": [150, 0, 0],
+    "joint-ankleBL": [-150, 0, 0], "joint-ankleBR": [-150, 0, 0],
     "joint-tailBase": [0, 60, 20], "joint-tailMid": [30, 40, 0], "joint-tailTip": [30, 20, 0],
   }, [], []),
   sphinx: definePose("sphinx", "Sphinx", -.09, {

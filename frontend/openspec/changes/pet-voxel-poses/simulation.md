@@ -2,7 +2,7 @@
 
 ## Public boundary
 
-`new CatPoseSimulation({seed, reducedMotion?, cues?})` owns a deterministic, renderer-free state. `enqueue(input)` copies an interaction outside the frame callback. Every input has an explicit future integer `tick`; invalid timing throws `Pose inputs require a future integer simulation tick.` before touching the queue or state.
+`new CatPoseSimulation({seed, reducedMotion?, cues?, library?})` owns a deterministic, renderer-free state. `enqueue(input)` copies an interaction outside the frame callback. Every input has an explicit future integer `tick`; invalid timing throws `Pose inputs require a future integer simulation tick.` before touching the queue or state.
 
 Inputs cover successful care `{action, sequence}`, preview pose selection, pointer look/touch in degrees, petting feedback, motion preference and existing need cues. Successful care sequences are monotonic and consumed once. Neither the simulator nor animation replay invokes HTTP, audio, storage or gameplay mutation.
 
@@ -25,6 +25,52 @@ This timing correction does not compile morphology-specific transfer FK or
 supply a physical interruption/contact context: those remain adapter work.
 
 All degree tables, complete edge tracks and 49 routes are compiled once outside the frame path. Interpolation, masks, idle cursor, filters and springs reuse storage. Exact interpolation endpoints copy rather than normalize again, preserving the precise interruption snapshot. Uninterrupted playback uses the authored track once, never a second whole-edge easing.
+
+## Optional prepared data and additive breathing — bounded S↔L
+
+`CatPoseLibrary` supplies stable bases, directed tracks and routes. Omitting it
+uses the original shared tables. The public default differential checks44 cases,
+10,560 fixed ticks and52,800 interpolated samples with `Object.is` on every field:
+zero differences against the pre-injection simulator class using the same catalog.
+
+`prepareCatPoseSimulation(resolvedSkeleton, options, actualBind)` compiles/caches a
+private S↔L FK library, configures that actual Bind and constructs this same simulator. It does not mount the renderer or
+start another playback clock. Reference compilation starts from resolved A1 binds,
+not displayed nodes/history; analytic IK is used only for grounded reference
+configurations. Airborne intervals are quaternion FK. Supported references use
+one canonical twist seed, so release does not inherit unrelated authoring twist.
+
+Injected frames become the authoritative `base` inside the core, before gestures,
+idle, gaze, breathing and springs. Existing interruption snapshots therefore see
+the actual compiled base. Optional visibility tables expose forearms/shins during
+transfer, including interpolated samples, while retaining stable endpoint masks.
+No event, intent, route, reaction or clock rule is replaced by the library.
+
+Core still consumes ONLY the nominal breath1 base. `PoseTrack.breathFK` stores81
+cached reference/FK variants over .99..1.01, covering the existing awake amplitude
+(.01×idleAmp .25..1) and sleeping amplitude (.006). The compiler solves only
+actually supported reference feet; free trajectories interpolate authored FK.
+Bind applies `inverse(nominalFK) * variantFK` as an ADDITIVE local body-surface
+rotation before LAST support IK, using reusable quaternion scratch. No joint
+translation/scale, root/goal search, display history or second clock is introduced.
+The frame/base buffers and parent affine breathing/anchor transform are unchanged.
+No-library and breath1 bypass the delta. Prepared nonfinite/out-of-range breath
+throws `Breathing FK input is outside the compiled physical range.`; it is never
+clamped or suppressed.
+
+The historical eight-case breath RED is corrected on the real public prepared
+before/after release AND landing paths. Strict1e-6rad/.001unit tests pass at knots
+and all80 interval midpoints across four profiles; largest observed midpoint
+rotation error8.162e-7rad. Twenty-four fixed-tick/quarter-frame physical sweeps
+pass with original, opposite-phase awake and offset sleep-rate breath signals.
+This is finite interpolation proof, not an exact arbitrary-input guarantee.
+
+**The prepared library is not accepted for general motion.** Physical interrupted
+bases need an explicit additive handoff context: they need not equal the nominal
+edge sample used by this cache. Proximal/interbody clearance, remaining arcs and
+renderer/browser/physical-device CPU gates are still pending. Do not compensate
+by recapturing goals/history or applying IK to released feet. See
+[renderer.md](renderer.md) for current evidence and per-spec limits.
 
 ## Layers and interaction
 

@@ -19,6 +19,8 @@ export class CatPoseContacts {
     requestedMask: null, unreachableFeet: null, maxFootDrift: null,
   };
   private readonly chains;
+  private plannedMask = 0;
+  goalRevision = 0;
   private readonly scratch = createSupportScratch();
   private readonly solution = createSupportSolution();
   private readonly origin = new Vector3();
@@ -43,6 +45,33 @@ export class CatPoseContacts {
         upperLength: a.distanceTo(b), lowerLength: b.distanceTo(c) };
       return { upper, lower, foot, input, flat: foot.getWorldQuaternion(new Quaternion()) };
     });
+  }
+
+  /** Borrowed goals are copied OUT; callers cannot mutate stored targets. */
+  copyGoalsInto(output: Float64Array): Float64Array {
+    if (output.length !== 12) throw new RangeError("Support goal buffer must contain 12 coordinates.");
+    for (let i = 0; i < 4; i++) for (let axis = 0; axis < 3; axis++) output[i * 3 + axis] = this.chains[i].input.target[axis];
+    return output;
+  }
+
+  /** Atomically validate all landings before changing goals or counters. */
+  applyPlan(mask: number, goals: Float64Array): typeof this.diagnostics {
+    if (!Number.isInteger(mask) || mask < 0 || mask > 15 || goals.length !== 12) throw new RangeError("Invalid planned support goals.");
+    for (let i = 0; i < 12; i++) if (!Number.isFinite(goals[i])) throw new RangeError("Planned support goals must be finite.");
+    for (let i = 0; i < 4; i++) if ((mask & this.plannedMask & (1 << i)) !== 0) {
+      const target = this.chains[i].input.target;
+      for (let axis = 0; axis < 3; axis++) if (target[axis] !== goals[i * 3 + axis]) {
+        throw new RangeError("A planted goal cannot change before an explicit release.");
+      }
+    }
+    const landingMask = mask & ~this.plannedMask;
+    for (let i = 0; i < 4; i++) if (landingMask & (1 << i)) {
+      const target = this.chains[i].input.target;
+      for (let axis = 0; axis < 3; axis++) target[axis] = goals[i * 3 + axis];
+    }
+    if (landingMask !== 0) this.goalRevision++;
+    this.plannedMask = mask;
+    return this.apply(mask);
   }
 
   private aim(node: Object3D, child: Object3D, target: readonly number[]) {

@@ -81,9 +81,9 @@ describe("resolved local FK bind (S4/S10/S12 partial adapter proof)", () => {
       }
     }
   });
-  it("reports a truly unreachable upward reaction instead of certifying the clamped paws planted", () => {
+  it.each([.005, .04])("reports an unreachable +%s upward reaction instead of certifying clamped paws planted", height => {
     const rig = scene(100), frame = new CatPoseSimulation({ seed: 13 }).sample();
-    frame.rootOffset[1] = .04;
+    frame.rootOffset[1] = height;
     rig.bind.apply(frame);
     expect(rig.bind.contacts.diagnostics.requestedMask).toBe(15);
     expect(rig.bind.contacts.diagnostics.unreachableFeet).toBeGreaterThan(0);

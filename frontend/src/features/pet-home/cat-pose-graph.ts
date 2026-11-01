@@ -21,9 +21,10 @@ function edge(from: CatPoseId, to: CatPoseId, durationTicks: number,
 
 /** Directed only: there is intentionally no sphinx -> standing shortcut. */
 export const CAT_POSE_EDGES: readonly CatPoseEdge[] = Object.freeze([
-  edge("seated", "standing", 51, [stage(.2, "seated", hind, true), stage(.8, "standing", front)]),
+  edge("seated", "standing", 51, [stage(.2, "seated", hind), stage(.8, "standing", front)]),
   edge("standing", "seated", 57, [
-    stage(.25, "standing", hind), stage(.45, "seated", ["joint-torso"], true),
+    { ...stage(.25, "standing", hind), rootOffset: [0, -.14, 0] },
+    stage(.45, "seated", ["joint-torso"], true),
     stage(.5, "standing", front), stage(.7, "seated", hind),
     stage(.8, "standing", tail), stage(.85, "seated", front),
   ]),
