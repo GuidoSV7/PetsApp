@@ -1,6 +1,18 @@
-# T8 — Read-only historical frozen-scope reconciliation
+# T8 — Owner acceptance basis and historical reconciliation
 
-## Result: reconciliation performed; full union UNPROVEN
+## Current owner-selected acceptance basis
+
+The owner supersedes missing-snapshot retrieval as an acceptance requirement. Do not reconstruct absent frozen scopes, pursue those internal artifacts further or reopen exact cumulative target54ddaf. Historical facts below remain unchanged; missing union proof is not represented as proof and is no longer the gate.
+
+T8 acceptance now rests on:
+1. Native approved/burned T1,T3,T2,T4,T5R1,T5R3.
+2. T5R2 accepted by the maintainer as an SDK false positive, still NOT native approval.
+3. A NEW independent, blind, isolated security review of the final branch state: SEP-10/browser-purpose/timebounds/attempts, sessions, linking/roles, ownership/recovery, unique concurrent legacy credit, migrations0006–0008, frontend owner/epoch/default-off gate, and listener host setting.
+4. Exact54ddaf owner omission retained, not broadened to another target.
+
+The independent reviewer receives a source-only final-state snapshot and historical migration source fixtures, NOT these prior outcomes, reports or review conclusions. Report severity/path/concrete scenario. Confirmed real bugs require RED→GREEN and green applicable suites; doubtful findings are reported without speculative fixes. Current status: the NEW blind final-state review completed on sourcea2db3884356a694a245ffa798d71613dbe4e6e3c with no proven-real defect. All423sourcehashes matched before/after;125backend/144frontendfocusedtests plus3backend/1frontendindependentprobes and both type checks passed. See [full report and limitations](freighter-final-security-review.md). The completed verifier RETURN is retained, but its original scratch disappeared before artifact export: raw logs, expanded command list and executed probe files are unavailable. No export files or original-artifact hash manifest were produced. Therefore final T8 acceptance is BLOCKED awaiting the owner's explicit disposition of this evidence limitation; the review result is not erased and missing artifacts are not fabricated. This is NOT real-wallet T7, production certification or merge authorization. T7 remains paused; no production/mainnet/push/merge.
+
+## Historical result: reconciliation performed; full union UNPROVEN
 
 Historical accumulated range: `70906fdb87e2279268901ee791afeb1371051dd2..31615747ea866438eb4a3887a9ff785901059e0b`. Ordinary Git diff:137paths,7661insertions,393deletions. These are source-range statistics, **not reviewer-coverage proof**. New HOST preparation commits are outside this historical range and receive no inherited approval.
 
@@ -56,4 +68,4 @@ The observed native inventory retains R2 v2 state. Matching terminal-consumption
 
 Needed data is specifically the **six approved lineages' target-bound frozen scope snapshots**, plus base/candidate bindings where absent above. Without them, no honest change-identity union comparison against70906fd..3161574 can be completed. Counts, contiguous intervals, source hashes and candidate-view contents cannot replace them. This is a proof gap, not identification of a particular unreviewed source hunk. No new review or authority repair was attempted as a workaround.
 
-Parent metadata evidence resolves from the Freighter worktree via `git rev-parse --git-path agent-evidence/freighter-t8-reconciliation`, file `metadata-checks.json`: historical diff statistics, R2 existing-scope/tree match and unchanged native-state hash. Read-only reconciliation/report is complete; **T8 union acceptance remains UNPROVEN**. T7 remains owner-scheduled; no push/merge or production/mainnet action.
+Parent metadata evidence resolves from the Freighter worktree via `git rev-parse --git-path agent-evidence/freighter-t8-reconciliation`, file `metadata-checks.json`: historical diff statistics, R2 existing-scope/tree match and unchanged native-state hash. Read-only reconciliation/report is complete; **historical frozen-change union remains UNPROVEN**. The owner superseded union reconstruction as an acceptance gate; current final-state review/basis is recorded above without rewriting that history. T7 remains owner-scheduled; no push/merge or production/mainnet action.

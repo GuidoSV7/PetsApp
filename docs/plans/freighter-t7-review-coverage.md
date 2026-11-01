@@ -1,4 +1,10 @@
-# T8 — Historical review coverage, with an explicit proof gap
+# T8 — Historical review coverage and owner-selected acceptance
+
+## Current acceptance policy
+
+The owner no longer requires retrieving/reconstructing the missing frozen-scope snapshots. Do not pursue them or reopen54ddaf. Acceptance is six recorded native approvals + maintainer acceptance ofR2 + a NEW independent blind isolated final-state critical-surface security review + the exact owner-omitted54ddaf record. That NEW blind review completed on sourcea2db3884356a694a245ffa798d71613dbe4e6e3c: no proven-real defect;423sourcehashesunchanged;125backend/144frontendfocusedtests and3backend/1frontendindependentprobes passed, plus both type checks. See [full report and limitations](freighter-final-security-review.md). Artifact export subsequently failed because the original scratch was absent; only the returned report, not original raw logs/probe files, is retained. Final T8 acceptance is BLOCKED on the owner's explicit disposition of that evidence limitation. Historical union evidence remains unproven as a fact, not an acceptance blocker. See [current basis and historical reconciliation](freighter-t8-review-reconciliation.md).
+
+## Historical record (unchanged dispositions)
 
 **Read-only documentary record at feature source31615747ea866438eb4a3887a9ff785901059e0b.** No review, authority mutation, new acknowledgement, approved-ref update or T7 environment/database action was executed for this guide. The subsequent owner-authorized reconciliation used read-only Git metadata and archived evidence only. Existing commits and approval records remain unchanged. This is not delivery authorization.
 
@@ -34,9 +40,9 @@ The documented commit intervals form a contiguous sequence from70906fd to3161574
 
 **Full accumulated frozen-change union: UNPROVEN.** The owner-authorized read-only reconciliation is now complete: [per-review report](freighter-t8-review-reconciliation.md). It located R2's exact frozen trees/ten paths and confirmed their Git tree/path match; it did not locate the six approved lineages' target-bound frozen scopes and, except T1's explicit receipt, base/candidate bindings. The report lists each missing field instead of reconstructing it. This is missing proof, not identification of a particular unreviewed hunk.
 
-Ordinary accumulated Git diff is137paths/7661insertions/393deletions; that statistic and contiguous ancestry cannot substitute for immutable scopes. T8 acceptance needs the actual archived missing bindings, not a new invented scope/acknowledgement or a broadened54ddaf omission. R2 remains maintainer-only despite its located scope.
+Ordinary accumulated Git diff is137paths/7661insertions/393deletions; that statistic and contiguous ancestry cannot substitute for immutable scopes. Historical immutable-union proof would require the actual missing bindings; the owner no longer requires that proof for acceptance. No new scope/acknowledgement is invented and54ddaf omission is not broadened. R2 remains maintainer-only despite its located scope.
 
-No lifecycle operation or application execution was performed for reconciliation. Optional HOST has separate authorized preparation evidence and lies outside70906fd..3161574. The guide/plan is **not T8 accepted**; real-extension T7 stays paused until owner scheduling. No push/merge.
+No lifecycle operation or application execution was performed for reconciliation. Optional HOST has separate authorized preparation evidence and lies outside70906fd..3161574. The owner-selected T8 review basis is documented with the completed new blind RETURN; final acceptance still awaits owner disposition of the unavailable original execution artifacts; this is not new native approval, real-extension T7 acceptance or delivery authorization. Real-extension T7 stays paused until owner scheduling. No push/merge.
 
 ## Source provenance
 

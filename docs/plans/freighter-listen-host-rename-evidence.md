@@ -19,6 +19,6 @@ Gates ran with normal HOME, installed tools/no package manager, one worker, unde
 
 Resolve this worktree's evidence with git rev-parse --git-path agent-evidence/freighter-final-security: rename-red/rename-green stdout, stderr and exits; rename-gates.json; rename-gate-source-identity.json; per-check logs; rename-cleanup.json. Source identity covers source/tests/migrations/config/lock. Original HOST evidence remains historical and unchanged; this file supersedes its active setting name, not its observed results.
 
-README, T7 guide and DEPLOY.md document the renamed optional setting with no default. The NEW independent blind final-state security review is a separate pending outcome; these gates do not claim it passed. T8 uses the owner's new acceptance basis, without reconstructing absent snapshots or reopening54ddaf.
+README, T7 guide and DEPLOY.md document the renamed optional setting with no default. At the listener rename commit, the NEW independent blind final-state security review was pending; it is now separately recorded in [the completed security report](freighter-final-security-review.md). The primary gates alone do not establish that result. T8 uses the owner's new acceptance basis, without reconstructing absent snapshots or reopening54ddaf.
 
 Risk: item 2 (network-interface configuration). No push/merge/production/mainnet or T7 execution.
