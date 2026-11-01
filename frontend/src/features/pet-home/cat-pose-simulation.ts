@@ -105,6 +105,7 @@ export class CatPoseSimulation {
   private track: PoseTrack | null = null;
   private age = 0;
   private bridgeOnly = false;
+  private completedSpan = false;
   private bridging = false;
   private goal: CatPoseId = "seated";
   private pendingGoal: CatPoseId | null = null;
@@ -161,6 +162,7 @@ export class CatPoseSimulation {
   }
 
   step(): void {
+    this.completedSpan = false;
     copyFrame(this.current, this.previous);
     this.tick++;
     while (this.inputIndex < this.inputs.length && this.inputs[this.inputIndex].tick <= this.tick) {
@@ -287,6 +289,7 @@ export class CatPoseSimulation {
       this.current.transitionTo = track.to; this.current.transitionProgress = tick / track.duration;
       this.age++;
       if (tick === track.duration) {
+        this.completedSpan = true;
         this.current.pose = track.to; this.routeIndex++; this.bridging = false;
         if (this.routeIndex < this.route.length - 1) {
           this.track = tracks[this.route[this.routeIndex]][this.route[this.routeIndex + 1]]!; this.age = 0;
@@ -298,7 +301,7 @@ export class CatPoseSimulation {
       this.blend(this.bridgeStart, stable[this.goal].base, ease(t), this.current.base);
       this.current.transitionFrom = this.current.pose; this.current.transitionTo = this.goal; this.current.transitionProgress = t;
       this.age++;
-      if (t === 1) { this.bridgeOnly = false; this.finishGoal(); }
+      if (t === 1) { this.completedSpan = true; this.bridgeOnly = false; this.finishGoal(); }
     }
     const pose = stable[this.current.pose];
     this.current.visibleMask = pose.visible;
@@ -424,6 +427,23 @@ export class CatPoseSimulation {
   sample(alpha = 1): CatPoseFrame {
     const t = clamp(alpha, 0, 1), output = this.rendered;
     copyFrame(this.current, output);
+    if (this.reduced) { output.bodyBreath = 1; output.bounce = 0; return output; }
+    if (t < 1) {
+      const previous = this.previous, current = this.current;
+      output.pose = previous.pose;
+      output.transitionFrom = previous.transitionFrom; output.transitionTo = previous.transitionTo;
+      output.transitionProgress = previous.transitionProgress;
+      output.supportMask = previous.supportMask;
+      // Posture extensions follow geometry; discrete gesture feedback stays current.
+      output.visibleMask = (previous.visibleMask & 15) | (current.visibleMask & 48);
+      if (previous.transitionTo !== null) {
+        const sameSpan = previous.transitionFrom === current.transitionFrom && previous.transitionTo === current.transitionTo
+          && current.transitionProgress >= previous.transitionProgress;
+        const end = sameSpan ? current.transitionProgress
+          : this.completedSpan ? 1 : previous.transitionProgress;
+        output.transitionProgress += (end - previous.transitionProgress) * t;
+      }
+    }
     this.blend(this.previous.base, this.current.base, t, output.base);
     if (t === 0) output.rotations.set(this.previous.rotations);
     else if (t !== 1) for (let i = 0; i < 88; i += 4) {
@@ -435,11 +455,6 @@ export class CatPoseSimulation {
     output.headingDeg = output.base[91];
     output.bodyBreath = this.previous.bodyBreath + (this.current.bodyBreath - this.previous.bodyBreath) * t;
     output.bounce = this.previous.bounce + (this.current.bounce - this.previous.bounce) * t;
-    if (this.reduced) {
-      output.base.set(this.current.base); output.rotations.set(this.current.rotations);
-      output.rootOffset.set(this.current.rootOffset); output.headingDeg = this.current.headingDeg;
-      output.bodyBreath = 1; output.bounce = 0;
-    }
     return output;
   }
 }

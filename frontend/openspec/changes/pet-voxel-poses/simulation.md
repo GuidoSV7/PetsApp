@@ -8,6 +8,22 @@ Inputs cover successful care `{action, sequence}`, preview pose selection, point
 
 `step()` advances exactly 1/60 second. `advance(seconds)` accumulates display time, performs all complete fixed ticks, then returns an interpolated frame. A resumed tab contributes at most .25 seconds per display callback; excess wall time does not fast-forward simulation-time sleep. `sample(alpha)` interpolates previous/current quaternions and root coordinates in reusable buffers. Returned frame/buffers are borrowed: copy them only when retaining an external snapshot.
 
+### Sampled contact time
+
+For normal motion, the posture ID, directed edge, phase progress, support mask
+and posture-extension visibility describe the **same interpolated geometry**.
+A finishing edge remains active until its endpoint is sampled, even when the
+authoritative tick already starts the next edge. A redirected/restarted base
+snapshot is not mistaken for edge completion; a real eighteen-tick bridge
+completion does interpolate to its endpoint. The fixed-step completion flag is
+explicit, not inferred from coinciding pose IDs.
+
+The frame's `tick` remains the authoritative **integer** simulation tick.
+`sample(1)` retains current-tick behavior. Gesture feedback stays current;
+reduced motion returns the stable current cut at every alpha without a fade.
+This timing correction does not compile morphology-specific transfer FK or
+supply a physical interruption/contact context: those remain adapter work.
+
 All degree tables, complete edge tracks and 49 routes are compiled once outside the frame path. Interpolation, masks, idle cursor, filters and springs reuse storage. Exact interpolation endpoints copy rather than normalize again, preserving the precise interruption snapshot. Uninterrupted playback uses the authored track once, never a second whole-edge easing.
 
 ## Layers and interaction
