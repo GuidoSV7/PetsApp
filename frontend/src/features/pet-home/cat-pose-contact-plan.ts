@@ -13,7 +13,7 @@ const phases: Readonly<Record<string, readonly Phase[]>> = {
   "seated:standing": [phase(0, 15, null, "seated")],
   "standing:seated": [phase(0, 15, null, "seated")],
   "seated:sphinx": [phase(0, 12, null, "seated"), phase(34 / 54, 0, "belly", "sphinx"), phase(1, 3, "belly", "sphinx")],
-  "standing:sphinx": [phase(0, 15, null, "standing"), phase(.1, 12, null, "standing"), phase(.55, 12, "belly", "standing"), phase(.75, 3, "belly", "sphinx")],
+  "standing:sphinx": [phase(0, 15, null, "standing"), phase(20 / 54, 0, "belly", "sphinx"), phase(1, 3, "belly", "sphinx")],
   "sphinx:seated": [phase(0, 0, "belly", "sphinx"), phase(20 / 54, 15, null, "seated")],
   "seated:loaf": [phase(0, 12, null, "seated"), phase(34 / 45, 0, "belly", "loaf")],
   "loaf:seated": [phase(0, 0, "belly", "loaf"), phase(20 / 48, 15, null, "seated")],

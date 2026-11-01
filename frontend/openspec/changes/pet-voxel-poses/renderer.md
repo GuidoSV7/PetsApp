@@ -1,6 +1,33 @@
 # T4a partial integration — not renderer acceptance
 
-## Current S↔F nominal transfers — bounded GREEN, T4 still partial
+## Current direct Q→F — bounded GREEN, T4 still partial
+
+The same factory/Core/actual passed Bind now has a genuine direct standing→F
+track. Keep all15 neutral supports during authored monotonic settling from
+Q rootY−.10 to−.24; actual belly contact20 precedes last-foot release. Four free
+FK arches lift distal bones first, rotate uppers with distal bones UP, then
+extend to calibrated F front3 landing54. Exact raw Q seed/start and prepared F
+endpoint are retained; no displayed S/loaf detour, runtime Bind/Core/graph/global
+row change, airborne IK, goal movement, root fitting or breath suppression.
+
+Dedicated36 GREEN includes all ticks/alpha0/.25/.5/.75/1, explicit finite XYZ,
+exact endpoints, real body support and strict supported/FK handoffs at five
+breaths plus80 interpolation midpoints/profile. Original QF12, SF24, SL24,
+SQ/protocol/library40, frozen SF48/supported36/staticF26/immutable144 pass.
+Filtered cases are not passes;24 original physical cases remain unaccepted.
+Prepared six-route/stable-node differential and default-class differential both
+report0 differences; global types/focused lint pass. Details, exact phases,
+setup diagnostic, numeric footprint and limits:
+[Quadruped → sphinx](quadruped-sphinx.md).
+
+New evidence only:
+`.git/agent-evidence/a2-cat-poses-implementation/renderer-phase-6-quadruped-sphinx/evidence/`.
+F↔side/remaining lying poses, physical interruptions/reactions, general clearance,
+raw-degree exports, mounting/browser/device/owner gates remain pending. The
+parent's723/75 checkpoint proof is f08-only, not all WIP. **Do not mount or infer
+whole T4 acceptance.** Earlier sections below retain their historical boundaries.
+
+## Previous S↔F nominal transfers — bounded GREEN, T4 still partial
 
 The existing factory now compiles actual direct S→F/F→S tracks from calibrated
 stable F, with explicit neutral/F goal templates. Down: rear support until real
