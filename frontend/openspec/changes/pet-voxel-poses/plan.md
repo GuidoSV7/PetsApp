@@ -1,14 +1,14 @@
 # A2 — Procedural cat poses and transitions
 
-**Status: proposal only; NOT authorization to implement.** Branch: `plan/a2-cat-poses-transitions`, based on fetched `main` / `origin/main` at `70906fdb87e2279268901ee791afeb1371051dd2`. No application code, dependencies, API, database or production changes.
+**Status: APPROVED for implementation with owner amendments recorded in `odd/tasks/a2-cat-poses.md`. No push or merge before owner video approval.** Branch: `plan/a2-cat-poses-transitions`, based on fetched `main` / `origin/main` at `70906fdb87e2279268901ee791afeb1371051dd2`. Implementation is frontend-only; no dependency, API, database or production changes.
 
 Freighter T7 is **paused by the owner, not failed**. Preserve `feat/freighter-user-pet` at `31615747ea866438eb4a3887a9ff785901059e0b`; no rebase, deletion, push or merge. Its guide and review dispositions remain separate. Fresh resource audit found eight owned scratch paths absent, no matching processes, no listeners on 3102–3104 and no T2–T5 test databases. Native immutable review candidate views are retained evidence, not running test servers.
 
 ## 1. Scope and evidence boundary
 
-Keep the approved choices: custom procedural animation, seven data-defined poses, directed transition graph, quaternion interpolation with intermediate poses, separate heading, interruption from the instantaneous **base** pose, fixed-step state, ordered layers, second-order springs, gaze, four care reactions, an admin pose editor and real-Chromium owner acceptance. No AnimationMixer, artist rig, locomotion or IK; those last two belong to A4.
+Keep the approved choices: custom procedural animation, seven data-defined poses, directed transition graph, quaternion interpolation with intermediate poses, separate heading, interruption from the instantaneous **base** pose, fixed-step state, ordered layers, second-order springs, gaze, four care reactions, an admin pose editor and real-Chromium owner acceptance. No AnimationMixer or artist rig. Analytic two-bone support IK is now explicitly authorized as the LAST layer after springs; no gait, locomotion or navigation (A4). Do not use CCDIKSolver/SkinnedMesh.
 
-Preserve all 33 original box IDs, six A1 extension IDs, 22 joint IDs and three accessory anchors. Preserve coat recipes/colors/camera suggestions, backend needs/actions/free care, API/database, authentication/roles/admin routing and landing. Do not start implementation, publish or merge before owner validation.
+Preserve all 33 original box IDs, six A1 extension IDs, 22 joint IDs and three accessory anchors. Preserve coat recipes/colors/camera suggestions, backend needs/actions/free care, API/database, authentication/roles/admin routing and landing. Implementation is authorized. Do not push or merge before owner video approval; if two rounds still look robotic, present toy style as a proposal ONLY, without implementing it.
 
 ### Observed source map
 
@@ -78,6 +78,7 @@ Easing: `smoothstep = 3t²−2t³`; `smootherstep = 6t⁵−15t⁴+10t³`. Times
 | S → Q | .85 s / 51 ticks | Shift support to front paws; raise pelvis; extend rear/front chains; head counters torso. | smootherstep per stage |
 | Q → S | .95 s / 57 ticks | **Pelvis lowers first** (0–45%); fold hind chains (25–70%); forelegs settle (50–85%); **tail settles last** (80–100% plus bounded spring tail). | smootherstep |
 | Q → F | .90 s / 54 ticks | Bend elbows, lower chest, fold hind chains, settle belly; feet release only in declared phases. | smootherstep |
+| S → F | .90 s / 54 ticks | Extend front paws forward, lower chest, transfer underside support; no standing detour. | smootherstep |
 | F → S | .90 s / 54 ticks | Raise chest over forelegs, bring pelvis under body, then restore seated support. | smootherstep |
 | F → D | .85 s / 51 ticks | Shift support to one side; roll 0→45→90°; place cheek and relax legs. | smoothstep per stage |
 | D → F | .85 s / 51 ticks | Lift head, roll onto belly with explicit support transfer, extend front paws. | smoothstep |
@@ -88,11 +89,11 @@ Easing: `smoothstep = 3t²−2t³`; `smootherstep = 6t⁵−15t⁴+10t³`. Times
 | S → L | .75 s / 45 ticks | Lower chest, tuck paws, spread support to underside, wrap tail. | smootherstep |
 | L → S | .80 s / 48 ticks | Unwrap tail, expose front paws, lift chest, recover seated support. | smootherstep |
 
-Examples: Q→D = Q→F→D; B→Q = B→D→F→S→Q; C→Q = C→D→F→S→Q; S→B = S→Q→F→D→B. Disallow F→Q and D→Q shortcuts. Sleeping from S uses S→Q→F→D→C or stops at D.
+Examples: Q→D = Q→F→D; B→Q = B→D→F→S→Q; C→Q = C→D→F→S→Q; S→B = S→F→D→B. Disallow F→Q and D→Q shortcuts. Sleeping from S uses S→F→D→C or stops at D; never passes through Q.
 
 All joint segments use normalized quaternion slerp; insert more local waypoints whenever angular distance exceeds 150°, including interrupted routes. Separate unwrapped heading prevents a 350°→370° heading request from becoming a long spin or a 180° roll from choosing an unwanted short path.
 
-**Interruption:** sample the in-flight base pose at the event's simulation tick, *before* gesture/idle/gaze/needs/springs. That becomes the first retarget keyframe. Preserve spring positions/velocities independently; never bake their offsets back into base or restart from the old origin. Use phase/contact metadata to finish a short support-transfer segment before rerouting if immediate redirection would break support. A new request can interrupt, but cannot teleport a planted foot or skip mandatory graph nodes.
+**Interruption:** sample the in-flight base pose at the event's simulation tick, *before* gesture/idle/gaze/needs/springs. That becomes the first retarget keyframe. Preserve spring positions/velocities independently; never bake their offsets back into base or restart from the old origin. Use phase/contact metadata to finish at most 300ms (18 fixed ticks) of the current support-transfer segment before rerouting. Gaze and ears respond on the next tick after touch rather than waiting for this base redirect. A new request can interrupt, but cannot teleport a planted foot or skip mandatory graph nodes.
 
 ## 4. Replace D2 compensation without changing seated pixels
 
@@ -102,8 +103,8 @@ A1 already has the correct ancestry. Its compiler chooses legacy world targets a
 2. Resolve needs/admin morphology once, retaining existing original-box world matrices as the seated rest oracle. Derive rigid, unit-scale joint rest frames and each mesh bind using `inverse(jointRestWorld) × meshRestWorld`. At zero pose delta, require the original 33 box/patch transforms to match the oracle; reuse exact baseline arithmetic where necessary for pixel parity.
 3. A2's pose path uses fixed local rest bindings and FK descendants of the torso. It must not re-target distal joints to legacy **world** positions after torso/limb motion. Keep the legacy compiler/tests as a compatibility oracle rather than rewriting the goldens to bless a new silhouette.
 4. Keep every joint scale `(1,1,1)`. A mesh's visual scale never becomes its child's transform. If an attachment originates on a body/head surface, compute its local attachment point from the host mesh's scaled local geometry, then place the rigid child joint there. Never decompose a rotated non-uniformly scaled parent to approximate a new skeleton.
-5. Separate **morphology rest rebinding** (hunger/admin settings) from **runtime movement** (poses/breathing). Calibrate each resolved seated rest to the oracle; do not continuously rebuild inverse posed-world offsets that cancel the requested follow-through. Breathing moves surface attachments, with small authored FK corrections for declared supports, not runtime IK.
-6. Contact-aware FK curves are authored across bodySlim/hunger and breathing phase. Breathing is small and pose-specific; preserve the active support surface when scaling torso mesh. If curves cannot pass the contact/drift tolerance without IK, reduce amplitude/tune the curve or stop for a scoped decision—do not quietly add A4.
+5. Separate **morphology rest rebinding** (hunger/admin settings) from **runtime movement** (poses/breathing). Calibrate each resolved seated rest to the oracle; do not continuously rebuild inverse posed-world offsets that cancel the requested follow-through. Breathing moves surface attachments; LAST-layer analytic support IK pins declared paw goals in world space with unit-scale joints, per-leg bend direction/reach and flat rear feet.
+6. Pose/support phases are authored across bodySlim/hunger and breathing. Analytic two-bone IK (law of cosines) runs after springs, pinning planted paws within ≤0.001 model unit world drift. Report unreachable goals honestly; never mark a clamped endpoint as planted. Rear thigh/shin solve by IK; ankle compensates to keep foot flat. No gait/navigation.
 
 **Zero-pixel contract:** same browser/build environment, viewport/DPR/camera/lights/coat/design/needs and a frozen **neutral seated rest**: idle/gaze/gesture/breathing deltas neutral, springs at equilibrium. Compare fresh baseline vs new torso-following rig, all five coats at hunger 0 and 100; 0 differing canvas pixels, matching world transforms and unit joint scales. Add dense pure geometry checks for hunger 0..100. Keep a fresh whole-home comparison as a separate integration check. New animated tail, breathing and gaze frames are intentionally different; do not claim they match old animated A1 captures pixel-for-pixel.
 
@@ -125,9 +126,10 @@ A1 already has the correct ancestry. Its compiler chooses legacy world targets a
 | 3. Additive idle | Keep seeded blink and ear-tic scheduling. Replace old direct tail sine rotation with a small target offset for the **new three-segment spring chain**; do not apply both old and new tail rotations. |
 | 4. Gaze | Neck/head/pupil target offsets in current local pose; feeding/sleep masks suppress conflicting pointer gaze. |
 | 5. Needs | Existing needs remain authoritative; apply morphology, energy/fun amplitudes and pose-specific breathing, preserving coat attachment. No backend values or rules change. |
-| 6. Springs | Final bounded secondary targets for tail/ears/head; support/contact bounds take precedence over oscillation. No root/paw spring that makes planted feet slide. |
+| 6. Springs | Bounded secondary targets for tail/ears/head; never oscillate planted goals. |
+| 7. Support IK | LAST: analytic two-bone solution, bend/reach constraints and flat rear feet; preserve world-space goals through breathing, transitions and reactions. |
 
-Tail posture targets: happy = raised base with curved tip; relaxed seated = wrap around paws; curled = tip above nose. Ears forward for interest, partly closed eyes for petting and small torso breathing. Breathing starts at neutral phase for reference captures; initial awake frequency .25Hz/amplitude1% torso mesh, sleep .12Hz/.6%, then tune within contact constraints. Never scale a joint.
+Tail posture targets: happy = raised base with curved tip; relaxed seated = wrap around paws; curled = tip above nose. Ears forward for interest, partly closed eyes for petting and small torso breathing. Breathing starts at neutral phase for reference captures; approved awake frequency .4Hz/amplitude1% torso mesh, sleep .3Hz/.6%, then tune within contact constraints. Never scale a joint.
 
 ### Second-order springs: initial proposal, not measured tuning
 
@@ -145,7 +147,7 @@ Frequency is Hz; damping and response are dimensionless. Clamp velocities/amplit
 
 ### Look-at
 
-Raycast/project the pointer or finger onto a local target plane near head depth, transformed by the cat's current root heading. No global pointer capture or interference with page scrolling. A finger uses the last active touch target; release returns to neutral smoothly.
+Raycast/project the pointer or finger onto a local target plane near head depth, transformed by the cat's current root heading. No global pointer capture or interference with page scrolling. A finger uses the last active touch target; release returns to neutral smoothly. The touch target and interested-ear response are consumed on the next simulation tick; base interruption delays never delay them.
 
 Eyes lead (approximately80ms response), then head (180ms), then neck (240ms). Initial total yaw budget45°: pupils first within their eye whites, then up to25° head and20° neck; final total pitch initially −25°..+20°. These dynamic limits are tighter than editor safety limits. Clamp pupils to ≤50% of available white-margin travel; do not translate them outside the eye. Pupils are mesh-local offsets, not new rig joints. Behind-body/unreachable targets clamp at the limit, never turn the torso or relocate the cat. Feeding owns head/neck gaze toward the plate; sleep returns it to neutral.
 
@@ -156,21 +158,21 @@ Emit a discrete `{sequence, action}` reaction **only after the existing care req
 | Action | Visual sequence / mask | Approximate extra time, excluding graph travel |
 |---|---|---:|
 | Feed | Route to Q; freeze support, reveal plate; neck/head lower toward it, enable jaw and tongue, 3 slow chew cycles; tongue/jaw disappear while mouth closes; return along legal graph to prior resting pose. Gaze/idle head movement masked while eating. |2.4s|
-| Sleep | Route to C or D using seed-selected stable choice; close eyes and run slow breathing while the sleep reaction holds; settle rather than teleport, then return on explicit wake/new successful care event. This is a visual state, not new backend sleep gameplay. |entry graph +2.0s minimum quiet hold|
+| Sleep | Route to C or D using seed-selected stable choice; close eyes and run slow breathing while the sleep reaction holds; settle rather than teleport, then return on explicit wake/new successful care event. This is a visual state, not new backend sleep gameplay. |entry graph +2.0s reaction, then sleep until touch/care or60s hold timeout|
 | Bathe | Keep/route to stable S or Q; ears rotate sideways during a1.2 s wash gesture; finish with a .45s tapered torso/head/ear shake. Paws stay in support; no water assets/particles needed. |1.65s|
 | Play | Short .8s in-place body/head/tail burst, no root X/Z displacement. Retain/absorb the existing play bounce once; do not apply the legacy play bounce and a second new bounce. |.8s|
 
-**Petting remains current bounce + purr.** Do not route petting through the care API or duplicate its pulse. Existing purr timing is not redesigned. Reduced-motion handling is proposed below.
+**Petting:** bounce only in seated, standing or loaf; lying poses use squinted eyes + purr. Touching sleep wakes through the graph with squint+purr, never a jump to standing. Reduced motion suppresses every bounce. Do not route petting through the care API or duplicate pulses.
 
-Use a **six-box plate group**: bottom + four raised rims + one small food box; no textures, model downloads, new audio or new cat IDs. Place it on the authored support plane in front of the cat, outside paw clearance; bake the target relative to root heading at reaction start, not into a springing head/accessory anchor. It stays still while chewing. Mount/cache once, toggle visibility, and hide/clean it on cancellation, completion or unmount. No persistent room object before a room exists.
+Use **one merged plate mesh** with vertex colors: author bottom/rim/food geometry then merge with no material groups into one BufferGeometry and one material. No textures, model downloads, new audio or new cat IDs. Place it on the authored support plane in front of the cat, outside paw clearance; bake the target relative to root heading at reaction start, not into a springing head/accessory anchor. It stays still while chewing. Mount/cache once, toggle visibility, and hide/clean it on cancellation, completion or unmount. No persistent room object before a room exists.
 
 Latest successful care event retargets from current base using the same contact-safe interruption policy; deduplicate sequence IDs. A sleep request may replace another reaction, and a new care event wakes it. Never replay a backend mutation to replay an animation. Existing control/request disabling policy is preserved.
 
-## 7. Reduced-motion proposal — owner validation required
+## 7. Reduced motion — owner approved
 
-Recommended: **cut directly to the final stable pose**, with no oscillatory springs, body shake, hop, tail sway or torso breathing. Keep automatic blink. Show plate/static lowered-head feed pose and existing success text; sleeping = stable C/D with closed eyes; bathing = static sideways ears then neutral; play = one static attentive pose then neutral. Restoring normal motion starts from the displayed pose with zero spring velocity, not a hidden elapsed animation.
+Approved: **cut directly to the final stable pose**, with no oscillatory springs, body shake, hop, tail sway or torso breathing. Keep automatic blink. Show plate/static lowered-head feed pose and existing success text; sleeping = stable C/D with closed eyes; bathing = static sideways ears then neutral; play = one static attentive pose then neutral. Restoring normal motion starts from the displayed pose with zero spring velocity, not a hidden elapsed animation.
 
-Proposal: also suppress the intentional **visual petting bounce** under reduced motion while preserving click feedback and existing purr. This is an explicit accessibility extension: current code only suppresses automatic idle, so owner must validate this deliberate difference. Do not silently claim it already behaves that way. No opacity fade is required; an optional ≤100ms non-spatial fade would need separate owner validation because it adds materials/render concerns.
+Also suppress the intentional **visual petting bounce** under reduced motion, preserving feedback and purr. This is now explicitly owner-approved; NO fade.
 
 Runtime preference changes immediately stop oscillations at a stable target. Test both initial preference values and changes during all reactions/transitions. Motion preference is not stored as a pose or account setting.
 
@@ -199,7 +201,7 @@ Current eligible base meshes =33, coat patch boxes = solid0/tabby12/tuxedo8/cali
 | D side |4|37|79|103|95|87|103|
 | C curled |4|37|79|103|95|87|103|
 | B belly-up |4|37|79|103|95|87|103|
-| Feeding maximum: Q + jaw + tongue +6-box plate |6|39 +6plate|95|119|111|103|119|
+| Feeding maximum: Q + jaw + tongue +1 merged plate |6|39 +1plate|85|109|101|93|109|
 
 Transitions conservatively use the union of source/target limb visibility: up to4 extra limb boxes, no jaw/tongue outside feeding. Feeding max is the overall planned bound. Visibility switches only at occluded/contact-authored phases; verify draw counts and absence of pops in Chromium's actual main + contact-shadow passes. If renderer/pass behavior invalidates the formula, report actual counts before changing budgets.
 
@@ -222,17 +224,17 @@ New worst median = **.137482775ms/call**; largest batch mean = **.212976005ms/ca
 
 **A2 CPU per pose/pattern is not measured: the implementation does not exist.** A sampler call is not full simulation/FK/node copying or GPU rendering. Do not extrapolate .137ms to seven new poses or to phones. Each of the7×5 pose/coat cells,12 directed edges and4 reactions must later record measured median/p95/max for simulation + render interpolation/node copy. The pure core should be coat-independent; verify that claim instead of inventing identical timing numbers.
 
-Proposed acceptance budget for **every pose/coat cell**: ≤2ms CPU per displayed frame at p95 on the owner-selected low-end phone, including all fixed ticks performed that frame, layers, FK and node writes. Also report worst frame and missed frame rate. This is a proposed budget, not measured attainment.
+Proposed acceptance budget for **every pose/coat cell**: ≤2ms CPU per displayed frame at p95 on the owner-selected low-end phone, including all fixed ticks performed that frame, layers, support IK and node writes. Also report worst frame and missed frame rate. This is a proposed budget, not measured attainment.
 
 ### Measurement protocol after implementation
 
 - Node: production-equivalent compiled core, warmup then raw batches, seeded8h simulation time without waiting8h; record all 7 poses × 5 coats, every edge and reaction, normal/reduced motion and hunger boundaries. Separate core step and renderer-adapter costs. Keep baseline and candidate harness identical for actual comparison; retain source/build/runtime hashes and results.
-- Real low-end Android Chromium: owner supplies/model identifies target device; physical phone, no SwiftShader/CPU-throttling substitution for acceptance. Fixed viewport/DPR, same production build and fixture, warmup30s,3×60s captures, cool-down/device thermal state recorded. Time core+interpolation+node writes with Performance API; collect median/p95/max, tick counts/frame, GC and long frames. Report draw calls separately from CPU and GPU/frame presentation. Do not rerun measurements merely to select a favorable result.
+- Physical Android Chromium: owner identifies target device before gate; if no low-end phone exists, measure the available phone, report model and leave low-end budget UNVALIDATED. No SwiftShader/CPU-throttling substitution for physical proof. Fixed viewport/DPR, same production build and fixture, warmup30s,3×60s captures, cool-down/device thermal state recorded. Time core+interpolation+node writes with Performance API; collect median/p95/max, tick counts/frame, GC and long frames. Report draw calls separately from CPU and GPU/frame presentation. Do not rerun measurements merely to select a favorable result.
 - Chromium desktop/SwiftShader verifies rendering/contacts/video generation, **not mobile GPU or CPU performance**. If the phone is unavailable, report the missing proof explicitly; do not claim the2ms mobile gate passed.
 
 ## 10. Planned edit surfaces and Freighter overlap
 
-Only this plan document is added now. The following are **future proposed edits**, not implementation authorization. Overlap was checked using `git diff --name-only main...feat/freighter-user-pet` with main 70906fd/Freighter3161574.
+The following are authorized implementation surfaces, bounded by owner amendments and exclusions. Overlap was checked using `git diff --name-only main...feat/freighter-user-pet` with main 70906fd/Freighter3161574.
 
 | Proposed path (relative to frontend/) | Freighter overlap? | Boundary |
 |---|---|---|
@@ -240,12 +242,12 @@ Only this plan document is added now. The following are **future proposed edits*
 | `src/features/pet-home/cat-pose-graph.ts` |No/new|Directed edges, waypoints, durations/easing and mandatory routing. |
 | `src/features/pet-home/cat-pose-simulation.ts` |No/new|Fixed-step explicit state, layers, events, interruption. |
 | `src/features/pet-home/cat-pose-springs.ts` |No/new|Second-order state and stable bounded integration. |
-| `src/features/pet-home/cat-pose-bind.ts` |No/new|Rest calibration, scaled surface anchors and FK/support checks. |
+| `src/features/pet-home/cat-pose-bind.ts`, `cat-support-ik.ts` |No/new|Rest calibration, scaled surface anchors, FK and LAST-layer analytic support IK. |
 | `src/features/pet-home/cat-skeleton.ts` |No|Minimal reusable bind/motion boundary if needed; retain legacy seated oracle and exact IDs. |
 | `src/features/pet-home/cat-idle-motion.ts`, `cat-idle-frame.ts` |No|Reuse blink/ear scheduling, remove direct tail rotation in A2 path, reconcile bounce; no double motion. |
 | `src/features/pet-home/need-visuals.ts` |No|Only if necessary to expose existing morphology as ordered needs-layer data; never change gameplay rules. |
 | `src/features/pet-home/components/Cat3DModel.tsx`, `Cat3DViewer.tsx`, possibly `CatSkeletonParts.tsx` |No|Output-to-node adapter, gaze/event forwarding, visibility and plate group. |
-| `src/features/pet-home/components/PetHomeStage.tsx` |**YES**|Only emit/forward care reaction after existing valid success, avoid duplicate play bounce. No auth/bootstrap/claim/coin logic movement. |
+| `src/features/pet-home/components/PetHomeStage.tsx` |**YES**|ONLY emit/forward a discrete care event after existing valid success; no other Stage edits. Suppress duplicate play pulse inside renderer adapter. No auth/bootstrap/claim/coin logic movement. |
 | `src/app/admin/_components/design-3d/CatPoseEditor.tsx` |No/new|Editor-local authoring/clipboard state. |
 | `src/app/admin/_components/design-3d/AdminDesign3DPage.tsx`, `admin-design-3d.module.css` |No|Mount editor/preview controls; existing guard, route and storage schema unchanged. |
 | `test/features/pet-home/cat-pose-*.test.ts[x]`, admin editor tests |No/new|Public-core/renderer integration and editor contracts. |
@@ -274,7 +276,7 @@ These are **planned RED→GREEN tests**, not tests already written/run. Existing
 | Springs | Target reversals/8h replay explode, seam breaks, or head oscillates repeatedly. | Stable fixed-step solver, local quaternion error, bounds and initial tuning. |
 | Gaze | Pupils leave whites, behind-target flips torso, or head leads eyes. | Local target clamp, eye→head→neck timing and masks. |
 | Care success / failures | Failed/broke/rejected request emits a reaction; replay/remount duplicates one. | Success-only sequenced event, consumption and lifecycle cleanup; backend calls unchanged. |
-| Four reactions / plate / petting | Feeding has no chew/plate, sleep lacks quiet pose, bath lacks ears/shake, play translates or doubles bounce, petting loses purr. | Named gesture outputs; six-box plate lifecycle; existing petting preserved. |
+| Four reactions / plate / petting | Feeding has no chew/plate, sleep lacks quiet pose, bath lacks ears/shake, play translates or doubles bounce, petting loses purr. | Named gesture outputs; one-mesh vertex-color plate lifecycle; existing petting preserved. |
 | Reduced motion | Any spring oscillation/hop/shake/breath survives preference, or toggling causes a jump through stale animation. | Approved stable-pose policy, blink and state reset rules. |
 | Admin editor | Non-admin routing changes, wrong/missing joint fields, preview changes real needs, clipboard exports quaternions only. | Existing authorization unchanged; local controls and stable complete degree export. |
 | Rendering/performance/assets | Draw counts exceed table, frame updates call React setState, or new binary assets/loaders appear. | Actual renderer pass counts, output-only adapter, zero new runtime binary assets and measured budgets. |
@@ -289,7 +291,7 @@ Capture in real Chromium with a WebGL context, nonblank canvas, fixed seed/clock
 |---|---|
 | `seated-parity-*` screenshots | Fresh main baseline and candidate,5 coats×hunger 0/100;0 differing canvas pixels and world-transform agreement. Fresh whole-home baseline separate; A1 images untouched. |
 | `seven-poses` video +7 still images | Front and3/4 views; one pass each coat, plus hunger 0/100 silhouette montage. Show all support contacts and hidden connectors. |
-| `all-directed-edges` videos | Every one of the 12 edges, front and side, normal speed and slowed replay; pelvis-first/tail-last Q→S highlighted. |
+| `all-directed-edges` videos | Every one of the 13 edges, front and side, normal speed and slowed replay; pelvis-first/tail-last Q→S highlighted. |
 | `floor-to-standing` video | C/B/D/F/L→S→Q routes, with graph path visible in editor overlay; no impossible shortcut. |
 | `interruption` video | New requests at25/50/75% of representative sit/roll/sleep/feeding paths; no pose jump or inherited additive drift. |
 | `tail-and-ears` video | Happy tip, seated paw-wrap, curled nose coverage, reversal/settling; visible torso→tail→ear/head delay, no twisted tail. |
@@ -300,27 +302,29 @@ Capture in real Chromium with a WebGL context, nonblank canvas, fixed seed/clock
 | `admin-editor` video | Existing admin route,22 sliders/axis selector, preview, clipboard export and re-imported identical pose. Existing non-admin denial remains a test, not new auth work. |
 | `mobile-performance` trace/video | Physical low-end phone with declared model/Chromium/build/thermal state; per-pose/pattern CPU and frame data, not desktop emulation. |
 
-Owner gate: **no skating, no separated parts, no jumps between poses, delayed tail/ears, silent gesture comprehension**. Permit at most two visual-tuning rounds. If still robotic after round2, switch to an explicitly reviewed **toy style**—clear held poses and restrained in-betweens—before any investment in walking. Do not expand into realism/IK/locomotion to rescue this gate.
+PR must record: after A2 lands and Freighter resumes, merge `main` into `feat/freighter-user-pet` with a merge commit (NO rebase); care-event emission stays behind Freighter owner/epoch checks. Do not modify that paused branch now.
+
+Owner gate: **no skating, no separated parts, no jumps between poses, delayed tail/ears, silent gesture comprehension**. Permit at most two visual-tuning rounds. If still robotic after round2, PRESENT a **toy style** plan—clear held poses and restrained in-betweens—without implementing it. Do not expand into realism/IK/locomotion to rescue this gate.
 
 ## 12. Risks, owner decisions and implementation order after approval
 
 | Risk | Mitigation / stop condition |
 |---|---|
 | D2 removal changes rest or hungry geometry | Fresh unchanged-main baseline, rigid bind calibration and0-pixel seated gate before other poses; never rewrite A1. |
-| Unit-scale FK plus surface breathing produces support drift | Small authored amplitudes and morphology-dependent curves; OBB/support sweeps. Stop rather than smuggling in IK. |
+| Support drift or unreachable IK goals | World-space planted goals, per-leg reach/bend constraints, flat rear feet and per-frame transition/breathing sweeps; no fake pass via clamped endpoints. |
 | Three-box tail cannot reach nose / loaf wrap naturally | Verify reach/clearance in editor before locking C; preserve IDs/geometry unless owner explicitly approves a different scope. |
 | Visibility pop / mirrored pose breaks IDs | Occluded switch phases and explicit ID mapping; no negative joint scale. |
 | Determinism is lost to render timing, random mount seed or retargeting | Tick-indexed events, explicit seed/state, base-only interruption and replay tests. |
 | CPU budget or visual realism not attained | Physical-device evidence and two owner rounds, then toy style; no false mobile claims. |
 | Shared PetHomeStage overlaps Freighter | One success-event seam; no account/coin/API refactor, no changes to paused branch. |
 
-**Owner decisions requested for this plan:**
+**Owner decisions now recorded:**
 
-1. Validate reduced motion: direct stable-pose cuts, no oscillation/breathing/shake, and suppression of deliberate petting bounce while preserving purr/feedback.
-2. Select/identify the physical low-end phone and validate the proposed **p95≤2ms/frame** CPU budget. Actual per-pose/pattern CPU remains an implementation gate, not a fabricated number in this proposal.
-3. Validate initial timings/spring tuning/visibility budgets and the contact-safe reaction policy (sleep holds visually until wake/new care; latest successful care retargets). The seven poses, procedural approach and layer order are already decided and are not reopened.
+1. APPROVED reduced motion: direct stable-pose cuts, no oscillation/breathing/shake, and suppression of deliberate petting bounce while preserving purr/feedback.
+2. APPROVED **p95≤2ms/frame** CPU budget plus maximum. Owner identifies physical phone before gate; available non-low-end phone is allowed but does not validate low-end budget. Actual per-pose/pattern CPU remains an implementation gate, not a fabricated number in this proposal.
+3. APPROVED initial timings/spring tuning, with amended contact-safe reaction policy (sleep holds visually until wake/new care; latest successful care retargets). The seven poses, procedural approach and layer order are already decided and are not reopened.
 
-After plan approval only: (a) freeze fresh A2 baseline and contact contracts; (b) implement rigid torso-following binds with seated parity; (c) pose data/editor and graph; (d) fixed-step layers/springs/gaze; (e) success-only care events/plate/reduced motion; (f) full functional/browser/mobile evidence and owner rounds. Each is a reviewable cohesive unit with its tests. Preserve original anatomy/coat/A1 fixtures throughout. No push or merge until both plan validation and implementation acceptance.
+Authorized implementation order: (a) freeze fresh A2 baseline and contact contracts; (b) implement rigid torso-following binds with seated parity; (c) pose data/editor and graph; (d) fixed-step layers/springs/gaze; (e) success-only care events/plate/reduced motion; (f) full functional/browser/mobile evidence and owner rounds. Each is a reviewable cohesive unit with its tests. Preserve original anatomy/coat/A1 fixtures throughout. No push or merge until both plan validation and implementation acceptance.
 
 ### References checked for this plan
 
