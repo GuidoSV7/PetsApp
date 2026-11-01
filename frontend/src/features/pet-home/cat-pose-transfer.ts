@@ -6,6 +6,7 @@ import { createCatPoseReference } from "./cat-pose-reference";
 import { compileCatPoseSphinx } from "./cat-pose-sphinx";
 import { compileCatPoseSphinxTransfers } from "./cat-pose-sphinx-transfers";
 import { compileCatPoseQuadrupedSphinx } from "./cat-pose-quadruped-sphinx";
+import { compileCatPoseLying } from "./cat-pose-lying";
 import { BASE_SIZE, CAT_POSE_LIBRARY, type CatPoseLibrary, type PoseTrack } from "./cat-pose-tracks";
 import { CatPoseSimulation, type CatSimulationOptions } from "./cat-pose-simulation";
 
@@ -182,7 +183,7 @@ export function prepareCatPoseSimulation(skeleton: CatSkeleton, options: CatSimu
   if (!prepared) {
     const transfer = compileCatPoseTransfer(skeleton), sphinx = compileCatPoseSphinx(skeleton);
     const transfers = compileCatPoseSphinxTransfers(skeleton, { ...transfer, stable: { ...transfer.stable, sphinx: sphinx.pose } }, sphinx.goals);
-    const library = compileCatPoseQuadrupedSphinx(skeleton, transfers);
+    const library = compileCatPoseLying(skeleton, compileCatPoseQuadrupedSphinx(skeleton, transfers));
     prepared = { library, sphinxGoals: sphinx.goals };
     preparedLibraries.set(skeleton, prepared);
   }

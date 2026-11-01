@@ -21,6 +21,8 @@ export class CatPoseBind {
   private readonly ordered;
   private readonly visuals;
   private readonly bellyY: number;
+  private readonly backY: number;
+  private readonly sideY: number;
   private readonly groundY: number;
   private readonly modelToWorld: Matrix4;
   private readonly skinPoint = new Vector3();
@@ -37,6 +39,8 @@ export class CatPoseBind {
   constructor(skeleton: CatSkeleton, joints: ReadonlyMap<string, Object3D>, boxes: ReadonlyMap<string, Object3D>, anchors?: ReadonlyMap<string, Object3D>) {
     const body = skeleton.bindings.get("body")!;
     this.bellyY = body.position[1] - body.part.args[1] * body.scale[1] / 2;
+    this.backY = body.position[1] + body.part.args[1] * body.scale[1] / 2;
+    this.sideY = body.position[1];
     this.bodyAnchors = skeleton.anchors.filter(anchor => anchor.parent === "joint-torso")
       .map(bind => ({ bind, node: anchors?.get(bind.id) }));
     const byId = new Map(skeleton.joints.map(joint => [joint.id, joint]));
@@ -104,9 +108,9 @@ export class CatPoseBind {
     node.quaternion.multiply(this.breathNominal).normalize();
   }
 
-  /** Affine body-surface expansion about the belly plane, never joint scaling. */
-  private breatheY(y: number, amount: number): number {
-    return y + (y - this.bellyY) * (amount - 1);
+  /** Affine body expansion about its supporting surface, never joint scaling. */
+  private breatheY(y: number, amount: number, anchor: number): number {
+    return y + (y - anchor) * (amount - 1);
   }
 
   /** Local FK/visual layers, then LAST analytic support for an explicit mask. */
@@ -118,10 +122,13 @@ export class CatPoseBind {
     if (track?.breathFK && (!Number.isFinite(frame.bodyBreath) || frame.bodyBreath < track.breathFK.minimum || frame.bodyBreath > track.breathFK.maximum)) {
       throw new RangeError("Breathing FK input is outside the compiled physical range.");
     }
+    // Belly arithmetic remains exact for accepted S/Q/L/F and their tracks.
+    // Side-face center/back top are fixed rather than translating with breath.
+    const breathAnchor = planned.body === "back" ? this.backY : planned.body === "side" ? this.sideY : this.bellyY;
     for (let i = 0; i < this.ordered.length; i++) {
       const { bind, node, rest } = this.ordered[i];
       node.position.set(bind.position[0], bind.parent === "joint-torso"
-        ? this.breatheY(bind.position[1], frame.bodyBreath) : bind.position[1], bind.position[2]);
+        ? this.breatheY(bind.position[1], frame.bodyBreath, breathAnchor) : bind.position[1], bind.position[2]);
       node.quaternion.copy(rest).multiply(this.delta.fromArray(frame.rotations, i * 4));
       if (track?.breathFK && frame.bodyBreath !== 1) this.applyBreathFK(track, frame, i, node);
       node.scale.set(1, 1, 1);
@@ -152,14 +159,14 @@ export class CatPoseBind {
       }
       node.visible = extension < 0 || showHidden || (frame.visibleMask & (1 << extension)) !== 0;
       if (id === "body" || id === "chest") {
-        node.position.y = this.breatheY(bind.position[1], frame.bodyBreath);
+        node.position.y = this.breatheY(bind.position[1], frame.bodyBreath, breathAnchor);
         node.scale.y *= frame.bodyBreath;
       }
       if (id === "eyeL" || id === "eyeR" || id === "pupilL" || id === "pupilR") node.scale.y *= frame.eyeScale;
     }
     for (let i = 0; i < this.bodyAnchors.length; i++) {
       const { bind, node } = this.bodyAnchors[i];
-      node?.position.set(bind.position[0], this.breatheY(bind.position[1], frame.bodyBreath), bind.position[2]);
+      node?.position.set(bind.position[0], this.breatheY(bind.position[1], frame.bodyBreath, breathAnchor), bind.position[2]);
     }
     if (planned.body !== null) {
       this.ordered[0].node.updateWorldMatrix(true, true);

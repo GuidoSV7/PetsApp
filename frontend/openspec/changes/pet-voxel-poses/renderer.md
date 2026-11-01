@@ -1,6 +1,33 @@
 # T4a partial integration — not renderer acceptance
 
-## Current direct Q→F — bounded GREEN, T4 still partial
+## Current stable D/C/B — bounded GREEN, connecting arcs still pending
+
+The same public factory/Core/library/actual passed Bind now prepares distinct
+stable side, curled and belly-up bases from immutable rest geometry. Closed-form
+oriented-body support calibration places the actual body on the rest-derived
+floor; side/curled also contact the lower hip cap, back rests on the rear/back
+body edge. Curled folds all four chains, head/neck and all three tail segments,
+not a renamed side pose. Raw rows and all tracks/graph/Core remain unchanged.
+
+Minimal Bind affine-anchor selection fixes side-face-center/back-edge breathing
+while preserving all accepted belly-anchor outputs exactly. Existing FK sampler,
+contact protocols, LAST IK and visual fitting remain unchanged. Dedicated88 GREEN
+includes fixed extrema,120 actual Core ticks/alpha1, finite XYZ/floor/real support,
+attachments, unit joints, oriented caps and updated/cold nonidentity parents.
+Seven-route/four-stable prepared differential:7,400+48 samples/476,672 nodes,
+zero differences. Old focused regressions/types/lint pass. One combined original
+matrix RPC failure was retained and replaced by the same60 cases in existing
+focused filters; no matrix/test/config/timeout edit. Details and limits:
+[Prepared lying poses](lying-poses.md).
+
+Evidence only:
+`.git/agent-evidence/a2-cat-poses-implementation/renderer-phase-7-lying-rest/evidence/`.
+All24 original lying-arc cases remain unaccepted; no arc authoring or mounting.
+Exact nose/tail coverage/head resting contact, general clearance, interruptions,
+reactions/reduced cuts/raw exports/render/phone/owner gates remain pending.
+Parent759/76 belongs to96a71 only, not this WIP. **T4 remains partial.**
+
+## Previous direct Q→F — bounded GREEN, T4 still partial
 
 The same factory/Core/actual passed Bind now has a genuine direct standing→F
 track. Keep all15 neutral supports during authored monotonic settling from
