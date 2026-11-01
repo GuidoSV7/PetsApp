@@ -107,6 +107,7 @@ export class CatPoseSimulation {
   private bridgeOnly = false;
   private completedSpan = false;
   private bridging = false;
+  /** Destination of the ACTIVE route; newer intentions live in pendingGoal. */
   private goal: CatPoseId = "seated";
   private pendingGoal: CatPoseId | null = null;
   private redirectAt = 0;
@@ -232,7 +233,6 @@ export class CatPoseSimulation {
     this.action = null; this.phase = "idle"; this.requestGoal("seated");
   }
   private requestGoal(goal: CatPoseId) {
-    this.goal = goal;
     if (this.reduced || (!this.track && !this.bridgeOnly)) { this.startRoute(goal); return; }
     this.pendingGoal = goal;
     let remaining = 18;
@@ -242,6 +242,7 @@ export class CatPoseSimulation {
     this.redirectAt = this.tick + Math.min(18, Math.max(0, remaining));
   }
   private startRoute(goal: CatPoseId) {
+    this.pendingGoal = null; // A newer immediate route supersedes an old queued one.
     const from = this.track ? (this.age < this.track.duration / 2 ? this.track.from : this.track.to) : this.current.pose;
     this.bridgeStart.set(this.current.base);
     this.goal = goal; this.route = routes[from][goal]; this.routeIndex = 0;
@@ -263,6 +264,8 @@ export class CatPoseSimulation {
     this.current.pose = this.goal;
     this.current.transitionFrom = this.current.transitionTo = null;
     this.current.transitionProgress = 1;
+    // Reaching the old support segment is not arrival at the newer intention.
+    if (this.pendingGoal !== null) return;
     if (this.phase === "entering" && this.action !== null) {
       this.phase = "gesture"; this.gestureAge = 0;
       this.current.sleeping = this.action === "sleep";

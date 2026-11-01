@@ -30,6 +30,13 @@ All degree tables, complete edge tracks and 49 routes are compiled once outside 
 
 The base is 22 local xyzw quaternions, xyz root offset and independent unwrapped heading. Masks are layered afterward. An interruption captures ONLY this base, not a head gesture, look offset, breathing or spring contribution. Redirection waits until the next support-phase boundary or18ticks/300ms, whichever is sooner. Touch updates look targets and interested ears on its next tick regardless of that wait. Outgoing care masks fade separately over9ticks to avoid a visible head snap; their plate hides immediately on cancellation.
 
+An incoming goal stays pending until its route actually starts: it does not
+rename the active route's endpoint. Finishing the old support segment displays
+that real endpoint without starting the incoming action's reaction. A newer
+immediate route consumes/cancels any older queued intent. Reduced motion still
+cuts to the newest pending intent. This prevents premature sleep and replay of
+an obsolete goal at an endpoint.
+
 Look clamps to horizontal ±45° and vertical −25°..+20°. Pupils lead (80ms filter); head and neck follow at180/240ms, bounded to25°+20° yaw. Feeding owns the downward head mask, sleeping neutralizes gaze. Actual pupil white-margin/raycast constraints belong to the renderer adapter.
 
 The original seeded blink and ear-tic sequences are retained via an incremental cursor; no growing per-frame replay loop. The old direct tail sway is NOT applied. Three bounded, independently damped tail springs receive idle targets; ear/head secondary springs settle independently and are not reset by interruption. Existing morphological droop/dirt/slim cues remain in the resolved bind, not double-added as pose rotations.
