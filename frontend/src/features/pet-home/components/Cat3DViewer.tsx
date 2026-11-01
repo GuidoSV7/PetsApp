@@ -7,6 +7,8 @@ import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-qu
 import type { CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
 import type { PetCoatInput } from "@/features/pet-home/coat-patterns";
+import type { CatCareEvent } from "@/features/pet-home/cat-pose-types";
+import type { CatPosePreview } from "@/features/pet-home/cat-pose-preview";
 import {
   describeNeedVisuals,
   needVisualCues,
@@ -29,6 +31,10 @@ type Props = {
   /** Admin preview override; home supplies explicit defaults. */
   design?: CatDesignTunables;
   needs?: PetNeeds;
+  /** Discrete successful-care event; never inferred from need deltas. */
+  careEvent?: CatCareEvent;
+  /** Admin-local pose controls; no gameplay or persistence effects. */
+  posePreview?: CatPosePreview;
 };
 
 /** WebGL stage for the procedural Michi. */
