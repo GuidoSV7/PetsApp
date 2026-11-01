@@ -1,6 +1,31 @@
 # T4a partial integration — not renderer acceptance
 
-## Current stable D/C/B — bounded GREEN, connecting arcs still pending
+## Current lying semantics — partial / UNKNOWN, not accepted
+
+The847/78 checkpoint proves the previous body-support/breath foundation, NOT the
+approved D head rest, C nose/tail contact/closed silhouette or complete mirrored
+geometry. New public-interface tests expose40 semantic failures; the geometric
+measurement sanity check passes. Actual C nose gaps are.5071/.6001/.5402/.7095
+across the four rigs, with tail/body penetrations. One bounded offline FK trial
+found contact-only candidates that fail clearance/floor, and deep100 residual
+.25347. No valid all-four-rig configuration is established; feasibility UNKNOWN,
+not an impossibility proof. B tailBase120° and C head pitch69.8° remain unresolved
+initial-guide departures, not accepted final limits.
+
+A new setup-only rest-aware mirror construction proves involution and paired
+subrig correspondence, but9 physical cases still fail at the asymmetric tail
+anchor. It is not installed or safe to claim as a complete mirrored pose. No
+lying pose, Bind path, track/schema/Core/global row, anatomy or old test changed.
+Old88 foundation checks and other focused gates pass; seven accepted arcs/four
+old stable poses remain bit-for-bit identical. Do not mount or lock lying arcs.
+
+Details, actual tables/OBB measurements, exact candidate angles and failure limits:
+[Lying semantics](lying-poses.md). Evidence only:
+`.git/agent-evidence/a2-cat-poses-implementation/renderer-phase-8-lying-semantics/evidence/`.
+The bounded trial stopped without rig expansion or criterion waiver. T4 and all24
+lying-arc cases remain unaccepted; no owner visual round or delivery approval.
+
+## Previous D/C/B body-support foundation — not complete endpoint semantics
 
 The same public factory/Core/library/actual passed Bind now prepares distinct
 stable side, curled and belly-up bases from immutable rest geometry. Closed-form

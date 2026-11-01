@@ -1,8 +1,66 @@
-# Prepared stable side, curled and belly-up
+# Lying semantics incomplete — body-support foundation only
 
-**Stable D/C/B pass the bounded physical endpoint gate. T4 remains partial and
-unmounted. Connecting arcs remain provisional and unaccepted.** No raw catalogue
-row, track, graph, Core/type/schema, anatomy or old assertion was changed.
+**Approved D/C/B semantics are NOT complete.** Earlier GREEN evidence proves
+body support, floor, breathing and attachments—not D head rest, C nose coverage,
+full silhouette/clearance or a physically valid whole-geometry mirror. No lying
+arc authoring or mounting is admitted by that foundation.
+
+## Current semantic witnesses and bounded stop
+
+Actual public prepared rigs, neutral breath, oriented feature distance/SAT:
+
+| Profile | D head/cheek gap above ground | C tail-tip/nose gap | C tailMid/body SAT overlap |
+| --- | ---: | ---: | ---: |
+| default0 | .1168 | .5071440123 | .1084848233 |
+| default100 | .1850 | .6000865450 | .1381782317 |
+| compact0 | .0418 | .5402356164 | .0257051981 |
+| deep100 | .3100 | .7094596855 | .2238217989 |
+
+Both tail seams have zero box distance; that does not certify their surrounding
+clearance. Actual full22 local XYZ tables, tail/eye/ear/head/body distances and
+SAT overlaps, limb-chain seams, silhouette probes and fixed-breath samples are
+in phase8 `actual-final-measurement.stdout` and `measurements-summary.json`.
+Current C head local XYZ is approximately[69.8138,−4.6368,−53.9478], outside the
+initial head pitch guide. B tailBase is[120,0,0], outside initial80°/axis. These
+are **unresolved authoring departures**, not validated final limits or waivers.
+
+One bounded offline authoring trial used11,025 predefined head configurations
+and20,000 independent seeded tail FK configurations per profile. It is not a
+runtime solver, continuous search proof or accepted pose. Contact-only best
+candidates touch on the first three rigs but fail head/body clearance or floor
+(compact head floor−.3383079184). Deep100 best sampled distance is.2534738778.
+Its selected head alone has a necessary any-tail contact lower bound.2425555479;
+this bound does NOT exclude other head poses. Feasibility remains **UNKNOWN**.
+No candidate was installed; no rig, base translation, angle criterion or
+clearance exemption was changed to obtain a pass.
+
+The new setup-only `mirrorCatPoseBase` uses exact joint-ID swapping and
+`inverse(restTarget) * F(restSource * delta)F`, with no negative scale or rest
+translation changes. Involution and paired-subrig reflection are verified.
+It is **not a valid complete mirrored pose**: A1's asymmetric +X tail root
+cannot reflect its translation. Actual mirrored tailBase floor is−.3695894365,
+−.3422026741 and−.4219340221 on default0/default100/compact0. Deep100 passes
+these finite mirrored floor cases. Do not integrate the helper as a runtime
+side selector or claim full-geometry reflection.
+
+New semantic tests:40 behavioral RED/one analytic measurement check GREEN.
+New mirror tests:15 pass/9 physical failures; not whole-mirror GREEN. Awake and
+sleep-rate semantic tests stop at their first failing contact sample, so they
+are NOT completed120tick contact sweeps. Existing88 foundation tests and all
+old focused gates still pass; seven-route/four-stable differential is exact.
+No optional stable breath metadata or Bind/runtime path was added.
+
+Evidence only:
+`.git/agent-evidence/a2-cat-poses-implementation/renderer-phase-8-lying-semantics/evidence/`.
+RESULT/finalidentity retain exact candidates, commands, failures, identities and
+resources. The bounded authoring trial stopped UNKNOWN rather than expanding
+anatomy or inventing impossibility/approval. All24 lying-arc cases remain pending.
+
+## Previous stable body-support foundation
+
+**D/C/B pass the bounded body-support gate only. T4 remains partial and unmounted.**
+No raw catalogue row, track, graph, Core/type/schema, anatomy or old assertion was
+changed.
 
 ## Calibration: immutable rest, not displayed history
 
