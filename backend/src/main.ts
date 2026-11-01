@@ -36,7 +36,7 @@ async function bootstrap() {
   app.useGlobalPipes(createValidationPipe());
 
   const port = app.get(ConfigService).get<number>('PORT') || 3000;
-  const host = app.get(ConfigService).get<string>('HOST');
+  const host = app.get(ConfigService).get<string>('BACKEND_LISTEN_HOST');
   if (host === undefined) await app.listen(port);
   else await app.listen(port, host);
   logger.log(`PetsApp API listening on http://localhost:${port}`);

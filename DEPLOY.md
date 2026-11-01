@@ -35,6 +35,7 @@ Set these in the backend application's Environment tab (runtime).
 | `CORS_ORIGIN`      | yes      | public frontend origin | e.g. `https://petsapp-frontend-….sslip.io` — also the CSRF Origin allowlist. |
 | `TRUST_PROXY`      | yes\*    | `1` | One hop (Traefik → app). Integer only. |
 | `PORT`             | yes\*    | `3000` | Must match the Dokploy domain port. |
+| `BACKEND_LISTEN_HOST` | no | — | Optional listener hostname, with no default. Leave unset to preserve the existing bind. Generic `HOST` is ignored. Use `127.0.0.1` only for an isolated private run, not an unrequested production configuration change. |
 | `NODE_ENV`         | yes\*    | `production` | Never `development` in a deployment. |
 | `JWT_EXPIRES_IN`   | no       | `12h` | Token and session cookie lifetime. |
 

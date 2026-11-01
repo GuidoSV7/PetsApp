@@ -38,6 +38,7 @@ function request(host: string): Promise<{ status: number; body: string }> {
 beforeEach(() => {
   vi.resetModules();
   vi.stubEnv('HOST', undefined);
+  vi.stubEnv('BACKEND_LISTEN_HOST', undefined);
   vi.stubEnv('CORS_ORIGIN', 'http://localhost:3080');
   logged = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
   server = createServer((_req, res) => res.end('host-probe'));
@@ -53,7 +54,12 @@ beforeEach(() => {
   state.app = {
     use: vi.fn(), disable: vi.fn(), set: vi.fn(),
     enableShutdownHooks: vi.fn(), enableCors: vi.fn(), useGlobalPipes: vi.fn(),
-    get: vi.fn(() => ({ get: (key: string) => key === 'PORT' ? 3081 : process.env.HOST })),
+    get: vi.fn(() => ({ get: (key: string) => {
+      if (key === 'PORT') return 3081;
+      if (key === 'HOST') return process.env.HOST;
+      if (key === 'BACKEND_LISTEN_HOST') return process.env.BACKEND_LISTEN_HOST;
+      return undefined;
+    } })),
     listen,
   };
 });
@@ -67,7 +73,9 @@ afterEach(async () => {
 });
 
 describe('public bootstrap listener', () => {
-  it('preserves the existing one-argument listen and wildcard reachability without HOST', async () => {
+  it.each([undefined, '127.0.0.1'])(
+    'preserves the existing listener without BACKEND_LISTEN_HOST, ignoring HOST=%s', async (genericHost) => {
+    if (genericHost !== undefined) vi.stubEnv('HOST', genericHost);
     await import('./main.js');
     expect(listen).toHaveBeenCalledExactlyOnceWith(3081);
     expect(logged).toHaveBeenCalledExactlyOnceWith('PetsApp API listening on http://localhost:3081');
@@ -77,8 +85,8 @@ describe('public bootstrap listener', () => {
     }
   });
 
-  it('binds HOST=127.0.0.1 and refuses other local/network addresses', async () => {
-    vi.stubEnv('HOST', '127.0.0.1');
+  it('binds BACKEND_LISTEN_HOST=127.0.0.1 and refuses other local/network addresses', async () => {
+    vi.stubEnv('BACKEND_LISTEN_HOST', '127.0.0.1');
     await import('./main.js');
     expect(listen).toHaveBeenCalledExactlyOnceWith(3081, '127.0.0.1');
     expect(await request('127.0.0.1')).toEqual({ status: 200, body: 'host-probe' });

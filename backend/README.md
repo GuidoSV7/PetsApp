@@ -533,10 +533,10 @@ See `.env.example`. Summary:
 - `CLIENT_SECRET`
 - `CORS_ORIGIN`, `CORS_ENABLED`
 - `NODE_ENV`, `PROD`, `PORT`, `TRUST_PROXY`
-- `HOST` (optional): when defined, passed as the listener hostname; use
-  `HOST=127.0.0.1` for a private isolated run. When absent, the existing
-  one-argument `app.listen(port)` behavior is unchanged. This does not change
-  deployed configuration. Frontend standalone binding separately uses
+- `BACKEND_LISTEN_HOST` (optional, no default): when defined, passed as the
+  listener hostname; use `BACKEND_LISTEN_HOST=127.0.0.1` for a private isolated
+  run. When absent, the existing one-argument `app.listen(port)` behavior is
+  unchanged. Generic `HOST` is ignored. This does not change deployed configuration. Frontend standalone binding separately uses
   `HOSTNAME=127.0.0.1` in that isolated run.
 - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` (only for `npm run seed:admin`)
 

@@ -1,7 +1,7 @@
 # T7 — Owner-operated Freighter walkthrough, not an execution record
 
 **T7 remains paused: none of the eleven owner journeys has run.**
-Historical feature snapshot: `31615747ea866438eb4a3887a9ff785901059e0b`, branch `feat/freighter-user-pet`, worktree `.worktrees/freighter-user-pet`. Preparation commit: `11fdf829122044d55c678ff61b709e6a752014dd` ([HOST evidence](freighter-host-preparation-evidence.md)). The owner separately authorized the optional HOST bootstrap change and its backend tests/build; that is the only application delta. T1–T6 auth/ledger behavior and historical approvals are unchanged. Preparation tests use disposable fixtures/probe listeners, not a running T7 environment. No T7 server/tunnel/browser session, run secret, wallet account, Friendbot request or Stellar transaction was created.
+Historical feature snapshot: `31615747ea866438eb4a3887a9ff785901059e0b`, branch `feat/freighter-user-pet`, worktree `.worktrees/freighter-user-pet`. Original optional-host preparation commit: `11fdf829122044d55c678ff61b709e6a752014dd` ([historical HOST evidence](freighter-host-preparation-evidence.md)). The owner subsequently renamed that setting to BACKEND_LISTEN_HOST; generic HOST is now ignored ([rename evidence](freighter-listen-host-rename-evidence.md)). The owner separately authorized the optional BACKEND_LISTEN_HOST bootstrap change and its backend tests/build; that is the only application delta. T1–T6 auth/ledger behavior and historical approvals are unchanged. Preparation tests use disposable fixtures/probe listeners, not a running T7 environment. No T7 server/tunnel/browser session, run secret, wallet account, Friendbot request or Stellar transaction was created.
 
 ## 1. Stop conditions before arranging a session
 
@@ -9,15 +9,15 @@ Historical feature snapshot: `31615747ea866438eb4a3887a9ff785901059e0b`, branch 
 | --- | --- |
 | Owner available at PC Chrome with real extension | Not scheduled; this guide is for later use |
 | Owner's existing SSH alias | Owner supplies locally; no host/IP/credential is invented here |
-| Backend listens only on VPS loopback | Optional HOST is implemented/tested; future run must set HOST=127.0.0.1 and verify actual sockets; standalone frontend separately sets HOSTNAME=127.0.0.1 |
+| Backend listens only on VPS loopback | Optional BACKEND_LISTEN_HOST is implemented/tested; future run must set BACKEND_LISTEN_HOST=127.0.0.1 and verify actual sockets; standalone frontend separately sets HOSTNAME=127.0.0.1 |
 | Auth signer/HMAC/JWT credentials | Future per-run ephemeral generation/injection authorized, only after scheduling; no production credentials or secret output |
 | Isolated database/fixtures | Future pgtest-db per run, no production connection |
 | Valid testnet-only configuration | Future check; no flags changed today |
 | Pinned extension compatibility with private localhost | UNKNOWN until the real owner session |
 | Optional threshold supplement on separate C | Not a T7 blocker. Never modify B; skip/pending unless owner can safely co-sign C restoration |
-| Full T8 review-change union | UNPROVEN; see the separate coverage note |
+| T8 acceptance | Owner-selected basis: six native approvals, maintainer R2, exact54ddaf omission and new blind final-state security review; no missing-snapshot reconstruction |
 
-Future launch uses backend `HOST=127.0.0.1`, frontend standalone `HOSTNAME=127.0.0.1`. With HOST absent, backend still calls app.listen(port) exactly as before; no deployed configuration was changed. PORT alone does not select a private bind. At session preflight verify both listeners and the test proxy are loopback-only and owned, plus isolated DB transport; source/unit proof does not prove actual future process configuration. No host-wide firewall/Docker changes or public exposure. Do not start this environment before the owner schedules T7.
+Future launch uses backend `BACKEND_LISTEN_HOST=127.0.0.1`, frontend standalone `HOSTNAME=127.0.0.1`. With BACKEND_LISTEN_HOST absent, backend still calls app.listen(port) exactly as before; no deployed configuration was changed. PORT alone does not select a private bind. At session preflight verify both listeners and the test proxy are loopback-only and owned, plus isolated DB transport; source/unit proof does not prove actual future process configuration. No host-wide firewall/Docker changes or public exposure. Do not start this environment before the owner schedules T7.
 
 ## 2. Private URL and exact tunnel recipe
 
@@ -44,7 +44,7 @@ The owner opens **`http://localhost:3080`**, not a public VPS URL, `0.0.0.0`, th
 | STELLAR_HORIZON_URL | `https://horizon-testnet.stellar.org` | Testnet only |
 | STELLAR_HOME_DOMAIN / STELLAR_WEB_AUTH_DOMAIN | `localhost` | Source regex rejects colon/port, scheme and path |
 | CORS_ORIGIN | `http://localhost:3080` | Verified cors-origins.util.ts allowlist and CSRF origin source; do not rely on defaults for port3000 |
-| Backend PORT / HOST | `3081` / `127.0.0.1` | HOST is consumed only when defined; absent retains previous listen overload |
+| Backend PORT / BACKEND_LISTEN_HOST | `3081` / `127.0.0.1` | BACKEND_LISTEN_HOST is consumed only when defined; absent retains previous listen overload |
 | Frontend standalone HOSTNAME / PORT | `127.0.0.1` / `3080` | Runtime server binding, separate from NEXT_PUBLIC build variables |
 | Journey8 isolated test proxy | `127.0.0.1:3082` | Future harness only, no application change; check availability too |
 | Frontend public NEXT_PUBLIC_ACCOUNT_PET_ENABLED | literal `true` | Fixed during that isolated build |
@@ -235,6 +235,6 @@ At future completion/failure: if exercised, restore C thresholds safely first (B
 
 ## 7. What this guide does not prove
 
-The eleven journeys are **instructions, not passes**. HOST bootstrap has separate RED→GREEN/backend/independent transport evidence, not proof of a launched T7 environment. Real extension behavior, HTTP/HTTPS localhost compatibility, actual scheduled-run bind/secret lifecycle and deterministic post-commit response loss remain future proof. Optional C restoration can remain pending without blocking T7. The completed read-only T8 reconciliation identifies missing frozen scopes; full union remains unproven. The code-valid `localhost` domain is not a tested browser guarantee. Current freighter.app pages are Varial-branded and are not evidence of API6 behavior. No additional implementation beyond the separately authorized HOST change, native review, push, merge, production/mainnet action or authorization to execute T7 before scheduling is implied.
+The eleven journeys are **instructions, not passes**. BACKEND_LISTEN_HOST bootstrap has separate RED→GREEN/backend/independent transport evidence, not proof of a launched T7 environment. Real extension behavior, HTTP/HTTPS localhost compatibility, actual scheduled-run bind/secret lifecycle and deterministic post-commit response loss remain future proof. Optional C restoration can remain pending without blocking T7. The historical frozen-scope union remains unproven, but is no longer the owner's acceptance gate. The new owner-selected basis requires a blind isolated final-state critical-surface security review; no snapshots or54ddaf review are reopened. The code-valid `localhost` domain is not a tested browser guarantee. Current freighter.app pages are Varial-branded and are not evidence of API6 behavior. No additional implementation beyond the separately authorized BACKEND_LISTEN_HOST change, native review, push, merge, production/mainnet action or authorization to execute T7 before scheduling is implied.
 
 See [review coverage](freighter-t7-review-coverage.md) for exact historical outcomes and the owner-omitted cumulative target.
