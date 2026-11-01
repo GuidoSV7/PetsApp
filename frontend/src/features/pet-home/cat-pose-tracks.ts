@@ -25,12 +25,22 @@ for (const id of CAT_POSE_IDS) {
     supports: legs.reduce((mask, leg, i) => mask | (compiled[id].supports.includes(leg) ? 1 << i : 0), 0),
   };
 }
+/** Cached FK samples; breathing stays additive and never enters Core.base. */
+export type PoseBreathFK = {
+  minimum: number;
+  maximum: number;
+  jointMask: number;
+  variants: readonly Float64Array[];
+};
 export type PoseTrack = {
   from: CatPoseId;
   to: CatPoseId;
   duration: number;
   frames: Float64Array;
   phaseEnds: readonly number[];
+  /** Optional per-fixed-tick posture-extension mask, authored with a rig track. */
+  visibility?: Uint8Array;
+  breathFK?: PoseBreathFK;
 };
 export const tracks = {} as Record<CatPoseId, Partial<Record<CatPoseId, PoseTrack>>>;
 export const routes = {} as Record<CatPoseId, Record<CatPoseId, readonly CatPoseId[]>>;
@@ -49,3 +59,7 @@ for (const edge of CAT_POSE_EDGES) {
     phaseEnds: [...new Set([...edge.waypoints.map(point => Math.round(point.at * edge.durationTicks)), edge.durationTicks])].sort((a, b) => a - b),
   };
 }
+
+/** Renderer-free lookup boundary. Omitted injection retains these exact tables. */
+export type CatPoseLibrary = { stable: typeof stable; tracks: typeof tracks; routes: typeof routes };
+export const CAT_POSE_LIBRARY: CatPoseLibrary = { stable, tracks, routes };

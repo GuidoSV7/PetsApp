@@ -2,7 +2,7 @@ import { Euler, Quaternion } from "three";
 import { needVisualCues, type NeedVisualCues } from "./need-visuals";
 import { PREVIEW_PET_NEEDS } from "./pet-stats";
 import { CatIdleCursor } from "./cat-idle-cursor";
-import { BASE_SIZE, routes, stable, tracks, type PoseTrack } from "./cat-pose-tracks";
+import { BASE_SIZE, CAT_POSE_LIBRARY, type CatPoseLibrary, type PoseTrack } from "./cat-pose-tracks";
 import type { CatCareAction, CatPoseId } from "./cat-pose-types";
 
 export type CatPoseInput = { readonly tick: number } & (
@@ -37,7 +37,7 @@ export type CatPoseFrame = {
   sleeping: boolean;
   bounce: number;
 };
-export type CatSimulationOptions = { seed: number; reducedMotion?: boolean; cues?: NeedVisualCues };
+export type CatSimulationOptions = { seed: number; reducedMotion?: boolean; cues?: NeedVisualCues; library?: CatPoseLibrary };
 
 
 const DT = 1 / 60;
@@ -48,10 +48,10 @@ const damping = [.7, .65, .6, .72, .72, .85, .85];
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 const ease = (t: number) => t * t * (3 - 2 * t);
 
-function createFrame(): CatPoseFrame {
+function createFrame(initial = CAT_POSE_LIBRARY.stable.seated): CatPoseFrame {
   return {
     tick: 0, pose: "seated", transitionFrom: null, transitionTo: null, transitionProgress: 1,
-    base: new Float64Array(stable.seated.base), rotations: new Float64Array(stable.seated.base.buffer.slice(0, 88 * 8)),
+    base: new Float64Array(initial.base), rotations: new Float64Array(initial.base.buffer.slice(0, 88 * 8)),
     rootOffset: new Float64Array(3), headingDeg: 0, visibleMask: 0, supportMask: 15,
     bodyBreath: 1, eyeScale: 1, gazeYaw: 0, gazePitch: 0, earInterest: 0, idleEarSide: null,
     plateVisible: false, sleeping: false, bounce: 0,
@@ -74,9 +74,10 @@ function copyFrame(from: CatPoseFrame, to: CatPoseFrame) {
  */
 export class CatPoseSimulation {
   tick = 0;
-  private readonly current = createFrame();
-  private readonly previous = createFrame();
-  private readonly rendered = createFrame();
+  private readonly library: CatPoseLibrary;
+  private readonly current: CatPoseFrame;
+  private readonly previous: CatPoseFrame;
+  private readonly rendered: CatPoseFrame;
   private readonly bridgeStart = new Float64Array(BASE_SIZE);
   private readonly trackSample = new Float64Array(BASE_SIZE);
   private readonly angles = new Float64Array(7);
@@ -100,7 +101,7 @@ export class CatPoseSimulation {
   private readonly idle: CatIdleCursor;
   private readonly seed: number;
   private reduced: boolean;
-  private route: readonly CatPoseId[] = routes.seated.seated;
+  private route: readonly CatPoseId[];
   private routeIndex = 0;
   private track: PoseTrack | null = null;
   private age = 0;
@@ -129,6 +130,11 @@ export class CatPoseSimulation {
   private interestedUntil = 0;
 
   constructor(options: CatSimulationOptions) {
+    this.library = options.library ?? CAT_POSE_LIBRARY;
+    this.current = createFrame(this.library.stable.seated);
+    this.previous = createFrame(this.library.stable.seated);
+    this.rendered = createFrame(this.library.stable.seated);
+    this.route = this.library.routes.seated.seated;
     this.seed = options.seed >>> 0;
     this.cues = { ...(options.cues ?? needVisualCues(PREVIEW_PET_NEEDS)) };
     this.reduced = options.reducedMotion ?? false;
@@ -245,18 +251,18 @@ export class CatPoseSimulation {
     this.pendingGoal = null; // A newer immediate route supersedes an old queued one.
     const from = this.track ? (this.age < this.track.duration / 2 ? this.track.from : this.track.to) : this.current.pose;
     this.bridgeStart.set(this.current.base);
-    this.goal = goal; this.route = routes[from][goal]; this.routeIndex = 0;
-    this.track = this.route.length > 1 ? tracks[this.route[0]][this.route[1]]! : null;
+    this.goal = goal; this.route = this.library.routes[from][goal]; this.routeIndex = 0;
+    this.track = this.route.length > 1 ? this.library.tracks[this.route[0]][this.route[1]]! : null;
     this.age = 0; this.bridging = false; this.bridgeOnly = this.track === null;
-    for (let i = 0; i < BASE_SIZE; i++) if (this.current.base[i] !== stable[from].base[i]) { this.bridging = true; break; }
+    for (let i = 0; i < BASE_SIZE; i++) if (this.current.base[i] !== this.library.stable[from].base[i]) { this.bridging = true; break; }
     if (this.reduced) {
       // Traverse the legal cached route logically, but render only its final stable cut.
       for (let i = 0; i < this.route.length; i++) this.current.pose = this.route[i];
-      this.current.base.set(stable[goal].base); this.track = null; this.bridgeOnly = false;
+      this.current.base.set(this.library.stable[goal].base); this.track = null; this.bridgeOnly = false;
       this.finishGoal();
     } else if (!this.track) {
       let different = false;
-      for (let i = 0; i < BASE_SIZE; i++) if (this.current.base[i] !== stable[goal].base[i]) { different = true; break; }
+      for (let i = 0; i < BASE_SIZE; i++) if (this.current.base[i] !== this.library.stable[goal].base[i]) { different = true; break; }
       if (!different) { this.bridgeOnly = false; this.finishGoal(); }
     }
   }
@@ -295,21 +301,22 @@ export class CatPoseSimulation {
         this.completedSpan = true;
         this.current.pose = track.to; this.routeIndex++; this.bridging = false;
         if (this.routeIndex < this.route.length - 1) {
-          this.track = tracks[this.route[this.routeIndex]][this.route[this.routeIndex + 1]]!; this.age = 0;
+          this.track = this.library.tracks[this.route[this.routeIndex]][this.route[this.routeIndex + 1]]!; this.age = 0;
           this.current.transitionFrom = this.track.from; this.current.transitionTo = this.track.to; this.current.transitionProgress = 0;
         } else { this.track = null; this.finishGoal(); }
       }
     } else if (this.bridgeOnly) {
       const t = Math.min(1, this.age / 18);
-      this.blend(this.bridgeStart, stable[this.goal].base, ease(t), this.current.base);
+      this.blend(this.bridgeStart, this.library.stable[this.goal].base, ease(t), this.current.base);
       this.current.transitionFrom = this.current.pose; this.current.transitionTo = this.goal; this.current.transitionProgress = t;
       this.age++;
       if (t === 1) { this.completedSpan = true; this.bridgeOnly = false; this.finishGoal(); }
     }
-    const pose = stable[this.current.pose];
+    const pose = this.library.stable[this.current.pose];
     this.current.visibleMask = pose.visible;
     this.current.supportMask = this.current.transitionTo ? -1 : pose.supports;
-    if (this.current.transitionTo) this.current.visibleMask |= stable[this.current.transitionTo].visible;
+    if (this.current.transitionTo) this.current.visibleMask |= this.library.stable[this.current.transitionTo].visible;
+    if (track?.visibility && this.current.transitionTo) this.current.visibleMask |= track.visibility[Math.min(this.age - 1, track.duration)];
   }
   private advanceReaction() {
     if (this.phase === "gesture" && this.action) {
@@ -445,6 +452,10 @@ export class CatPoseSimulation {
         const end = sameSpan ? current.transitionProgress
           : this.completedSpan ? 1 : previous.transitionProgress;
         output.transitionProgress += (end - previous.transitionProgress) * t;
+      }
+      if (output.transitionFrom !== null && output.transitionTo !== null) {
+        const data = this.library.tracks[output.transitionFrom][output.transitionTo];
+        if (data?.visibility) output.visibleMask |= data.visibility[Math.ceil(output.transitionProgress * data.duration)];
       }
     }
     this.blend(this.previous.base, this.current.base, t, output.base);
