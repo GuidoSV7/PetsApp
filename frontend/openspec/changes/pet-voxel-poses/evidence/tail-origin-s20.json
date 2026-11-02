@@ -1,0 +1,134 @@
+{
+  "baseline": "f3629abd0079a71dcc0ab9e44e0100d44e5d5d43",
+  "covered": [
+    "S20 global rest-origin correction",
+    "S22 isolated local work-unit commit",
+    "S23/S26/S27 offline normal-HOME independent verification",
+    "S28 expressly authorized managed execution of unchanged independent raster fixture"
+  ],
+  "inputHashes": {
+    "AGENTS.md": {
+      "baseline": "7fe72d35e903a97fa7ea8c62323f0a3f8eb45362efcc5c5e04355c7583565818",
+      "candidate": "c7b332484634f6b79e1f0654f13d7f9cde072250ebe238240ce3a5576adedb6b"
+    },
+    "frontend/src/features/pet-home/cat-skeleton.ts": {
+      "baseline": "2462250abe524e062e0b277454c3c76d69b6e837bd7617d3273d5af5068283d6",
+      "candidate": "121117828d80f9b8c9cbb58c99f0ab3a7aecfd3c88b81344889338a4a1946ca0"
+    },
+    "frontend/test/features/pet-home/cat-skeleton.test.ts": {
+      "baseline": "4d6a26ff0107524bb0a9491b0f2782ffed0bb5ba1859800e6237bd0fd6c07fc6",
+      "candidate": "a6c1526eaeb74c27f71b18428afb9f439c36d5645437954219f6db300c18f299"
+    },
+    "frontend/test/features/pet-home/cat-3d-model-skeleton.test.tsx": {
+      "baseline": "c5c39ce580e8511a9c83f0d739b214ce71fc604d7117eeef6e714c0bd3d3b411",
+      "candidate": "e21440532883d652a194468fce3e716c5bb2809267faeff6a0b26c6140446fb4"
+    },
+    "frontend/test/features/pet-home/cat-skeleton-tail-surface.test.ts": {
+      "baseline": null,
+      "candidate": "8186739db0b4db2209ca0166e41065c57d18a2ffe81760944c07d00aca304913"
+    },
+    "frontend/test/features/pet-home/cat-tail-surface-oracle.ts": {
+      "baseline": null,
+      "candidate": "158f12bce873237ed442d939a8fe3fa58d3c8bb4d813900728d1dd050918fbe0"
+    },
+    "frontend/test/features/pet-home/cat-pose-joint-zones.ts": {
+      "baseline": null,
+      "candidate": "266c5378968432cf102a58a751bc3ca51ffd20d1b9e8a9a9781a324a7c6ab053"
+    },
+    "frontend/test/features/pet-home/cat-3d-model-coat-patterns.test.tsx": {
+      "baseline": "351aa25980eb823ce052edbc1629637a7f4fc74ef68957a2a84a667936a00b9c",
+      "candidate": "e355a30ede5442ac991b876b77c05438cdde00a759760ad689b78c782f51ee53"
+    }
+  },
+  "parentEvidenceRoot": "/home/agent/repos/PetsApp/.worktrees/a2-cat-poses-transitions/odd/evidence/a2-tail-surface-s20",
+  "canonicalEvidenceRoot": "/home/agent/repos/PetsApp/.git/agent-evidence/a2-cat-poses-implementation/tail-surface-s20-origin-r1",
+  "parentRecords": {
+    "OWNER-REQUEST.md": "12189189c981450da9da54bae38a4fa1c85385114782dde814308b39b996b57e",
+    "RESULT.md": "f9dfab76f4f1ba39a127c33b95c7e49ba058125124322ce4f9514e90162a3e98",
+    "red.json": "4cba28d77756a43562108c266c13644fda05e56284a328c76e54c2fd35cc8f8c",
+    "green-with-s20-oracle.json": "72852ed5c4333b2a42fa1a55ee23577b32b7a0ac95dee251575c558a65398caf",
+    "typecheck.json": "c03bfa6cf9312a30b0a65000312631b2d3e7c22658bac9e13467ad7f9b763ea4",
+    "browser-result.json": "a190e3aacb40c909c0ffe89779ca3c836d65eb9819128c0d74f8bcba74e79372",
+    "browser-r1-result.json": "2ff822779a0ff4c5b001a62770a610d8e8430cbcc451cdbc8a5a9d38d939a71a",
+    "all-profile-matrix/summary.json": "b7120071eee305b8a98d29af787676a55c1848ca40b9c4769cf8a7373b1ad69f",
+    "before/manifest.json": "a9a094a78af351fc7b0e7b58c9756c6fd324bdf320e56a5a0f8087909f9a74a4",
+    "after/manifest.json": "cd03ee8f4cd95cff88d9a96b99145dc765a35e0fb9bca824d673e3419ba1b386"
+  },
+  "freshCandidateFocused": {
+    "exit": 0,
+    "testsPassed": 60,
+    "filesPassed": 4,
+    "seconds": 7.82,
+    "inputDrift": false,
+    "rawEvidence": "odd/evidence/s20-unit/focused.{json,stdout,stderr}"
+  },
+  "parentOnlyResults": {
+    "focused": "60 passed; exit 0",
+    "types": "nonincremental exit 0; 8.297 seconds",
+    "browserR1": "before/after exit 0; 10 default CAT pixel comparisons exact zero; compact only 3 tail translations",
+    "firstBrowser": "exit 2; historical whole-home UI mismatch; retained",
+    "fourProfileMatrix": "129 PASS / 111 FAIL; historical failed matrix, not acceptance"
+  },
+  "limits": [
+    "Fresh parent full suite passed 853/853 across 79 files. Independent neutral public-rig fixture raster passed; not mounted-product acceptance.",
+    "48/55 recorded after-snapshot pet-home/admin module identities match; seven pose modules differ. Matching inputs do not transfer whole-candidate acceptance.",
+    "Admin variants diagnostic under S21; default-range acceptance separate.",
+    "No A2 motion/device/owner visual acceptance, push or merge. Earlier unavailable/failed attempts remain historical."
+  ],
+  "protectedInputs": {
+    "count": 51,
+    "manifestSha256": "a048c8aa39f069ce7a409e72de2f97f4a1307a8cd5fa238e295fc1099f1f4257",
+    "status": "unchanged from immutable baseline; fixtures/goldens and D source/tests not edited"
+  },
+  "coatReconciliation": {
+    "reason": "Intentional additional test consumer of the S20 admin tail shift; 6 full-suite failures were stale expectations, not geometry repairs.",
+    "historicalRED": "parent-results/full: 847 PASS / 6 FAIL / 853 tests / 79 files; preserved",
+    "oracle": "Same independent arithmetic, only consumed-field Pick types generalized; only 3 admin tail translations adapted after canonical root/hierarchy.",
+    "precisionAndAssertions": "unchanged; default/non-tail, coat local geometry/materials, registry/seed/idle checks preserved",
+    "freshFocused": "89 PASS / 5 files; exit 0; no skips",
+    "freshTypes": "nonincremental exit 0",
+    "freshChangedTestLint": "exit 0, no warnings",
+    "evidence": "odd/evidence/s20-unit/coat-r1",
+    "retainedBuild": "Default Next build exit 0 retained after test/docs-only changes: 144 production/config/lock inputs and recorded tools/HOME equal. Complete inherited build environment was not archived; no full-environment equivalence claim.",
+    "correctedFullSuite": "Fresh 853 PASS / 853 tests / 79 files; exit 0, no skips; wall 515.1618073s, queue .1540318s; canonical s20-isolated-parent-coat-r1."
+  },
+  "finalVerification": {
+    "parentFull": {
+      "passed": 853,
+      "files": 79,
+      "exit": 0,
+      "skips": 0
+    },
+    "independentFunctional": {
+      "agent": "mvzv8hlx-9-p00t",
+      "scalarChecks": 28550,
+      "cases": 10,
+      "focusedTests": 89,
+      "typesExit": 0,
+      "defaultSnapshots": "bit-identical",
+      "compactHunger0Gap": "0.06706 model / 0.0523068 world -> 0",
+      "compactHunger100Gap": "0.007 model / 0.00546 world -> 0"
+    },
+    "independentRaster": {
+      "fixture": "Unchanged independently authored neutral public-rig consumer; parent-managed execution, not mounted Home",
+      "defaultCases": 10,
+      "changedPixels": 0,
+      "compactScreenshots": 2,
+      "webgl": "WebGL2 / ANGLE SwiftShader",
+      "pageConsoleAndGlErrors": 0,
+      "browserExit": 0,
+      "executionSeconds": 6.207943
+    },
+    "canonicalRaw": "agent-evidence/a2-cat-poses-implementation/s20-independent-s28-managed-raster",
+    "archival": {
+      "filesByteCompared": 274,
+      "bytesByteCompared": 14214143,
+      "exactOwnedChildRemoved": true,
+      "processReferencesBeforeAndAfter": 0,
+      "signalsSent": 0,
+      "parentAndOlderResidueUntouched": true
+    },
+    "retainedFailures": "First full 847/6 RED; verifier v1 array-aliasing harness failure; original Chromium tool timeout with unknown exit. None retroactively passed.",
+    "scope": "Only 11 application lines; default full-A2 sweep, displayed motion/layers, product videos, phone CPU and owner visual gate remain separate."
+  }
+}

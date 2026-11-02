@@ -26,6 +26,17 @@ export function buildCatSkeleton(resolved: readonly CatPart[]): CatSkeleton {
   };
   buildCatPartTree(CAT_ANATOMY).forEach(node => visit(node));
   const base = (id: string) => CAT_ANATOMY.find(p => p.id === id)!;
+  // Needs scale body X/Z together; admin depth adds only a Z stretch. Transport
+  // from the same-hunger default surface, preserving both default A1 renders.
+  // Move every tail rest world before deriving hinges AND inverse visual binds:
+  // relocating only the Base pivot is canceled by its inverse bind at rest.
+  const bodyScale = scales.get("body")!;
+  if (bodyScale[2] !== bodyScale[0]) {
+    const displacement = new Vector3(0, 0, 1).transformDirection(worlds.get("body")!)
+      .multiplyScalar(-base("body").args[2] / 2 * (bodyScale[2] - bodyScale[0]));
+    const transport = new Matrix4().makeTranslation(...tuple(displacement));
+    for (const id of ["tailBase", "tailMid", "tailTip"]) worlds.get(id)!.premultiply(transport);
+  }
   const bodyPoint = (point: Vec3) => vector(point).sub(vector(base("body").position)).applyMatrix4(worlds.get("body")!);
   const headPoint = (point: Vec3) => vector(point).sub(vector(base("head").position)).applyMatrix4(worlds.get("head")!);
   const center = (id: string) => new Vector3().setFromMatrixPosition(worlds.get(id)!);
