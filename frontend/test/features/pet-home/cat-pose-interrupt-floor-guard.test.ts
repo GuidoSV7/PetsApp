@@ -66,9 +66,9 @@ it("S4 the floor guard does not touch planted feet, plant goals or authored edge
   // A transition that keeps 15 planted feet throughout: the plan mask and every goal must survive.
   const { scene, renderer } = setup();
   const sim = renderer.simulation;
-  sim.enqueue({ tick: 1, kind: "pose", pose: "standing", sequence: 1 });
+  sim.enqueue({ tick: 1, kind: "pose", pose: "standing" });
   for (let i = 0; i < 40; i++) renderer.render(FRAME);
-  sim.enqueue({ tick: sim.tick + 1, kind: "pose", pose: "seated", sequence: 2 });
+  sim.enqueue({ tick: sim.tick + 1, kind: "pose", pose: "seated" });
   for (let i = 0; i < 60; i++) {
     const frame = renderer.render(FRAME);
     scene.root.updateMatrixWorld(true);

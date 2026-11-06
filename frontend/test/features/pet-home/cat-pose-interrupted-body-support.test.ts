@@ -51,7 +51,7 @@ it("S19 stable lying poses are not moved by the seat correction", () => {
   for (const pose of stable) {
     const { scene, renderer } = setup();
     const sim = renderer.simulation;
-    sim.enqueue({ tick: sim.tick + 1, kind: "pose", pose, sequence: 1 });
+    sim.enqueue({ tick: sim.tick + 1, kind: "pose", pose });
     for (let i = 0; i < 260; i++) renderer.render(FRAME);
     const frame = renderer.render(FRAME);
     const plan = renderer.bind.plan.resolve(frame);
