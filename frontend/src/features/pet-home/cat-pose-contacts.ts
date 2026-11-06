@@ -6,6 +6,8 @@ const chains = [
   ["shoulderFL", "elbowFL", "wristFL"], ["shoulderFR", "elbowFR", "wristFR"],
   ["hipBL", "kneeBL", "ankleBL"], ["hipBR", "kneeBR", "ankleBR"],
 ] as const;
+/** Joint ids of the four support chains, in leg-bit order (FL, FR, BL, BR). */
+export const SUPPORT_CHAIN_JOINTS: readonly (readonly string[])[] = chains.map(ids => ids.map(id => "joint-" + id));
 type MutablePoint = [number, number, number];
 const point = (): MutablePoint => [0, 0, 0];
 
@@ -15,10 +17,15 @@ const point = (): MutablePoint => [0, 0, 0];
  * This is NOT the transition contact planner: unresolved (-1) masks are rejected.
  */
 export class CatPoseContacts {
-  readonly diagnostics: { requestedMask: number | null; unreachableFeet: number | null; maxFootDrift: number | null; bodySupportCorrection: number | null } = {
+  readonly diagnostics: {
+    requestedMask: number | null; unreachableFeet: number | null; maxFootDrift: number | null;
+    bodySupportCorrection: number | null; freeFootCorrection: number | null; freeFootUnreachable: number | null;
+  } = {
     requestedMask: null, unreachableFeet: null, maxFootDrift: null, bodySupportCorrection: null,
+    freeFootCorrection: null, freeFootUnreachable: null,
   };
   private readonly chains;
+  private readonly free;
   private plannedMask = 0;
   goalRevision = 0;
   private readonly scratch = createSupportScratch();
@@ -45,6 +52,45 @@ export class CatPoseContacts {
         upperLength: a.distanceTo(b), lowerLength: b.distanceTo(c) };
       return { upper, lower, foot, input, flat: foot.getWorldQuaternion(new Quaternion()) };
     });
+    // Separate inputs for the floor guard: solving a free limb must never overwrite a frozen
+    // plant goal, because a planted goal cannot change before an explicit release.
+    this.free = this.chains.map(({ input }) => ({
+      root: point(), target: [...input.target] as MutablePoint, pole: [...input.pole] as MutablePoint,
+      upperLength: input.upperLength, lowerLength: input.lowerLength,
+    }));
+  }
+
+  /** Read-only world position of a support foot, used by the free-limb floor guard. */
+  footWorld(leg: number, out: Vector3): Vector3 {
+    if (!Number.isInteger(leg) || leg < 0 || leg > 3) throw new RangeError("Support leg index must be 0..3.");
+    return this.chains[leg].foot.getWorldPosition(out);
+  }
+
+  /**
+   * Floor guard for FREE limbs: solve the given legs toward world targets through the same
+   * analytic support solver, without touching the planned mask, the frozen plant goals or the
+   * planted-foot diagnostics. An unreachable target is counted, never clamped into a contact.
+   */
+  plantFree(legs: number, targets: Float64Array): number {
+    if (!Number.isInteger(legs) || legs < 0 || legs > 15 || targets.length !== 12) {
+      throw new RangeError("Invalid free-limb floor guard input.");
+    }
+    let unreachable = 0;
+    this.root.updateWorldMatrix(true, true);
+    for (let i = 0; i < 4; i++) {
+      if ((legs & (1 << i)) === 0) continue;
+      const { upper, lower, foot, flat } = this.chains[i], input = this.free[i];
+      for (let axis = 0; axis < 3; axis++) input.target[axis] = targets[i * 3 + axis];
+      upper.getWorldPosition(this.origin).toArray(input.root);
+      solveTwoBoneSupportInto(input satisfies SupportChainInput, this.solution, this.scratch);
+      if (!this.solution.reachable) unreachable++;
+      this.aim(upper, lower, this.solution.knee);
+      this.aim(lower, foot, this.solution.foot);
+      foot.parent!.getWorldQuaternion(this.parentRotation).invert();
+      foot.quaternion.copy(this.parentRotation).multiply(flat).normalize();
+      foot.updateWorldMatrix(false, true);
+    }
+    return unreachable;
   }
 
   /** Borrowed goals are copied OUT; callers cannot mutate stored targets. */

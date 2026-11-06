@@ -1,8 +1,8 @@
 import { Euler, Matrix4, Quaternion, Vector3, type Object3D } from "three";
 import { CAT_JOINT_IDS } from "./cat-pose-data";
 import type { CatPoseFrame } from "./cat-pose-simulation";
-import type { CatSkeleton } from "./cat-skeleton";
-import { CatPoseContacts } from "./cat-pose-contacts";
+import type { CatBoxBind, CatSkeleton } from "./cat-skeleton";
+import { CatPoseContacts, SUPPORT_CHAIN_JOINTS } from "./cat-pose-contacts";
 import { createCatPoseVisualFit } from "./cat-pose-visual-fit";
 import { CatPoseContactPlan, validateSphinxGoals, type BodySupport } from "./cat-pose-contact-plan";
 import { BASE_SIZE, type CatPoseLibrary, type PoseBreathFK, type PoseTrack } from "./cat-pose-tracks";
@@ -22,8 +22,11 @@ export class CatPoseBind {
   readonly plan: CatPoseContactPlan;
   private readonly bathSupport: CatBathSupport;
   private readonly surface = new Vector3();
+  private readonly foot = new Vector3();
+  private readonly freeFloorTargets = new Float64Array(12);
   private readonly ordered;
   private readonly visuals;
+  private readonly legVisuals;
   private readonly bellyY: number;
   private readonly backY: number;
   private readonly sideY: number;
@@ -71,6 +74,9 @@ export class CatPoseBind {
         ...createCatPoseVisualFit(bind, byId.get(bind.jointId)!), weight: 0,
       };
     });
+    // Boxes carried by each support chain, in leg-bit order; the floor guard measures these.
+    this.legVisuals = SUPPORT_CHAIN_JOINTS.map(joints =>
+      this.visuals.filter(visual => joints.includes(visual.bind.jointId)));
   }
 
   /** The public rig preparation factory supplies this same library to Core. */
@@ -127,16 +133,22 @@ export class CatPoseBind {
 
   /** Local FK/visual layers, then LAST analytic support for an explicit mask. */
   /** Lowest world-space corner of the boxes that carry a declared body support. */
+  private boxFloor(bind: CatBoxBind, node: Object3D): number {
+    let floor = Infinity;
+    for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) for (let z = -1; z <= 1; z += 2) {
+      this.surface.set(x * bind.part.args[0] / 2, y * bind.part.args[1] / 2, z * bind.part.args[2] / 2).applyMatrix4(node.matrixWorld);
+      floor = Math.min(floor, this.surface.y);
+    }
+    return floor;
+  }
+
   private declaredBodyFloor(support: BodySupport): number {
     this.ordered[0].node.updateWorldMatrix(true, true);
     let floor = Infinity;
     for (let i = 0; i < this.visuals.length; i++) {
       const { bind, node } = this.visuals[i], id = bind.part.id;
       if (id !== "body" && (support === "belly" || (id !== "hipL" && id !== "hipR"))) continue;
-      for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) for (let z = -1; z <= 1; z += 2) {
-        this.surface.set(x * bind.part.args[0] / 2, y * bind.part.args[1] / 2, z * bind.part.args[2] / 2).applyMatrix4(node.matrixWorld);
-        floor = Math.min(floor, this.surface.y);
-      }
+      floor = Math.min(floor, this.boxFloor(bind, node));
     }
     return floor;
   }
@@ -257,6 +269,42 @@ export class CatPoseBind {
       node.parent!.worldToLocal(this.skinPoint);
       node.position.copy(this.skinPoint);
       node.updateWorldMatrix(false, true);
+    }
+
+    // The floor constrains the whole rig, measured on what actually renders: this runs after
+    // the skin-fitting layer because that layer can conceal a shallow sub-floor hinge and only
+    // the remaining, visible penetration is a defect. A bridged retarget interpolates rotations and the base
+    // under one weight, so a limb the plan leaves FREE can hang under the floor while the declared
+    // body support sits exactly on it. Such a limb is solved as a support contact for that frame
+    // through the same analytic solver, against a target lifted by its own penetration: planted
+    // feet, their frozen goals and the planned mask stay untouched, and any frame already inside
+    // the 1 mm family of tolerances is left byte-identical.
+    const guard = this.contacts.diagnostics;
+    guard.freeFootCorrection = null; guard.freeFootUnreachable = null;
+    if (frame.transitionTo !== null && planned.feet !== 15) {
+      let correction = 0, unreachable = 0;
+      for (let pass = 0; pass < 4; pass++) {
+        let legs = 0;
+        for (let i = 0; i < 4; i++) {
+          if ((planned.feet & (1 << i)) !== 0) continue;
+          const carried = this.legVisuals[i];
+          let floor = Infinity;
+          for (let k = 0; k < carried.length; k++) {
+            const visual = carried[k];
+            if (visual.node.visible) floor = Math.min(floor, this.boxFloor(visual.bind, visual.node));
+          }
+          const deficit = this.groundY - floor;
+          if (!(deficit > .001)) continue;
+          this.contacts.footWorld(i, this.foot);
+          this.freeFloorTargets[i * 3] = this.foot.x;
+          this.freeFloorTargets[i * 3 + 1] = this.foot.y + deficit;
+          this.freeFloorTargets[i * 3 + 2] = this.foot.z;
+          correction = Math.max(correction, deficit); legs |= 1 << i;
+        }
+        if (legs === 0) break;
+        unreachable += this.contacts.plantFree(legs, this.freeFloorTargets);
+      }
+      guard.freeFootCorrection = correction; guard.freeFootUnreachable = unreachable;
     }
   }
 }

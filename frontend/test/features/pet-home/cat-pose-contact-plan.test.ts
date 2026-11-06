@@ -112,7 +112,7 @@ describe("phase protocol", () => {
     expect(rig.bind.plan.output).toEqual(before);
     expect(rig.bind.contacts.copyGoalsInto(new Float64Array(12))).toEqual(goals);
     expect(rig.bind.contacts.goalRevision).toBe(0);
-    expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: null, unreachableFeet: null, maxFootDrift: null, bodySupportCorrection: null });
+    expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: null, unreachableFeet: null, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
   });
   it("does not commit a pretend belly support whose actual finite box corners miss the floor", () => {
     const rig = poseScene(), goals = rig.bind.contacts.copyGoalsInto(new Float64Array(12));
@@ -120,6 +120,6 @@ describe("phase protocol", () => {
     expect(() => rig.bind.apply(rig.frame)).toThrow("Declared belly support is not on the floor");
     expect(rig.bind.contacts.goalRevision).toBe(0);
     expect(rig.bind.contacts.copyGoalsInto(new Float64Array(12))).toEqual(goals);
-    expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: null, unreachableFeet: null, maxFootDrift: null, bodySupportCorrection: null });
+    expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: null, unreachableFeet: null, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
   });
 });
