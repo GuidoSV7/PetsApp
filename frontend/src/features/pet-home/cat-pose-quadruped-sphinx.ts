@@ -1,6 +1,7 @@
 import { Euler, Quaternion, Vector3 } from "three";
 import { CAT_JOINT_IDS } from "./cat-pose-data";
 import { createCatPoseReference } from "./cat-pose-reference";
+import { catPoseFoldMarginPitch } from "./cat-pose-fold-margin";
 import { CatPoseSimulation } from "./cat-pose-simulation";
 import { BASE_SIZE, type CatPoseLibrary, type PoseTrack } from "./cat-pose-tracks";
 import type { CatSkeleton } from "./cat-skeleton";
@@ -19,10 +20,29 @@ export function compileCatPoseQuadrupedSphinx(skeleton: CatSkeleton, library: Ca
   const original = library.tracks.standing.sphinx!, supportedF = library.tracks.seated.sphinx!;
   const qa = new Quaternion(), qb = new Quaternion(), total = new Quaternion();
   const rest = new Map(skeleton.joints.map(joint => [joint.id, new Quaternion().setFromEuler(new Euler(...joint.rotation)).invert()]));
+  const torsoIndex = index("torso"), pitchAxis = new Vector3(1, 0, 0);
+  const bodyScale = reference.boxes.get("body")!.getWorldScale(new Vector3());
+  const torsoPivot = reference.joints.get("joint-torso")!.getWorldPosition(new Vector3());
+  let settlePitch = 0;
+  // A vertical hip path can cross the two-bone inner reach sphere even when
+  // both endpoints are reachable. Arc the torso, never the root or foot goals.
+  // Admin depth variants keep their existing diagnostic trajectories.
+  if (bodyScale.x === bodyScale.z) for (const [upper, lower, foot] of chains.slice(0, 2)) {
+    const a = reference.joints.get("joint-" + upper)!.getWorldPosition(new Vector3());
+    const b = reference.joints.get("joint-" + lower)!.getWorldPosition(new Vector3());
+    const goal = reference.joints.get("joint-" + foot)!.getWorldPosition(new Vector3());
+    const minimum = Math.abs(a.distanceTo(b) - b.distanceTo(goal)), dx = a.x - goal.x, dz = a.z - goal.z;
+    if (Math.hypot(dx, dz) >= minimum) continue;
+    const clearance = dz + Math.sqrt((minimum - Math.abs(dx)) * (minimum + Math.abs(dx)));
+    settlePitch = Math.max(settlePitch, Math.asin(1.15 * clearance / (torsoPivot.y - a.y)),
+      catPoseFoldMarginPitch(a, goal, torsoPivot, a.distanceTo(b), b.distanceTo(goal)));
+  }
   function settle(output: Float64Array, tick: number) {
     const weight = ease(tick / 20);
     for (let i = 0; i < 88; i += 4) qa.fromArray(standing, i).slerp(qb.fromArray(sphinx, i), weight).normalize().toArray(output, i);
     for (let i = 88; i < BASE_SIZE; i++) output[i] = standing[i] + (sphinx[i] - standing[i]) * weight;
+    const lean = settlePitch * (tick <= 5 ? ease(tick / 5) : tick <= 11 ? 1 : 1 - ease((tick - 11) / 3));
+    if (lean) qa.fromArray(output, torsoIndex).multiply(qb.setFromAxisAngle(pitchAxis, lean)).normalize().toArray(output, torsoIndex);
     // Keep the actual Q twist seed, not the seated/canonical zero seed. These
     // limbs are still planted; each reference is solved from authoritative data.
     for (const chain of chains) for (const id of chain) { const i = index(id); output.set(standing.subarray(i, i + 4), i); }

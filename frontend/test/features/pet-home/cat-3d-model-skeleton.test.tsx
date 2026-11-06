@@ -14,6 +14,7 @@ import * as frameModule from "@/features/pet-home/cat-idle-frame";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
 import type { CoatPattern } from "@/features/pet-home/coat-patterns";
 import type { FrozenCase, FrozenState } from "./cat-skeleton-baseline.test";
+import { a1TailSurfaceExpectedWorld } from "./cat-tail-surface-oracle";
 
 const frame = vi.hoisted(() => ({ current: undefined as undefined | ((state: { clock: { getElapsedTime: () => number } }, delta: number) => void) }));
 const observed = vi.hoisted(() => ({ boxes: [] as { name: string; visible: boolean }[] }));
@@ -38,10 +39,11 @@ function world(el: Element): Matrix4 {
   const parent = el.parentElement;
   return parent && ["group", "mesh"].includes(parent.tagName.toLowerCase()) ? world(parent).multiply(local) : local;
 }
-function assertWorlds(doc: ParentNode, state: FrozenState) {
+function assertWorlds(doc: ParentNode, state: FrozenState, fixture: FrozenCase) {
   for (const box of state.boxes) {
     const element = doc.querySelector(`mesh[name="${box.id}"]`)!; expect(element, box.id).not.toBeNull();
-    world(element).elements.forEach((v, i) => expect(v, `${box.id}[${i}]`).toBeCloseTo(box.matrix[i], 10));
+    const expected = a1TailSurfaceExpectedWorld(fixture, state, box);
+    world(element).elements.forEach((v, i) => expect(v, `${box.id}[${i}]`).toBeCloseTo(expected[i], 10));
   }
 }
 function model(f: FrozenCase) {
@@ -110,7 +112,7 @@ describe("actual A1 renderer and idle route (S2/S4/S9/S11)", () => {
         const staticBinds = JSON.stringify([...skeleton.bindings]);
         const checkFrame = (time: number, expected: FrozenState) => {
           frame.current!({ clock: { getElapsedTime: () => 100 + time } }, 0);
-          assertWorlds(container, expected);
+          assertWorlds(container, expected, fixture);
           expect(compile).toHaveBeenCalledTimes(index + 1);
           expect(JSON.stringify([...skeleton.bindings])).toBe(staticBinds);
           const input = applied.mock.calls.at(-1)![0], motion = moved.mock.calls.at(-1)!;
@@ -142,7 +144,7 @@ describe("actual A1 renderer and idle route (S2/S4/S9/S11)", () => {
   });
   for (const fixture of fixtures) {
     it(`${fixture.id}: complete actual SSR worlds against frozen browser`, () => {
-      const doc = new DOMParser().parseFromString(renderToStaticMarkup(model(fixture)), "text/html"); assertWorlds(doc, fixture.rest);
+      const doc = new DOMParser().parseFromString(renderToStaticMarkup(model(fixture)), "text/html"); assertWorlds(doc, fixture.rest, fixture);
     });
     it(`${fixture.id}: actual callback follows rigid joints; bind and registry identity are stable`, async () => {
       const container = document.createElement("div"), root = createRoot(container);
@@ -156,7 +158,7 @@ describe("actual A1 renderer and idle route (S2/S4/S9/S11)", () => {
         for (const sample of fixture.idle) {
           frame.current!({ clock: { getElapsedTime: () => 100 + sample.time } }, 0);
           expect(poses).not.toHaveBeenCalled();
-          assertWorlds(container, sample.state);
+          assertWorlds(container, sample.state, fixture);
           for (const element of container.querySelectorAll("mesh")) expect(element.getAttribute("position")).toBe(initialPositions.get(element.getAttribute("name")));
           const current = applied.mock.calls.at(-1)![0].meshes;
           if (registry) expect(current).toBe(registry); else registry = current;

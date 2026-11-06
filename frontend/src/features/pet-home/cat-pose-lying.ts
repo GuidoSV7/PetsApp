@@ -1,7 +1,8 @@
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { CAT_JOINT_IDS } from "./cat-pose-data";
 import type { CatSkeleton } from "./cat-skeleton";
-import type { CatPoseLibrary } from "./cat-pose-tracks";
+import type { CatPoseLibrary, PoseBreathFK, StablePose } from "./cat-pose-tracks";
+import { CAT_CURLED_TAIL_FK, CAT_SIDE_TAIL_FK, mirrorCatPoseBase } from "./cat-pose-mirror";
 
 const index = (id: string) => CAT_JOINT_IDS.indexOf(("joint-" + id) as typeof CAT_JOINT_IDS[number]) * 4;
 
@@ -40,9 +41,11 @@ export function compileCatPoseLying(skeleton: CatSkeleton, library: CatPoseLibra
       rotation(base, "neck", curled ? -20 : 0, curled ? 25 : 0, -30);
       rotation(base, "head", 0, 0, -60);
       if (curled) {
-        // Counter the side roll, then turn inward and tuck the head. Preserve
-        // the real neck lever rather than lowering the root to conceal it.
-        q.setFromEuler(new Euler(20 * Math.PI / 180, 35 * Math.PI / 180, -Math.PI / 2, "ZYX"));
+        // Rigid neck fold carries the head hipward; its face looks backward
+        // along the torso, while the crown counters the side roll. No nasal
+        // target, root concealment or spine/box deformation is involved.
+        rotation(base, "neck", -70, 0, -30);
+        q.setFromEuler(new Euler(0, Math.PI, -Math.PI / 2, "ZYX"));
         delta.fromArray(base, index("neck")).invert().multiply(q).normalize().toArray(base, index("head"));
       }
       rotation(base, "tailBase", curled ? 30 : 0, curled ? -65 : 35, curled ? 20 : 10);
@@ -65,7 +68,70 @@ export function compileCatPoseLying(skeleton: CatSkeleton, library: CatPoseLibra
     // One analytic oriented-box projection, not a root search, live correction,
     // sampled hull fitting or a capture of displayed nodes. No foot IK here.
     base[89] = ground - floor("body", worlds(base));
-    return { base, visible: 15, supports: 0 };
+    const result: StablePose = { base, visible: 15, supports: 0 };
+    if (curled) {
+      ["tailBase", "tailMid", "tailTip"].forEach((joint, i) => {
+        rotation(base, joint, ...CAT_CURLED_TAIL_FK.left[i]);
+        q.fromArray(base, index(joint)).normalize().toArray(base, index(joint));
+      });
+    }
+    if (id === "side") {
+      ["tailBase", "tailMid", "tailTip"].forEach((joint, i) => {
+        rotation(base, joint, ...CAT_SIDE_TAIL_FK.left[i]);
+        // Reach the same normalization fixed point used by Core sampling.
+        q.fromArray(base, index(joint)).normalize().toArray(base, index(joint));
+      });
+      const neck = skeleton.joints.find(joint => joint.id === "joint-neck")!;
+      const head = skeleton.joints.find(joint => joint.id === "joint-head")!;
+      const box = skeleton.bindings.get("head")!;
+      // A small world roll selects one lowest head corner rather than an
+      // ambiguous whole bottom face. Its rest-derived contact stays fixed.
+      const tilt = -80 * Math.PI / 180;
+      const corner = new Vector3(...box.position).add(new Vector3(-box.part.args[0] * box.scale[0] / 2, -box.part.args[1] * box.scale[1] / 2, 0));
+      // Fold a long resolved neck lever backward just enough to keep the head
+      // joined to the body. Short/default levers keep zero pitch. The deep
+      // profile needs ~40 degrees, a measured departure from the initial guide.
+      const joinedLength = Math.abs(Math.sin(tilt)) * box.part.args[0] * box.scale[0] / 2
+        + Math.abs(Math.cos(tilt)) * box.part.args[1] * box.scale[1] / 2 - .02;
+      const pitch = head.position[1] <= joinedLength ? 0
+        : -Math.acos(joinedLength / Math.hypot(head.position[1], head.position[2])) - Math.atan2(head.position[2], head.position[1]);
+      const length = head.position[1] * Math.cos(pitch) - head.position[2] * Math.sin(pitch);
+      function headAngles(output: Float64Array, neckAngle: number, totalHeadAngle: number) {
+        q.setFromEuler(new Euler(pitch, 0, neckAngle, "ZYX")).normalize().toArray(output, index("neck"));
+        delta.copy(q).invert().multiply(new Quaternion().setFromEuler(new Euler(0, 0, totalHeadAngle))).normalize().toArray(output, index("head"));
+      }
+      const cx = Math.cos(tilt) * corner.x - Math.sin(tilt) * corner.y;
+      const cy = Math.sin(tilt) * corner.x + Math.cos(tilt) * corner.y;
+      const neckY = worlds(base).get("joint-neck")!.elements[13];
+      const sine = (neckY + cx - ground) / length;
+      if (Math.abs(sine) > 1) throw new RangeError("Side head support is outside the rigid neck lever.");
+      const angle = Math.asin(sine);
+      headAngles(base, angle, tilt);
+      const targetX = neck.position[0] - length * Math.sin(angle) + cx;
+      const targetY = neck.position[1] + length * Math.cos(angle) + cy;
+      const radius = Math.hypot(corner.x, corner.y);
+      const variants: Float64Array[] = [], reflected: Float64Array[] = [];
+      for (let knot = 0; knot <= 80; knot++) {
+        const variant = new Float64Array(base), breath = 1 + (knot - 40) / 4000;
+        if (knot !== 40) {
+          // Closed-form setup authoring of the two rigid planar levers. Playback
+          // only samples additive quaternions; no live head/airborne target IK.
+          const x = targetX - neck.position[0], y = targetY - neck.position[1] * breath;
+          const distance = Math.hypot(x, y);
+          const cosine = (distance * distance + length * length - radius * radius) / (2 * distance * length);
+          if (Math.abs(cosine) > 1) throw new RangeError("Side breathing contact is outside the rigid head levers.");
+          const direction = Math.atan2(y, x) - Math.acos(cosine);
+          const neckAngle = direction - Math.PI / 2;
+          const headAngle = Math.atan2(y - length * Math.sin(direction), x - length * Math.cos(direction)) - Math.atan2(corner.y, corner.x);
+          headAngles(variant, neckAngle, headAngle);
+        }
+        variants.push(variant); reflected.push(mirrorCatPoseBase(skeleton, variant));
+      }
+      const jointMask = (1 << (index("neck") / 4)) | (1 << (index("head") / 4));
+      const data = (values: Float64Array[]): PoseBreathFK => ({ minimum: .99, maximum: 1.01, jointMask, variants: values });
+      result.breathFK = data(variants); result.mirroredBreathFK = data(reflected);
+    }
+    return result;
   }
   return { ...library, stable: { ...library.stable, side: pose("side"), curled: pose("curled"), bellyUp: pose("bellyUp") } };
 }

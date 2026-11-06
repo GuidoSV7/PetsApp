@@ -3,8 +3,11 @@ import { CAT_JOINT_IDS } from "./cat-pose-data";
 import type { CatPoseFrame } from "./cat-pose-simulation";
 import type { CatSkeleton } from "./cat-skeleton";
 import { CatPoseContacts } from "./cat-pose-contacts";
+import { createCatPoseVisualFit } from "./cat-pose-visual-fit";
 import { CatPoseContactPlan, validateSphinxGoals } from "./cat-pose-contact-plan";
-import { BASE_SIZE, type CatPoseLibrary, type PoseTrack } from "./cat-pose-tracks";
+import { BASE_SIZE, type CatPoseLibrary, type PoseBreathFK, type PoseTrack } from "./cat-pose-tracks";
+import { catJumpReleased } from "./cat-pose-jump";
+import { CatBathSupport } from "./cat-pose-bath";
 
 const extensions = ["forearmFL", "forearmFR", "shinBL", "shinBR", "jaw", "tongue"] as const;
 
@@ -17,6 +20,7 @@ const extensions = ["forearmFL", "forearmFR", "shinBL", "shinBR", "jaw", "tongue
 export class CatPoseBind {
   readonly contacts: CatPoseContacts;
   readonly plan: CatPoseContactPlan;
+  private readonly bathSupport: CatBathSupport;
   private readonly surface = new Vector3();
   private readonly ordered;
   private readonly visuals;
@@ -57,20 +61,14 @@ export class CatPoseBind {
     const paw = boxes.get("pawFL")!, args = skeleton.bindings.get("pawFL")!.part.args;
     const matrix = paw.matrixWorld.elements;
     this.groundY = matrix[13] - (Math.abs(matrix[1]) * args[0] + Math.abs(matrix[5]) * args[1] + Math.abs(matrix[9]) * args[2]) / 2;
-    this.plan = new CatPoseContactPlan(this.contacts.copyGoalsInto(new Float64Array(12)));
+    const neutralGoals = this.contacts.copyGoalsInto(new Float64Array(12));
+    this.plan = new CatPoseContactPlan(neutralGoals);
+    this.bathSupport = new CatBathSupport(this.ordered[0].node, joints, neutralGoals);
     this.visuals = [...skeleton.bindings.values()].map(bind => {
       const node = boxes.get(bind.part.id);
       if (!node) throw new RangeError(`Missing rigid cat box: ${bind.part.id}`);
-      const owner = byId.get(bind.jointId)!;
-      const child = owner.children[0];
-      const limb = /^(legF|hip[LR]$|forearmF|shinB)/.test(bind.part.id) && child !== undefined;
-      const direction = limb ? new Vector3(...child.position) : new Vector3(0, 1, 0);
-      const length = direction.length();
       return { bind, node, extension: extensions.indexOf(bind.part.id as typeof extensions[number]),
-        restPosition: new Vector3(...bind.position), restScale: new Vector3(...bind.scale), limb, weight: 0,
-        fitPosition: direction.clone().multiplyScalar(.5),
-        fitRotation: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize()),
-        fitScale: new Vector3(Math.min(bind.scale[0], .12 / bind.part.args[0]), length / bind.part.args[1], Math.min(bind.scale[2], .12 / bind.part.args[2])),
+        ...createCatPoseVisualFit(bind, byId.get(bind.jointId)!), weight: 0,
       };
     });
   }
@@ -108,6 +106,20 @@ export class CatPoseBind {
     node.quaternion.multiply(this.breathNominal).normalize();
   }
 
+  /** Stable counterpart of track FK: the same additive, library-owned boundary. */
+  private applyStableBreathFK(data: PoseBreathFK, frame: CatPoseFrame, joint: number, node: Object3D): void {
+    if ((data.jointMask & (1 << joint)) === 0) return;
+    const coordinate = (frame.bodyBreath - data.minimum) / (data.maximum - data.minimum) * (data.variants.length - 1);
+    const low = Math.min(data.variants.length - 2, Math.floor(coordinate));
+    const neutral = Math.round((1 - data.minimum) / (data.maximum - data.minimum) * (data.variants.length - 1));
+    this.breathNominal.fromArray(data.variants[neutral], joint * 4);
+    this.breathLow.fromArray(data.variants[low], joint * 4);
+    this.breathHigh.fromArray(data.variants[low + 1], joint * 4);
+    this.breathLow.slerp(this.breathHigh, coordinate - low);
+    this.breathNominal.invert().multiply(this.breathLow);
+    node.quaternion.multiply(this.breathNominal).normalize();
+  }
+
   /** Affine body expansion about its supporting surface, never joint scaling. */
   private breatheY(y: number, amount: number, anchor: number): number {
     return y + (y - anchor) * (amount - 1);
@@ -119,18 +131,30 @@ export class CatPoseBind {
     const planned = this.plan.resolve(frame);
     const track = frame.transitionFrom === null || frame.transitionTo === null ? undefined
       : this.library?.tracks[frame.transitionFrom][frame.transitionTo];
-    if (track?.breathFK && (!Number.isFinite(frame.bodyBreath) || frame.bodyBreath < track.breathFK.minimum || frame.bodyBreath > track.breathFK.maximum)) {
+    const stable = frame.transitionFrom === null && frame.transitionTo === null ? this.library?.stable[frame.pose] : undefined;
+    // Roll-side classification is invariant under q -> -q; heading is separate.
+    const reflected = stable && frame.rotations[2] * frame.rotations[3] * stable.base[2] * stable.base[3] < 0;
+    const stableBreath = catJumpReleased(frame.jumpPhase) ? this.library?.playJumpFK
+      : reflected ? stable?.mirroredBreathFK : stable?.breathFK;
+    const breathData = track?.breathFK ?? stableBreath;
+    if (breathData && (!Number.isFinite(frame.bodyBreath) || frame.bodyBreath < breathData.minimum || frame.bodyBreath > breathData.maximum)) {
       throw new RangeError("Breathing FK input is outside the compiled physical range.");
     }
     // Belly arithmetic remains exact for accepted S/Q/L/F and their tracks.
     // Side-face center/back top are fixed rather than translating with breath.
-    const breathAnchor = planned.body === "back" ? this.backY : planned.body === "side" ? this.sideY : this.bellyY;
+    let breathAnchor = planned.body === "back" ? this.backY : planned.body === "side" ? this.sideY : this.bellyY;
+    if (track?.breathAnchors) {
+      const time = frame.transitionProgress * track.duration;
+      const tick = Math.min(track.duration - 1, Math.floor(time)), alpha = time - tick;
+      breathAnchor = track.breathAnchors[tick] + (track.breathAnchors[tick + 1] - track.breathAnchors[tick]) * alpha;
+    }
     for (let i = 0; i < this.ordered.length; i++) {
       const { bind, node, rest } = this.ordered[i];
       node.position.set(bind.position[0], bind.parent === "joint-torso"
         ? this.breatheY(bind.position[1], frame.bodyBreath, breathAnchor) : bind.position[1], bind.position[2]);
       node.quaternion.copy(rest).multiply(this.delta.fromArray(frame.rotations, i * 4));
       if (track?.breathFK && frame.bodyBreath !== 1) this.applyBreathFK(track, frame, i, node);
+      else if (stableBreath && frame.bodyBreath !== 1) this.applyStableBreathFK(stableBreath, frame, i, node);
       node.scale.set(1, 1, 1);
       if (i === 0) {
         node.position.x += frame.rootOffset[0];
@@ -143,6 +167,7 @@ export class CatPoseBind {
     const fitWeight = frame.transitionFrom === "seated" ? Math.min(1, frame.transitionProgress / .2)
       : frame.transitionTo === "seated" ? Math.min(1, (1 - frame.transitionProgress) / .2)
       : frame.pose === "seated" && frame.transitionTo === null ? 0 : 1;
+    if (frame.bathRoll) this.bathSupport.apply(planned.feet, fitWeight);
     for (let i = 0; i < this.visuals.length; i++) {
       const visual = this.visuals[i], { bind, node, extension } = visual, id = bind.part.id;
       node.position.set(bind.position[0], bind.position[1], bind.position[2]);
@@ -163,6 +188,10 @@ export class CatPoseBind {
         node.scale.y *= frame.bodyBreath;
       }
       if (id === "eyeL" || id === "eyeR" || id === "pupilL" || id === "pupilR") node.scale.y *= frame.eyeScale;
+      if (id === "pupilL" || id === "pupilR") {
+        node.position.x += frame.gazeYaw / 45 * .012;
+        node.position.y += frame.gazePitch / 25 * .008;
+      }
     }
     for (let i = 0; i < this.bodyAnchors.length; i++) {
       const { bind, node } = this.bodyAnchors[i];
@@ -181,7 +210,7 @@ export class CatPoseBind {
       }
       if (Math.abs(floor - this.groundY) > .001) throw new RangeError(`Declared ${planned.body} support is not on the floor: ${floor}`);
     }
-    if (frame.transitionTo !== null || frame.pose !== "seated") this.contacts.applyPlan(planned.feet, planned.goals);
+    if (frame.jumpPhase || frame.transitionTo !== null || frame.pose !== "seated") this.contacts.applyPlan(planned.feet, planned.goals);
     else this.contacts.apply(frame.supportMask);
     // Skin fitting is node copying AFTER the final joint solution, not another
     // pose/IK layer. Translate only inside the cross-section: both rigid hinges

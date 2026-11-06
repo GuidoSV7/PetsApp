@@ -4,6 +4,7 @@ import { PREVIEW_PET_NEEDS } from "./pet-stats";
 import { CatIdleCursor } from "./cat-idle-cursor";
 import { BASE_SIZE, CAT_POSE_LIBRARY, type CatPoseLibrary, type PoseTrack } from "./cat-pose-tracks";
 import type { CatCareAction, CatPoseId } from "./cat-pose-types";
+import { catPlayJumpHeight, catPlayJumpPhase, catJumpReleased, PLAY_LANDING, type CatJumpPhase } from "./cat-pose-jump";
 
 export type CatPoseInput = { readonly tick: number } & (
   | { readonly kind: "care"; readonly action: CatCareAction; readonly sequence: number }
@@ -36,6 +37,9 @@ export type CatPoseFrame = {
   plateVisible: boolean;
   sleeping: boolean;
   bounce: number;
+  jumpPhase: CatJumpPhase | null;
+  /** Bath-only torso gesture roll, including outgoing fade; never base data. */
+  bathRoll: number;
 };
 export type CatSimulationOptions = { seed: number; reducedMotion?: boolean; cues?: NeedVisualCues; library?: CatPoseLibrary };
 
@@ -54,7 +58,7 @@ function createFrame(initial = CAT_POSE_LIBRARY.stable.seated): CatPoseFrame {
     base: new Float64Array(initial.base), rotations: new Float64Array(initial.base.buffer.slice(0, 88 * 8)),
     rootOffset: new Float64Array(3), headingDeg: 0, visibleMask: 0, supportMask: 15,
     bodyBreath: 1, eyeScale: 1, gazeYaw: 0, gazePitch: 0, earInterest: 0, idleEarSide: null,
-    plateVisible: false, sleeping: false, bounce: 0,
+    plateVisible: false, sleeping: false, bounce: 0, jumpPhase: null, bathRoll: 0,
   };
 }
 function copyFrame(from: CatPoseFrame, to: CatPoseFrame) {
@@ -64,7 +68,7 @@ function copyFrame(from: CatPoseFrame, to: CatPoseFrame) {
   to.headingDeg = from.headingDeg; to.visibleMask = from.visibleMask; to.supportMask = from.supportMask;
   to.bodyBreath = from.bodyBreath; to.eyeScale = from.eyeScale; to.gazeYaw = from.gazeYaw; to.gazePitch = from.gazePitch;
   to.earInterest = from.earInterest; to.idleEarSide = from.idleEarSide; to.plateVisible = from.plateVisible;
-  to.sleeping = from.sleeping; to.bounce = from.bounce;
+  to.sleeping = from.sleeping; to.bounce = from.bounce; to.jumpPhase = from.jumpPhase; to.bathRoll = from.bathRoll;
 }
 
 /**
@@ -74,7 +78,7 @@ function copyFrame(from: CatPoseFrame, to: CatPoseFrame) {
  */
 export class CatPoseSimulation {
   tick = 0;
-  private readonly library: CatPoseLibrary;
+  private library: CatPoseLibrary;
   private readonly current: CatPoseFrame;
   private readonly previous: CatPoseFrame;
   private readonly rendered: CatPoseFrame;
@@ -119,6 +123,7 @@ export class CatPoseSimulation {
   private gestureAge = 0;
   private sleepDeadline = 0;
   private lastSequence = -1;
+  private jumpPending: CatPoseInput | null = null;
   private petStart = -1000;
   private squintUntil = 0;
   private gazeTargetYaw = 0;
@@ -140,6 +145,36 @@ export class CatPoseSimulation {
     this.reduced = options.reducedMotion ?? false;
     this.gestureStatic = this.reduced;
     this.idle = new CatIdleCursor(this.seed, this.cues);
+  }
+
+  /** Setup-only morphology change: retain clock/intent/layers and replace authored references. */
+  rebindLibrary(library: CatPoseLibrary): void {
+    if (library === this.library) return;
+    const old = this.library, a = new Float64Array(BASE_SIZE), b = new Float64Array(BASE_SIZE);
+    const reference = (frame: CatPoseFrame, source: CatPoseLibrary, into: Float64Array) => {
+      const track = frame.transitionFrom && frame.transitionTo ? source.tracks[frame.transitionFrom][frame.transitionTo] : null;
+      if (!track) { into.set(source.stable[frame.pose].base); return; }
+      const time = frame.transitionProgress * track.duration, tick = Math.min(track.duration - 1, Math.floor(time));
+      this.blend(track.frames.subarray(tick * BASE_SIZE, (tick + 1) * BASE_SIZE),
+        track.frames.subarray((tick + 1) * BASE_SIZE, (tick + 2) * BASE_SIZE), time - tick, into);
+    };
+    const replace = (base: Float64Array, rotations?: Float64Array) => {
+      for (let i = 0; i < 88; i += 4) {
+        this.delta.fromArray(b, i).multiply(this.qa.fromArray(a, i).invert());
+        this.qb.fromArray(base, i).premultiply(this.delta).normalize().toArray(base, i);
+        if (rotations) this.qb.fromArray(rotations, i).premultiply(this.delta).normalize().toArray(rotations, i);
+      }
+      for (let i = 88; i < BASE_SIZE; i++) base[i] += b[i] - a[i];
+    };
+    for (const frame of [this.previous, this.current]) {
+      reference(frame, old, a); reference(frame, library, b); replace(frame.base, frame.rotations);
+      frame.rootOffset.set(frame.base.subarray(88, 91)); frame.headingDeg = frame.base[91];
+    }
+    // An interrupted base is a deviation from the route's authoritative source,
+    // not a posed-world bind. Keep that deviation and its existing bridge age.
+    a.set(old.stable[this.route[0]].base); b.set(library.stable[this.route[0]].base); replace(this.bridgeStart);
+    if (this.track) this.track = library.tracks[this.track.from][this.track.to]!;
+    this.library = library;
   }
 
   /** Input objects/queue compaction allocate only on interaction, never in step. */
@@ -172,6 +207,11 @@ export class CatPoseSimulation {
     this.completedSpan = false;
     copyFrame(this.current, this.previous);
     this.tick++;
+    // Complete the short released span (at most 16 ticks), then redirect from
+    // supported seated base. Never fade root height while replanting feet.
+    if (this.jumpPending && !catJumpReleased(this.current.jumpPhase)) {
+      const input = this.jumpPending; this.jumpPending = null; this.applyInput(input);
+    }
     while (this.inputIndex < this.inputs.length && this.inputs[this.inputIndex].tick <= this.tick) {
       this.applyInput(this.inputs[this.inputIndex++]);
     }
@@ -185,6 +225,11 @@ export class CatPoseSimulation {
   }
 
   private applyInput(input: CatPoseInput) {
+    if (input.kind === "care" && (input.sequence <= this.lastSequence
+      || (this.jumpPending?.kind === "care" && input.sequence <= this.jumpPending.sequence))) return;
+    if (!this.reduced && catJumpReleased(this.current.jumpPhase) && (input.kind === "care" || input.kind === "pose")) {
+      this.jumpPending = input; return;
+    }
     switch (input.kind) {
       case "care":
         if (input.sequence <= this.lastSequence) return;
@@ -214,7 +259,7 @@ export class CatPoseSimulation {
         break;
       case "pet":
         this.squintUntil = this.tick + 120;
-        if (!this.reduced && !this.current.sleeping && (this.current.pose === "seated" || this.current.pose === "standing" || this.current.pose === "loaf")) this.petStart = this.tick;
+        if (!this.reduced && !this.current.jumpPhase && !this.current.sleeping && (this.current.pose === "seated" || this.current.pose === "standing" || this.current.pose === "loaf")) this.petStart = this.tick;
         if (this.current.sleeping) this.wake();
         break;
       case "reducedMotion":
@@ -222,10 +267,16 @@ export class CatPoseSimulation {
         this.angles.fill(0); this.velocities.fill(0);
         if (this.reduced) {
           this.gestureStatic = true; this.petStart = -1000; this.breathPhase = 0;
+          const intended = this.jumpPending; this.jumpPending = null;
+          this.current.jumpPhase = null; this.current.bounce = 0;
           this.gestureAngles.fill(0); this.outgoingAngles.fill(0); this.outgoingTicks = 0;
           this.outgoingExtras = 0; this.outgoingBounce = 0;
           const goal = this.pendingGoal ?? this.goal;
-          this.pendingGoal = null; this.startRoute(goal);
+          this.pendingGoal = null;
+          // Reduced motion is an immediate supported cut, not cancellation of
+          // the latest successful-care/pose intention deferred during flight.
+          if (intended) this.applyInput(intended);
+          else this.startRoute(goal);
         }
         break;
       case "cues":
@@ -234,6 +285,9 @@ export class CatPoseSimulation {
   }
 
   private wake() {
+    if (catJumpReleased(this.current.jumpPhase)) {
+      this.jumpPending = { tick: this.tick, kind: "pose", pose: "seated" }; return;
+    }
     this.fadeGesture();
     this.current.sleeping = false; this.current.plateVisible = false;
     this.action = null; this.phase = "idle"; this.requestGoal("seated");
@@ -249,6 +303,17 @@ export class CatPoseSimulation {
   }
   private startRoute(goal: CatPoseId) {
     this.pendingGoal = null; // A newer immediate route supersedes an old queued one.
+    if (!this.reduced && this.track && !this.bridging && goal !== this.goal) {
+      const route = this.library.routes[this.track.from][goal];
+      if (route[1] === this.track.to) {
+        // A new destination can share the unfinished authored leg. Redirect its
+        // suffix at the support deadline, without pretending the nearer stable
+        // endpoint has already been reached. Restarting here would blend an
+        // unfinished support transfer under the next edge's contact schedule.
+        this.goal = goal; this.route = route; this.routeIndex = 0;
+        return;
+      }
+    }
     const from = this.track ? (this.age < this.track.duration / 2 ? this.track.from : this.track.to) : this.current.pose;
     this.bridgeStart.set(this.current.base);
     this.goal = goal; this.route = this.library.routes[from][goal]; this.routeIndex = 0;
@@ -358,7 +423,7 @@ export class CatPoseSimulation {
     const frame = this.current, elapsed = this.tick * DT;
     for (let i = 0; i < 88; i++) frame.rotations[i] = frame.base[i];
     for (let i = 0; i < 3; i++) frame.rootOffset[i] = frame.base[88 + i];
-    frame.headingDeg = frame.base[91]; frame.plateVisible = false; frame.bounce = 0;
+    frame.headingDeg = frame.base[91]; frame.plateVisible = false; frame.bounce = 0; frame.jumpPhase = null;
     this.idle.sample(elapsed, this.cues);
     frame.eyeScale = this.idle.eyeScale;
     frame.idleEarSide = this.reduced ? null : this.idle.earSide;
@@ -382,6 +447,15 @@ export class CatPoseSimulation {
         this.gesture(4, staticGesture ? .05 : (.12 + .10 * Math.sin(this.gestureAge / 144 * Math.PI * 6)) * weight, 0, 0);
       }
     }
+    if (gesturing && this.action === "play" && !staticGesture) {
+      frame.jumpPhase = catPlayJumpPhase(this.gestureAge);
+      frame.supportMask = catJumpReleased(frame.jumpPhase) ? 0 : 15;
+      // The supported downward gesture flexes the real legs via LAST support
+      // IK. It never enters base/route data or lifts a planted root upward.
+      const nod = this.gestureAge < 8 ? Math.sin(this.gestureAge / 8 * Math.PI)
+        : this.gestureAge > PLAY_LANDING ? Math.sin((this.gestureAge - PLAY_LANDING) / 24 * Math.PI) : 0;
+      this.gesture(3, .06 * nod, 0, 0);
+    }
     if (gesturing && this.action === "bathe") {
       const washing = this.gestureAge < 72;
       this.gesture(5, 0, 0, washing ? .35 * weight : 0);
@@ -391,15 +465,25 @@ export class CatPoseSimulation {
         this.gesture(1, 0, 0, shake * .2); this.gesture(3, 0, 0, shake);
       }
     }
+    frame.bathRoll = this.gestureAngles[1 * 3 + 2];
     for (let joint = 0; joint < 22; joint++) {
       const offset = joint * 3, x = this.gestureAngles[offset], y = this.gestureAngles[offset + 1], z = this.gestureAngles[offset + 2];
       if (x || y || z) this.append(joint, x, y, z);
     }
     if (!this.reduced) {
       frame.bounce = this.outgoingBounce * outgoing;
-      if (gesturing && this.action === "play" && !staticGesture && this.gestureAge < 24) frame.bounce = Math.max(frame.bounce, Math.sin(this.gestureAge / 24 * Math.PI) * .04);
+      if (frame.jumpPhase) frame.bounce = catPlayJumpHeight(this.gestureAge);
       const petAge = this.tick - this.petStart;
-      if (petAge >= 0 && petAge < 24) frame.bounce = Math.max(frame.bounce, Math.sin(petAge / 24 * Math.PI) * .04);
+      if (petAge >= 0 && petAge < 24) {
+        const petBounce = Math.sin(petAge / 24 * Math.PI) * .04;
+        // Support-first hierarchy: standing legs absorb the lift with planted
+        // feet (S4; folded seated legs and the loaf belly cannot), so only
+        // those poses go airborne (S31 release/replant). Releasing at
+        // zero bounce exposed raw sub-floor FK geometry — release only from
+        // the first tick the body actually lifts.
+        if (petBounce > 0 && frame.pose !== "standing") frame.supportMask = 0;
+        frame.bounce = Math.max(frame.bounce, petBounce);
+      }
     }
     // Idle and look-at: pupil target leads head/neck, each bounded independently.
     const yaw = feeding || frame.sleeping ? 0 : this.gazeTargetYaw;
@@ -444,6 +528,7 @@ export class CatPoseSimulation {
       output.transitionFrom = previous.transitionFrom; output.transitionTo = previous.transitionTo;
       output.transitionProgress = previous.transitionProgress;
       output.supportMask = previous.supportMask;
+      output.jumpPhase = previous.jumpPhase;
       // Posture extensions follow geometry; discrete gesture feedback stays current.
       output.visibleMask = (previous.visibleMask & 15) | (current.visibleMask & 48);
       if (previous.transitionTo !== null) {
@@ -469,6 +554,7 @@ export class CatPoseSimulation {
     output.headingDeg = output.base[91];
     output.bodyBreath = this.previous.bodyBreath + (this.current.bodyBreath - this.previous.bodyBreath) * t;
     output.bounce = this.previous.bounce + (this.current.bounce - this.previous.bounce) * t;
+    output.bathRoll = this.previous.bathRoll + (this.current.bathRoll - this.previous.bathRoll) * t;
     return output;
   }
 }

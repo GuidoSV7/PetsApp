@@ -1,6 +1,7 @@
 import { CAT_POSE_EDGES } from "./cat-pose-graph";
 import type { CatPoseFrame } from "./cat-pose-simulation";
 import type { CatPoseId } from "./cat-pose-types";
+import { catJumpReleased } from "./cat-pose-jump";
 
 export type BodySupport = "belly" | "side" | "back";
 type Phase = { readonly at: number; readonly feet: number; readonly body: BodySupport | null; readonly landing: CatPoseId };
@@ -71,10 +72,21 @@ export class CatPoseContactPlan {
 
   resolve(frame: CatPoseFrame): typeof this.output {
     const output = this.output, from = frame.transitionFrom, to = frame.transitionTo;
+    if (frame.jumpPhase) {
+      if (frame.pose !== "seated" || from !== null || to !== null) throw new RangeError("Play jump requires stable seated base.");
+      output.feet = catJumpReleased(frame.jumpPhase) ? 0 : 15;
+      output.body = null; output.phase = catJumpReleased(frame.jumpPhase) ? 1 : 0;
+      output.route = "play"; output.goals = this.goals.seated;
+      return output;
+    }
     if (from === null || to === null) {
       if (frame.supportMask < 0) throw new RangeError("Unresolved support phase: missing directed edge.");
-      output.feet = feet[frame.pose]; output.body = body[frame.pose]; output.phase = 0;
-      output.route = frame.pose; output.goals = this.goals[frame.pose];
+      // Pet bounce is airborne only where the stable body support cannot ride
+      // the lift (belly-declared poses, S31): its floor gates resume on
+      // landing. Feet keep the pose table; standing stays planted (S4).
+      output.feet = feet[frame.pose];
+      output.body = frame.bounce > 0 && body[frame.pose] === "belly" ? null : body[frame.pose];
+      output.phase = 0; output.route = frame.pose; output.goals = this.goals[frame.pose];
       return output;
     }
     if (!Number.isFinite(frame.transitionProgress) || frame.transitionProgress < 0 || frame.transitionProgress > 1) {

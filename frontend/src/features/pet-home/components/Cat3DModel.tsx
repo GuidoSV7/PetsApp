@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { CatPoseMountContext } from "../cat-pose-mount-context";
+import { CatPoseDriver } from "./CatPoseDriver";
 import { useFrame } from "@react-three/fiber";
 import type { Group, Mesh } from "three";
 import {
@@ -93,6 +95,8 @@ export function Cat3DModel({
   needs = PREVIEW_PET_NEEDS,
 }: Props) {
   const group = useRef<Group>(null);
+  const poseMount = useContext(CatPoseMountContext);
+  const poseInteract = useRef<(() => void) | null>(null);
   const bounce = useRef(0);
   const meshes = useRef(new Map<string, Mesh>());
   const boxes = useRef(new Map<string, Mesh>());
@@ -119,7 +123,12 @@ export function Cat3DModel({
         cues,
       ),
     [
-      cues,
+      // Only these cue fields affect anatomy. Dirt and behavioral cues still
+      // synchronize below, but must not replace an equal rig and its clock.
+      cues.bodySlim,
+      cues.earDroop,
+      cues.headDroop,
+      cues.pupilScale,
       tunables.bodyDepth,
       tunables.earSize,
       tunables.headHeight,
@@ -179,7 +188,10 @@ export function Cat3DModel({
     if (reactPulse > 0) bounce.current = 1;
   }, [reactPulse]);
 
+  const poseInput = useMemo(() => ({ ...poseMount, cues, reducedMotion, reactPulse }), [poseMount, cues, reducedMotion, reactPulse]);
+
   useFrame((state, delta) => {
+    if (poseMount !== null) return; // Viewer owns the sole A2 clock; no A1 additives.
     const now = state.clock.getElapsedTime();
     origin.current ??= now;
     bounce.current = applyCatIdleFrame({
@@ -228,6 +240,7 @@ export function Cat3DModel({
       scale={modelScale}
       onClick={(event) => {
         event.stopPropagation();
+        poseInteract.current?.();
         onPetInteract?.();
       }}
       onPointerOver={() => {
@@ -238,6 +251,9 @@ export function Cat3DModel({
       }}
     >
       <CatSkeletonParts skeleton={skeleton} joints={joints.current} renderBox={renderBox} />
+      {poseMount !== null && <CatPoseDriver skeleton={skeleton} joints={joints.current} boxes={boxes.current}
+        root={group} input={poseInput} seed={seed.current!} modelScale={modelScale}
+        yawBias={yawBias} orbiting={orbiting} interact={poseInteract} />}
     </group>
   );
 }

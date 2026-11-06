@@ -1,6 +1,303 @@
-# T4a partial integration — not renderer acceptance
+# A2 mounted integration — preliminary, not acceptance
 
-## Current lying semantics — partial / UNKNOWN, not accepted
+## Same-node world recalibration (S35 B2)
+
+`CatPoseRenderer.rebind` treats the rig parent's world transform as calibration
+input alongside skeleton/map identities. The exported Driver can change only
+`modelScale` while retaining those identities: a changed parent world matrix
+must restore authoritative joint/box/anchor REST and prepare a fresh Bind via
+the existing retained-Core factory. Displayed nodes are never calibration input.
+An unchanged rig and unchanged parent world matrix still take the no-op branch.
+No Driver lifecycle, Core, solver, goal, length or gesture timing change is needed.
+
+The public same-node ten-tick scale1→.8 witness went from two unreachable feet
+and .04855574973383996 drift to zero unreachable and near-zero drift. Added
+checks cover actual rendered structural BOX contact≤.001, floor≥−.291, unit
+joints, cold correct-scale world agreement, retained half-tick/state/layers,
+sleep's original timeout, consumed-care deduplication and unchanged-scale
+behavior. Curled support is body support; its foot drift remains null. The actual
+Model normally rebuilds anatomy on modelScale, so this exported-Driver contract
+is **not** claimed as an ordinary Home reproduction. Exact commands and frozen
+before sources are in `odd/evidence/a2-scale-calibration/r1/`.
+This resolves only the bounded B2 branch, not B1, T4, full A2 or visual acceptance.
+
+## Authoritative morphology rebinding
+
+Genuine hunger/admin rig changes now call `CatPoseRenderer.rebind` instead of
+constructing a new runtime. Driver unmount/seed changes still own runtime teardown.
+Rebinding restores new resolved joint/box/anchor REST before constructing Bind,
+then uses the existing preparation factory to configure Bind and the retained
+Core from the same cached library. No displayed-world inverse binds are captured.
+The fixed/fractional clock, sleep deadline, queued care/intention, RNG, gaze and
+spring state remain owned by the existing Core; the care ledger is not replayed.
+
+Core replaces authored stable/edge references at the existing phase, carrying
+local base/layer deviations separately. It retains bridge age and updates the
+active track pointer, rather than serializing state or restarting a route.
+New geometry legitimately changes supported root height and new-rest goals;
+old-shape world coordinates are not an equivalence target. Same-instant checks
+compare to the correctly prepared NEW rig at the same clock/sample.
+
+Fresh evidence: `odd/evidence/a2-runtime-continuity/rig-rebind-r1/`. Seeded sleep
+survives hunger100→0→100, including half-tick accumulation and its original hold
+timeout. Active sleep-route progress, airborne PLAY/deferred SLEEP, reduced cuts
+and true-unmount/new-seed semantics are checked through public interfaces. New
+rigs retain unit joints, floor≥−.291, zero unreachable planted supports and S25
+rendered-box contact≤.001; curled body support has no planted-foot drift metric.
+This bounded proof and short mounted WebGL capture do not close T4, arbitrary
+interrupted-rig physical coverage, phone performance or owner visual acceptance.
+
+## Needs-only lifecycle continuity
+
+Model anatomy memoization depends on the four cue fields actually read by
+`applyNeedVisualsToAnatomy`: body slimness, ear droop, head droop and pupil scale.
+Dirt and other non-geometric cue updates still update coat materials and reach
+`CatPoseRenderer.synchronize`, but no longer allocate an equal skeleton and
+restart the driver. The existing seed, care ledger, fixed clock, active sleep,
+prepared Core/Bind and body/foot support remain in the same runtime.
+
+A hygiene100→0 public RED on the integrated bath baseline reset sleeping curled
+tick600 to awake seated tick1. The focused correction retains curled sleep at
+tick601 with the same support/root offset; live dirt colors, hunger0→100 geometry
+and admin head-height updates are preserved. Genuine morphology/design changes
+use the explicit authoritative-rest rebind described above; no generic snapshot
+framework or owner/epoch scope is introduced.
+Short real Viewer/Model/Driver Chromium WebGL evidence and exact process/source
+receipts are under `odd/evidence/a2-runtime-continuity/fix-r1/`. This is scoped
+continuity proof, not full T4, physical matrix, device or owner acceptance.
+
+## Bath rendered contact — scoped correction
+
+Fresh evidence: `odd/evidence/a2-bath-support/unit-r1/resume-r1/`. The public
+h33 regression reproduces the retained .0012229094759250948 hidden-shin bridge
+failure before correction. One geometry-derived body-authoring correction
+retains each seated rear chain's REST upper-to-ankle span, blended by the existing
+visual-fit weight. The full calibrated IK lengths, fixed goals, LAST support,
+full breathing, original wash/shake timing and .04/.20 roll amplitudes remain.
+No visible extension is added and no bone, joint scale or base pose is changed.
+
+All606 default trajectories (101 integer hungers × seated/standing × exact
+.99/1/1.01 breath),309060 fixed/quarter/boundary samples pass: zero unreachable
+feet independently of drift≤.001, fixed goals, floor≥−.291, rendered structural
+contact≤.001, unit joints and unchanged roll authoring. All23 retained failures
+are joined to passing current rows, not remapped or waived. Eleven bath rules
+cover the public four-care path, preview, same-instant cancellation and reduced
+cuts. Fresh119-case PLAY preservation and a public18-case non-bath differential
+protect the shared Bind boundary; the four known compact floor diagnostics stay
+failed, identical to the pre-existing WIP witnesses, never production provenance.
+
+Short mounted offline Viewer/Model/Driver bath proof uses actual Chromium WebGL,
+nonblank captures, phase/support diagnostics and verified owned process/scratch
+cleanup. It is **not** final front/three-quarter/diorama, phone CPU, owner
+naturalness or whole-feature acceptance. Full suite/build and fresh independent
+feature-end verification remain parent-owned. No T4 or S# is closed.
+
+## Bath support candidate — historical failed physical gate
+
+Evidence: `odd/evidence/a2-bath-support/unit-r1/`. Public h33 care support and
+concurrent sphinx-preview REDs become targeted GREEN after one closed-form
+bath-only vertical compensation and sampled metadata/preview integration. The
+before-map covers both bath bases, all101hungers, exact .99/1/1.01 breath and
+quarter-tick phases:1,236,240 signed leg inputs;264 seated trajectories fail.
+No standing reach failures are observed. Full shake authoring remains intact.
+
+**Reach is not physical acceptance.** The h33 physical check fails the rendered
+nearest-visible `hipL→pawBL` bridge (hidden `shinBL` does not count):gap
+.0012229094759250948 at age89/alpha1/breath.99, versus the unchanged .001 gate.
+Reach is zero-unreachable there, drift6.206e−17 and root compensation
+−.004791339358394017. A before-image probe also fails a bath bridge, but that
+does not waive the candidate's worse gap. No hidden extension/SAT/zone proxy,
+threshold change, D/A1 repair or alternative gesture is used. This is one failed
+candidate, **not proof that all authorized geometry is impossible**. Full physical
+GREEN and the subsequent mounted bath proof remain pending; no T4/S# is closed.
+
+## S31 real PLAY jump — bounded correction, T4 still partial
+
+Evidence: `odd/evidence/a2-real-play-jump/correction-r1/` retains fresh before-
+images, SHA256 inputs, exact commands/channels/exits and coverage joins. Original
+`unit-r1/` evidence is immutable: its assertion-completed/RPC-exit1 run remains
+failed history, not retroactively green. No solver, length, anatomy, D, base pose
+or graph change was introduced; petting and bathing authoring stay unchanged.
+
+The mounted Core→contact-plan→Bind path now includes a genuine supported .006
+maximum downward preparation/landing flex, explicit release, .04 FK flight,
+fixed original-goal replant and settle. RootXZ/heading and Core.base stay fixed.
+A reduced-motion cut retains/applies the latest flight-deferred care/pose,
+including the renderer's preference-before-care ordering. Authoring preview owns
+its sampled base/support height and masks gameplay jump phase/lift only there;
+ordinary gameplay continues using the actual A2 jump, not a fallback.
+
+Fresh public RED6 intent/cut cases, RED3 concurrent PLAY/preview cases and RED1
+supported-flex rule become GREEN. Serial named/hunger shards now pass all119
+unique jump cases with true exit0 and no RPC error: original110 plus9 composed
+cases. The unchanged full domain is101integer hungers × .99/1/1.01 ×52ticks ×
+three alphas (47,268 explicit inputs). Added same-instant supported/FK handoffs
+check606 phase/breath/hunger pairs through public nodes/world matrices and
+antipodal-invariant quaternion errors at .001world/1e-6rad. Separate .002
+adjacent-tick bounds are motion checks, NOT the handoff criterion. Filtered
+cases are reported separately, not counted as passes.
+
+The six-file regression layout covers139 unique cases:135pass plus4 failed
+compact diagnostics. An in-project baseline assembled from unit-r1 before-
+images reproduces all four exact status/witnesses/exit1, establishing them as
+pre-existing WIP failures, not A1 provenance or green commands. Current global
+nonincremental TypeScript and scoped installed lint exit0. Short actual mounted
+Chromium/WebGL proof provides four nonblank images/video, no application/network/
+GL errors, one retained Clock deprecation warning, and verified context/server/
+owned-scratch cleanup. This is not final three-camera/device/owner evidence.
+
+Bath's scoped correction is recorded above; rig/owner-change continuity,
+remaining T4/full gates, independent
+feature-end verification and final visual acceptance remain open. No S# or T4/A2
+is closed here. Prior6060 base evidence stays immutable and does not certify the
+new reactive code.
+
+## Current S29 boundary
+
+The owner explicitly prioritizes mounted A2 and preliminary footage BEFORE the
+remaining default matrix. `Cat3DViewer` now always provides `CatPoseMountContext`;
+its actual `Cat3DModel` uses `CatPoseDriver`/`CatPoseRenderer` over the existing
+rigid nodes. Direct Model exports retain the frozen A1 calibration route; this
+is not a user feature flag or a matrix-dependent fallback. Viewer never selects
+A1. The legacy idle callback returns before applying any root/tail layer there.
+
+R3F delta drives one60Hz accumulator. Inputs enter from effects/pointer/click
+events outside the frame callback. Crossed fixed ticks reach Bind before the
+interpolated display; analytic support remains LAST. Successful-care sequence
+and legacy pulse bookkeeping prevents duplicate play feedback. The same
+prepared library feeds Core and Bind; admin sampling borrows its cached tables,
+composes local edits without mutating Core base, and uses fresh rest-calibrated
+contact epochs for explicit seeks. Mouse gaze includes pupils before support.
+UI yaw moves the camera, not planted goals. One vertex-color plate mesh supplies
+feeding feedback. Debug contacts/axes are admin-only; unmeasured projected drift,
+seams and floor metrics remain null, not fabricated zeroes.
+
+Evidence under `odd/evidence/a2-mounted-preliminary-s29/`:
+Viewer genuine2RED→34GREEN; real-node functional runtime and frozen A1 renderer
+30GREEN after a retained bath-detector X/Z harness correction; types/lint exit0.
+Functional care wiring is NOT physical acceptance: the runtime test records a
+real play-support failure at tick663 (two unreachable feet, drift
+.0004268417014146561). Sub-.001 drift does not waive unreachable support.
+Full layers, rig-change continuity, default range, independent proof, production
+build/bundle/draw, physical-device CPU and final owner approval remain open.
+
+The first Chromium attempt aborted before the page because its owned TMPDIR
+made the Unix socket path too long (SIGABRT, not timeout). R2/R3 use short owned
+children in the Git common directory, normal HOME and installed tools. R3 now
+provides70.208333s of actual WebGL2/SwiftShader footage: seven poses, seven
+transitions, mouse and four care reactions;20nonblank canvas crops, no page/GL/
+network errors or input drift, one retained THREE.Clock deprecation warning.
+The wide3/4 fixture corrects R2 framing only; application source is identical.
+Context/server closed and the profile-reference scan is empty; raw OS browser
+exit was unmeasured, not invented0. See `PRELIMINARY-REPORT.md` in the evidence
+unit for the video, actual play-support RED and remaining unverified domains.
+The fixture mounts the real Viewer/Model/Driver but emits synthetic successful-
+care events: not backend/Home end-to-end, final visual or device proof.
+The current606-case Q→F/L→S range checkpoint is not the full6060-case gate.
+No push/merge or owner naturalness approval is inferred.
+
+The sections below retain historical checkpoints; obsolete no-mount directives
+and S20-unavailable states do not override S29 or the isolated S20 closure in
+`tail-origin.md`/commit776c4dc. Their old receipts are not current-source gates.
+
+## Historical T4a partial integration
+
+> **S19 controls C acceptance.** [Stable C endpoint proof and measurements](lying-poses.md): rigid torso, face hipward, independently authored same-side headward tails, structural contact within .001 and unchanged floor/support through breathing. [SAT/zones](joint-zones.md) and pivot-distance metadata are NONBLOCKING diagnostics, not acceptance gates. D authoring and original tests remain frozen; S20 permits only measured nondefault tail-world consequences of the global rest-origin correction. Immutable A1 decorative/neutral gaps are explicitly disclosed, not repaired or waived. No nasal/front-plane reach target applies. Real WebGL front/three-quarter/diorama crossing evidence, transitions/integration and owner approval remain pending with the parent; numeric endpoint proof does not activate the renderer or certify visual naturalness.
+
+## S20 — Global tail rest-surface correction (partial, not accepted)
+
+A fresh renderer-equivalent A1 neutral measurement found body/tailBase separation
+**.06706000000000006** in compact0, versus **.017415099896644082** at the A2
+sphinx→side entry. The other three neutral profiles have zero box distance.
+The eight anatomy/design/needs/rig/render inputs match main `70906fdb`; that SHA
+also appears in metadata for the last successful frontend deployment
+`YIb0IwXHXuaBUhNhnbv11`. This confirms an inherited defect in the deployed A1
+source, not a new transition defect. No live production screenshot or affected
+user count is inferred.
+
+Compact0 is the test composite of admin slider minima: bodyDepth .7,
+headHeight −.15, earSize .6, hunger0. It is **not a named selectable preset**.
+Design settings persist only in browser-local `petsapp.admin.cat-design`.
+The admin preview exposes the sliders to admin/super_admin sessions; both main
+and the current ordinary home path explicitly pass `defaultCatDesign` and do
+not inherit that local override. Future A2 PR documentation must disclose the
+inherited admin-preview defect without suggesting ordinary users can select
+compact through the observed home UI.
+
+The tailBase pivot already used `bodyPoint`. Canonical tail visual rest worlds
+and Mid/Tip hinges did not travel with it, and inverse rest binding canceled a
+pivot-only displacement. The setup-only correction transports **all three tail
+rest worlds before deriving hinges and inverse visual binds**. Needs scale body
+X/Z together, while admin depth adds only a Z stretch; the reference is the
+**same-hunger default-design surface**, not canonical full-scale geometry.
+Default hunger0/100 take the exact identity path. No part dimensions, IDs,
+accessory anchors, joint scales, pose authoring, runtime layers or solver change.
+
+Genuine RED was2FAIL/4PASS. Focused skeleton/actual-renderer tests are60/60GREEN.
+Original fixtures and goldens remain byte-unchanged; an independent analytical
+oracle adds only the authorized admin tail-world displacement to the old
+matrices, with the existing tolerance. Every other/default coefficient still
+uses the old oracle. The first broader run's53PASS/7FAIL against unadjusted old
+admin expectations is retained, not relabeled as GREEN.
+
+The requested broad matrix attempted **all240 cases** (7 poses +13 directed
+routes ×4profiles ×3breathing trajectories): **129PASS/111FAIL**,71,528 completed
+samples, no timeout/input drift. It remains **failed**. It exposes original
+neutral/hidden-chain contacts and compact paw/head floor failures; inherited
+versus new classification and complete tail-only differential are unverified.
+Do not repair other A1 gaps, waive contacts, or weaken floor/support thresholds.
+D authoring and its protected tests remain unchanged. Old nondefault whole-world
+output equivalence and old C distance values do not certify this new rig.
+
+Independent Risk:item3 verification is **unavailable**, not passed: its required
+outside-root/copied-dependency/isolated-HOME setup conflicts with VPS policy;
+setup copying timed out, and no verification tests ran. RDD is off; read-only
+ASSESS returned high risk/unassessable, with no review candidate or approval.
+Real Chromium SwiftShader proof now passes all10 default CAT canvases against
+A1 with **zero changed RGBA pixels**, and the complete current home page has
+zero changed pixels across S20 before/after. Compact diorama/rear-three-quarter
+pictures are retained; its39 rest-world matrices differ only by the expected
+three-segment tail transport (maximum coefficient error5.56e−17). Both owned
+server groups and all observed descendants exited; no console errors or blank
+canvas were accepted. Nonincremental typecheck exits0 in8.298s.
+
+The first pre-change browser attempt remains a failure: CAT-canvas0pixels but
+historical whole-home6750pixels from the unrelated coin badge. Versioned r1
+keeps that historical page difference diagnostic, without touching coin source
+or weakening the zero-pixel CAT/S20-current-page gates. Raw images are unchanged;
+the labeled2× nearest-neighbour white-background pair is presentation only.
+C remeasurement, inherited/new runtime differential, complete physical
+acceptance, remaining integration checks, independent proof and owner visual
+acceptance are still missing. No browser result closes the failed matrix.
+
+Evidence: `odd/evidence/a2-tail-surface-s20/` (raw channels, exact commands,
+source/deployment correlation, frozen source snapshots, focused RED/GREEN,
+complete failed matrix, verifier-unavailable return and versioned browser runs).
+No push, merge or production mutation is authorized.
+
+## Historical pre-S19 checkpoints
+
+Earlier S16–S18 limits and claimed blockers below are historical only where S19 supersedes them.
+
+
+## Historical S16 C requirement — superseded by S18
+
+C's old exact nose-contact requirement is superseded only by S16: tail curves
+toward the face, tip in front of nose or muzzle, actual oriented nose/tip box
+distance ≤.04 in every mandatory variant including deep100/breath1. Preserve A1,
+all other contacts/floor/clearance and legitimate adjacency seams, explicitly
+measured rather than silently expanded. No forbidden tail/body, head, eye or ear
+penetration is allowed at stable C or any transition frame.
+
+The amended endpoint gate remains RED. A new complete-domain necessary bound
+exceeds .040010 for deep100/breath1 under tailMid/body clearance; see
+[lying semantics](lying-poses.md) and
+`odd/evidence/a2-curled-near-face/PROOF.md`. This is a new self-verified bound,
+not .04 feasibility inferred from the older independently admitted >.035 result.
+No C witness, renderer mount, full frame/interruption sweep or video approval is
+claimed. Video must read as a curled cat; any rig-change spec stays outside A2.
+
+## Historical lying semantics checkpoint — partial / UNKNOWN, not accepted
 
 The847/78 checkpoint proves the previous body-support/breath foundation, NOT the
 approved D head rest, C nose/tail contact/closed silhouette or complete mirrored

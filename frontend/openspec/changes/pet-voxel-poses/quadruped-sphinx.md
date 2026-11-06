@@ -1,8 +1,10 @@
 # Prepared direct quadruped → sphinx
 
-**Nominal Q→F passes the bounded physical gate. T4 remains partial and unmounted.**
-This does not accept arbitrary interruptions, reactions, clearance, raw-degree
-exports, runtime rendering, naturalness or phone performance.
+**Default23's preparation regression now passes; the full default range remains
+unaccepted. T4 is still partial and unmounted.** The phase-6 proof below is
+historical, source-scoped evidence, not a current all-hunger result. This does
+not accept arbitrary interruptions, reactions, clearance, raw-degree exports,
+runtime rendering, naturalness or phone performance.
 
 ## Same public preparation path
 
@@ -16,7 +18,7 @@ The direct graph edge remains54ticks/.90s; no Q→S→F detour or second clock.
 | Time | Support / goals | Geometry and motion |
 | --- | --- | --- |
 | 0 | all15, fixed neutral Q goals | Exact raw Q base/rootY−.10; reproduce its actual supported seed/twist, not canonical seated quaternions. |
-| 0..20 | all15, fixed neutral Q goals | Authored monotonic root descent to−.24, horizontal body; tail settles with the body. Supported references retain the raw Q limb seed. |
+| 0..20 | all15, fixed neutral Q goals | Original monotonic root descent to−.24; fold-risk default morphologies add the torso-only arc described below. Tail follows the body; raw Q limb seed is retained. |
 | 20 | belly, feet0 | Actual belly meets−.29 before last-foot release. No moving or recaptured active goal. |
 | 20..30 | belly, feet0 | Four free distal bones lift toward UP, preserving the supported release orientations. |
 | 30..44 | belly, feet0 | Rotate upper bones while distal bones remain UP; interpolate their start/end lift twists. |
@@ -30,6 +32,44 @@ segments interpolate quaternion orientations only, never point targets or IK.
 Goal revisions rise on initial neutral installation and final F landing only;
 release does not rewrite stored goals. Feet0 always has genuine belly support.
 
+## Default intermediate-fold correction
+
+The S21 sweep stopped during hunger23 preparation, before sampling: at settling
+tick9/breath1, both front root–goal distances were `.017772980680908608`, below
+the unchanged two-bone inner radius `.01778045543425276`. The resulting
+`7.47475334410738e-6` world drift being below `.001` does **not** make these
+unreachable legs valid. The same failure exists in the frozen pre-S20 A2 graph;
+this does not establish A1 or deployed-browser inheritance.
+
+Setup now detects an inner-radius risk from actual rest-world chain lengths and
+horizontal root–goal separation. For default body depth only, it derives a
+local `joint-torso` pitch from the backward shoulder clearance and the real
+pivot-to-shoulder lever, with a 15% authoring clearance margin. This is a pose
+arc, not a relaxed reach limit: ease in at ticks0–5, hold5–11, ease out11–14.
+The support solver and its rejection guard remain unchanged. Root X/Z stay
+zero; the original root Y path, heading, endpoints, goals and bone lengths stay
+unchanged. No-fold morphologies and admin depth variants skip the arc. D/A1
+authoring, geometry, fixtures, tolerances and breathing are not changed.
+
+The public hunger23 regression now passes all three exact breath factors
+`.99 / 1 / 1.01`, integer/quarter/endpoint samples, support masks/reach/drift,
+visible floors, base immutability, root X/Z and unit joints. Each breath case
+owns a fresh forward-only simulation/contact epoch; the initial reused-epoch
+harness failure and genuine pre-fix preparation RED remain preserved.
+Existing default0/default100 Q tests:18passed,18admin cases filtered, not passed.
+Types and changed-file lint exit0; ten recorded source/config hashes unchanged.
+The corrected-Q303-case run subsequently completed72cases (hunger0–23 ×3),
+15,840samples/tail samples, then aborted in the earlier Transfer compiler at
+hunger24;230cases were unattempted. This is not a303/full6060 pass.
+S29's geometry-derived L→S torso arc resolves the measured inner-fold in focused
+public regression:3/3 GREEN (h23/h24 Q→F andh24 L→S at all3breaths, every integer,
+quarter and endpoint),213other input hashes unchanged. It preserves root travel,
+goals, lengths, solver and tolerances. Full range and independent proof remain
+pending AFTER the owner-requested mounted preliminary video.
+
+Current receipts: `odd/evidence/a2-default-acceptance-s21/h23-diagnostic/` and
+`h23-validation/prior-default/`. No push, merge or visual approval is implied.
+
 ## Endpoints, twist and breath
 
 The release reference resets all input transforms from authoritative Q data,
@@ -39,9 +79,10 @@ Canonicalizing that start would silently change planted orientation.
 
 The calibrated supported F endpoint is reused from the already compiled S→F
 family at its final frame: its fronts were solved at immutable forward F goals,
-not neutral goals. Rear endpoint quaternions remain folded FK. Existing S↔L/S↔F
-compiler bytes and outputs are unchanged; no shared reference helper extraction
-or runtime generalization was needed.
+not neutral goals. Rear endpoint quaternions remain folded FK. At the historical phase6 boundary, S↔L/S↔F compiler bytes and outputs were
+unchanged. S29 later intentionally repairs the measured L→S inner-fold and adds
+a borrowed prepared-library getter for mounted admin sampling; earlier parity
+receipts do not certify that later source revision.
 
 81 breath knots .99..1.01, step .00025, use the existing `breathFK` shape and
 `inverse(nominalFK)*variantFK` sampling. No breath suppression/clamp, authoritative
@@ -107,4 +148,22 @@ gates pending. S12: protected bytes and immutable tests preserved.
 F↔side, remaining lying poses/24 original cases, arbitrary physical interruptions,
 physical reactions (including unchanged +.005 upward witness), general proximal/
 interbody clearance, raw exports, runtime mounting, Chromium/owner naturalness
-and physical-phone CPU remain pending. Do not mount, publish or infer approval.
+and physical-phone CPU remain pending. S29 explicitly authorizes mounting and
+preliminary video before the remaining matrix; no publication/final approval is
+inferred. Preliminary footage is not the visual acceptance gate.
+
+## S29 fractional Transfer checkpoint
+
+The first post-video Q→F/L→S range stopped at151strict passes, with default25/.99 L→S failing twice at31+.5/.75. The contemporaneous copied witness records2unreachable feet; the borrowed all-zero diagnostic object was overwritten by later frames and never cleared the failure. A separate copied-solver probe measures real inner margins−.0001467179455158295/−.0002132689328999498. Original S25 probes and failed child channels are retained unchanged.
+
+Transfer now centers its torso-local pitch plateau on the rotated shoulder fold height, pads the band by full1% body breathing and one maximum smoothstep root step, and fades outside that band. This prevents adjacent-frame SLERP from attenuating the torso arc inside that support band; root travel/heading/endpoints, calibrated lengths, foot goals, full breathing, solver and tolerances are unchanged. Default-depth guard and previous pitch amplitude are unchanged; no admin-depth repairs or D edits.
+
+Genuine public default25RED1FAIL/3filtered precedes the edit; focused h23/h24Q→F and h24/h25L→S are now4/4GREEN over three independent breath epochs and integer/quarter/end samples. TypeScript exits0. The first lint command exited127 because the binary is installed under backend, not frontend; corrected installed-path lint exits0, with both records retained. Fresh remaining-range/final physical/independent/device/owner acceptance is still pending; this is neither606 nor6060PASS. Evidence: `odd/evidence/a2-default-acceptance-s21/h25-diagnostic/`. ASSESS is native-unassessable/candidate-null because of undeclared untracked files; Risk3 self+independent plan remains required, RDDoff, no native continuation.
+
+## S30 whole-domain reach map and geometric reserve
+
+Before further physical matrices, the support-only survey measured all13 directed routes×101 integer hungers×3 exact breaths:3939 trajectories,2,707,532 planted-leg inputs,0 observed negative margins and0 unresolved kinematic bounds. The complete390 near-zero spans and all signed fold/stretch minima are indexed in `odd/evidence/a2-support-reach-s30/runs/all-r1/support-only/REPORT.md`; original data is byte-compared in Git-common `agent-evidence/a2-cat-poses-implementation/support-reach-s30-before-r1/`. The0.5% chain-length band is diagnostic, not acceptance.
+
+The narrowest transition-interior reserve was default23 Q→F/L→S/F→S: about2.05e−6. Existing seated endpoint outer margins at h27–32 are inherited and remain untouched. One authoring correction establishes an inner reserve of0.1% of calibrated total chain length (100× the survey's minimum-bracket resolution). With local shoulder height `h`, forward lever `z` and required transverse gap `g = sqrt((abs(upper−lower)+margin)^2 − dx^2)`, solve `z*cos(pitch) − h*sin(pitch) = goal.z − pivot.z − g`. The resulting exact minimum pitch floors, never reduces, the existing authored pitch. Existing rise plateau/root-step/breath padding and Q settling timing remain.
+
+This is torso orientation only: no root travel/heading/endpoints, goals, lengths, solver/inequalities/tolerances, full breathing, admin-depth paths, A1, D or S20 changes. Sphinx→seated consumes the same rising Transfer data, so the correction is shared rather than patched per hunger/route. Genuine public RED precedes the edit; new reserve rule plus4 existing rules pass5/5. The complete post-correction support-only recheck now passes3939/3939 trajectories,2,707,844 planted-leg inputs,0 negative/unresolved/bound violations and0 drift. The minimum observed inner reserve is0.0001622195449780678, with conservative lower bound0.00016061148711880288. Exactly9 h23 Q→F/L→S/F→S CSV cases change; the other3930 are byte-identical. The current public test recheck, TypeScript and lint pass. `AFTER-RESULT.md` and `AFTER-COVERAGE-AND-DIFFERENTIAL.json` in `odd/evidence/a2-support-reach-s30/runs/after-r1/support-only/` distinguish the corrected source from the collector's generic template. The default physical matrix is now running in bounded chunks; independent Risk3 verification and final gates remain pending. No publication or final visual acceptance is implied.

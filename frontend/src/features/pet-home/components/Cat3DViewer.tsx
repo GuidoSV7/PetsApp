@@ -9,6 +9,7 @@ import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
 import type { PetCoatInput } from "@/features/pet-home/coat-patterns";
 import type { CatCareEvent } from "@/features/pet-home/cat-pose-types";
 import type { CatPosePreview } from "@/features/pet-home/cat-pose-preview";
+import { CatPoseMountContext } from "@/features/pet-home/cat-pose-mount-context";
 import {
   describeNeedVisuals,
   needVisualCues,
@@ -45,8 +46,11 @@ export function Cat3DViewer({
   onPetInteract,
   design,
   needs = PREVIEW_PET_NEEDS,
+  careEvent,
+  posePreview,
 }: Props) {
   const [orbiting, setOrbiting] = useState(false);
+  const poseMount = useMemo(() => ({ careEvent, posePreview }), [careEvent, posePreview]);
   const [ceiling] = useState(() => typeof window === "undefined" ? 1 : maxDprForDevice({
     deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
     hardwareConcurrency: navigator.hardwareConcurrency,
@@ -111,6 +115,7 @@ export function Cat3DViewer({
         />
         <directionalLight position={[0, 1.2, 3]} intensity={0.35} />
         <Suspense fallback={null}>
+          <CatPoseMountContext.Provider value={poseMount}>
           <Cat3DModel
             colors={colors}
             orbiting={orbiting}
@@ -120,6 +125,7 @@ export function Cat3DViewer({
             design={design}
             needs={needs}
           />
+          </CatPoseMountContext.Provider>
         </Suspense>
         <ContactShadows
           resolution={256}

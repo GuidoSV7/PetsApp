@@ -1,5 +1,8 @@
 # A2 pose catalog and directed graph
 
+> **S19 controls acceptance.** Rigid C torso, head hipward, separate left/right tail FK along the same body side toward the head; no nasal-distance/front-plane target. Structural parent-child contact uses the existing .001 tolerance, with unchanged floor/support. SAT/zones/pivot metadata are NONBLOCKING diagnostics. See [actual prepared C distances and ±.005 regression guards](lying-poses.md), including explicit immutable A1 gaps. D authoring/tests/outputs stay frozen. Full transition and real WebGL front/three-quarter/diorama crossing/naturalness gates remain parent-owned; no visual or delivery approval is implied. The global raw catalog below remains provisional and is not the prepared per-rig endpoint.
+
+
 Status: initial rigid-FK authoring, **not visually/contact validated**. Implements the
 T1b catalog/graph portion of S1/S5/S7/S10/S12; the owner amendments in
 `odd/tasks/a2-cat-poses.md` override the original plan. No renderer is activated here.
@@ -32,13 +35,25 @@ is separate unwrapped yaw in degrees, not part of the root quaternion.
 | loaf | −.10 | none | none | Underside; folded original paws need clearance checks |
 | sphinx | −.09 | both forearms | FL FR | Belly/rear underside; front paws extended |
 | side | −.13 | both forearms + both shins | none | Left torso/hip side and cheek |
-| curled | −.13 | both forearms + both shins | none | Side/hip; existing three tail segments target nose |
+| curled | −.13 | both forearms + both shins | none | S19 rigid torso; hipward head, independent same-side headward tails; prepared endpoint distances frozen ±.005, not a nasal/reach target |
 | bellyUp | −.08 | both forearms + both shins | none | Back/hip; relaxed elevated paws |
 
 `supports` describes paw goals only, not an exhaustive body contact hull; the
 shared type has no torso/cheek support IDs. Jaw and tongue are disabled for every
 rest pose. These initial FK angles/heights are not a proof of reachable planted
 goals, floor clearance, a connected silhouette or tail-to-nose reach.
+
+### Historical S16 curled criterion — superseded by S19
+
+Exact ≤.001 nose contact is no longer required for C. The ≤.04 near-face limit
+applies to every mandatory variant, including deep100/breath1, without changing
+A1 geometry, IDs, anchors, fixtures or joint scales. Tail/body, tail/head and
+tail/eye forbidden penetrations must be zero at stable C and every transition
+frame; ear clearance and all other existing constraints remain. Explicitly
+quantify legitimate attachment seams; never add exemptions to satisfy the gate.
+Video must read as a curled cat, otherwise a rig change belongs to a separate
+spec, not A2. The raw catalog is not an accepted physical witness: current C
+endpoints and the full frame/live-breath/interruption gate remain unaccepted.
 
 ## Directed timing and stage semantics
 
@@ -53,7 +68,7 @@ Durations are integral 60 Hz ticks; values remain owner-approved initial tuning.
 | sphinx → side | 51 / .85 | Explicit 45° root roll at 50%, then cheek relax |
 | side → sphinx | 51 / .85 | Head lifts, explicit 45° roll, front extension |
 | side → curled | 57 / .95 | Limbs fold, tail base then mid then tip |
-| curled → side | 57 / .95 | Tip uncovers first, then tail and limbs unfold |
+| curled → side | 57 / .95 | Tip moves away from face first, then tail and limbs unfold |
 | side → bellyUp | 66 / 1.10 | Explicit 135° roll at 50%, paws relax after torso |
 | bellyUp → side | 66 / 1.10 | Head clears before 135° roll to side |
 | seated → loaf | 45 / .75 | Lower/tuck before tail wrap |

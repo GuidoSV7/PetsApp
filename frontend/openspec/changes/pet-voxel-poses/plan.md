@@ -1,5 +1,8 @@
 # A2 — Procedural cat poses and transitions
 
+> **S19 controls acceptance.** Structural parent-child articulation contact/overlap within the existing .001 tolerance and unchanged floor/support are numeric gates; visible crossings require real WebGL front/three-quarter/diorama evidence. SAT/zone/pivot metadata are NONBLOCKING diagnostics, not rejection gates. C keeps a rigid torso, head hipward and independently authored same-side headward tails without a nasal/front-plane target. [Prepared C measurements](lying-poses.md) freeze actual connected-endpoint tip/head distances ±.005 and disclose immutable A1 neutral/decorative gaps. D authoring/tests/outputs stay frozen. Complete transitions/integration/browser/full gates and owner visual approval remain pending. Earlier contradictory S16–S18 criteria are superseded, not new requirements.
+
+
 **Status: APPROVED for implementation with owner amendments recorded in `odd/tasks/a2-cat-poses.md`. No push or merge before owner video approval.** Branch: `plan/a2-cat-poses-transitions`, based on fetched `main` / `origin/main` at `70906fdb87e2279268901ee791afeb1371051dd2`. Implementation is frontend-only; no dependency, API, database or production changes.
 
 Freighter T7 is **paused by the owner, not failed**. Preserve `feat/freighter-user-pet` at `31615747ea866438eb4a3887a9ff785901059e0b`; no rebase, deletion, push or merge. Its guide and review dispositions remain separate. Fresh resource audit found eight owned scratch paths absent, no matching processes, no listeners on 3102–3104 and no T2–T5 test databases. Native immutable review candidate views are retained evidence, not running test servers.
@@ -54,7 +57,7 @@ Legend: S seated; Q quadruped; L loaf; F sphinx; D side-lying; C curled; B belly
 | **L — loaf** | Lower torso over folded limbs; forearms/shins tucked entirely inside silhouette and disabled. Fold shoulders/hips, not joint scales. Head upright and ears relaxed. | None | Chest/torso underside bears weight; tucked original paws must not protrude or penetrate forbidden regions. Tail wraps outside the paws/body. |
 | **F — sphinx** | Lower torso with forelegs extended forward; tune front chains as a coupled FK curve, hind chains folded. Neck supports an upright head. | A (2) | Belly/rear support and front paws on support plane; no shoulder-to-forearm or forearm-to-paw gaps. |
 | **D — side-lying** | Roll via F onto a chosen side, then fold legs loosely. Author left-side canonical pose and mirror by a tested joint mapping, not negative joint scale. Root height follows support hull. | A + H (4) | Side of torso/hip and cheek or head support; exposed limb chains remain connected; no body through floor. |
-| **C — curled, tail over nose** | Start from D; fold four limbs, turn head inward and distribute curvature across all three tail joints. First satisfy nose-to-tail reach with existing geometry, then tune silhouette. No tail stretching or extra joints as an unapproved shortcut. | A + H (4) | Body/limbs form a closed silhouette; tail tip covers/touches the nose without clipping eyes or ears; support does not slide. |
+| **C — rigid-torso curl (S19)** | Start from D; fold limbs, turn the head toward hips and route the tail along the same body side toward the head as far as it reaches. Preserve A1 geometry/IDs/anchors/fixtures. No spine split or tail extension inside A2. | A + H (4) | No nasal-distance/front-plane target. Actual structural parent-child contact/overlap ≤.001; unchanged floor/support at endpoints and every transition frame. SAT/zones/pivot metadata NONBLOCKING. Measured stable tip/head distances frozen ±.005; real WebGL crossing/naturalness acceptance and transitions remain pending. D stays unchanged; see lying-poses.md and joint-zones.md. |
 | **B — belly-up** | Start from D with roll waypoints; abdomen faces upward and paws relax above it. Total root roll can reach 180°, but no single interpolation segment exceeds 150°. | A + H (4) | Back/hip supports; no shoulder/hip detachment or limb-through-torso clipping; head remains neck-connected. |
 
 Jaw/tongue remain off in all seven **rest** poses; only feeding enables them. Existing three tail box IDs and their patch children remain unchanged. Hidden limb extensions use their existing host coat material/role; no new patch recipe or color is introduced.
@@ -63,8 +66,8 @@ Jaw/tongue remain off in all seven **rest** poses; only feeding enables them. Ex
 
 - Each of the 22 joints is edited in its actual local frame. Initial safety limits: neck yaw ±25°/pitch ±30°; head yaw ±35°/pitch −45°..+35°; jaw opening 0..25° around its hinge; ears ±35° around authored rest. Tail segment bend initially ≤80° per axis, then tightened by seam/clearance tests. Limb ranges are set by FK contact authoring, not an invented shared feline-anatomy limit.
 - Root/torso roll is handled with explicit intermediate poses rather than a 150° joint clamp. Root Y is authorable for support height; horizontal root motion remains zero. These are pose parameters, not new rig IDs.
-- Final export is accepted only after contact sweeps, neutral seated pixels and owner video review. If the existing tail cannot cover the nose without forbidden clipping, report the reach constraint; do not silently change IDs, add segments, stretch the tail or call it complete.
-- Contact uses designated seam points/planes plus oriented box distance/SAT. Existing AABB tests remain regressions, but AABB overlap alone cannot certify a rotated pose. Allow declared seam overlap and intended tucked-limb occlusion; reject unrelated penetrations.
+- Final export requires structural-contact/floor/support sweeps, preserved A1 neutral pixels and owner video review. S19 removes all C tip/nose distance and front-plane requirements; SAT/zones/pivot metadata in joint-zones.md are diagnostics only. Frozen-D numeric penetration is not a blocker under S19. C↔D all-frame acceptance still needs the parent-owned sweep and visual evidence. A spine split or tail extension requires a separate spec and is not implemented inside A2.
+- Contact uses designated seams and oriented-box feature distance (zero for touch/overlap), with existing wrist/ankle hinge-cap contracts preserved. Existing AABB tests remain regressions, but AABB overlap alone cannot certify a rotated seam. SAT and pivot metadata are diagnostic only; visible crossing rejection requires real WebGL evidence.
 - Proposed numerical gate: seam separation ≤0.001 model unit; planted support-point horizontal drift ≤0.001 model unit and ≤0.5 projected pixel in the acceptance camera. Tune stricter if owner videos reveal sliding. Track contacts per transition phase: release a support before lifting it; never label an intentionally moving paw as planted.
 
 ## 3. Directed transition graph
@@ -82,8 +85,8 @@ Easing: `smoothstep = 3t²−2t³`; `smootherstep = 6t⁵−15t⁴+10t³`. Times
 | F → S | .90 s / 54 ticks | Raise chest over forelegs, bring pelvis under body, then restore seated support. | smootherstep |
 | F → D | .85 s / 51 ticks | Shift support to one side; roll 0→45→90°; place cheek and relax legs. | smoothstep per stage |
 | D → F | .85 s / 51 ticks | Lift head, roll onto belly with explicit support transfer, extend front paws. | smoothstep |
-| D → C | .95 s / 57 ticks | Fold limbs, turn head inward, curl tail base→mid→tip across nose last. | smootherstep |
-| C → D | .95 s / 57 ticks | Uncover nose first, unfold head/limbs, restore side supports. | smootherstep |
+| D → C | .95 s / 57 ticks | Fold limbs, turn head toward hips, route tail along the same side toward head; S19 structural contact and floor/support every frame, visible crossings checked in WebGL. | smootherstep |
+| C → D | .95 s / 57 ticks | Move tail away from the face first, unfold head/limbs, restore side supports; preserve S19 structural contact/floor/support and verify visible crossings. | smootherstep |
 | D → B | 1.10 s / 66 ticks | Roll via explicit 90→135→180° world-roll landmarks; transfer back support; relax paws after torso. | smootherstep per waypoint |
 | B → D | 1.10 s / 66 ticks | Restore head clearance; roll through 180→135→90°; settle side supports. | smootherstep |
 | S → L | .75 s / 45 ticks | Lower chest, tuck paws, spread support to underside, wrap tail. | smootherstep |
@@ -129,7 +132,7 @@ A1 already has the correct ancestry. Its compiler chooses legacy world targets a
 | 6. Springs | Bounded secondary targets for tail/ears/head; never oscillate planted goals. |
 | 7. Support IK | LAST: analytic two-bone solution, bend/reach constraints and flat rear feet; preserve world-space goals through breathing, transitions and reactions. |
 
-Tail posture targets: happy = raised base with curved tip; relaxed seated = wrap around paws; curled = tip above nose. Ears forward for interest, partly closed eyes for petting and small torso breathing. Breathing starts at neutral phase for reference captures; approved awake frequency .4Hz/amplitude1% torso mesh, sleep .3Hz/.6%, then tune within contact constraints. Never scale a joint.
+Tail posture targets: happy = raised base with curved tip; relaxed seated = wrap around paws; curled = tail follows the same body side toward the hipward head as far as it reaches under S19, with no nasal distance/front-plane target. Ears forward for interest, partly closed eyes for petting and small torso breathing. Breathing starts at neutral phase for reference captures; approved awake frequency .4Hz/amplitude1% torso mesh, sleep .3Hz/.6%, then tune within contact constraints. Never scale a joint.
 
 ### Second-order springs: initial proposal, not measured tuning
 
@@ -294,7 +297,7 @@ Capture in real Chromium with a WebGL context, nonblank canvas, fixed seed/clock
 | `all-directed-edges` videos | Every one of the 13 edges, front and side, normal speed and slowed replay; pelvis-first/tail-last Q→S highlighted. |
 | `floor-to-standing` video | C/B/D/F/L→S→Q routes, with graph path visible in editor overlay; no impossible shortcut. |
 | `interruption` video | New requests at25/50/75% of representative sit/roll/sleep/feeding paths; no pose jump or inherited additive drift. |
-| `tail-and-ears` video | Happy tip, seated paw-wrap, curled nose coverage, reversal/settling; visible torso→tail→ear/head delay, no twisted tail. |
+| `tail-and-ears` video | Happy tip, seated paw-wrap, S19 rigid-torso curl with same-side headward tail, reversal/settling; visible torso→tail→ear/head delay, no twisted tail. |
 | `gaze` video | Pointer sweep and touch/release, extreme/behind targets, sleeping/feeding masks; eyes lead head/neck. |
 | `care-feed/sleep/bathe/play` videos | Four silent clips from successful public care actions, plate lifecycle, chew/slow breath/ear-shake/in-place burst clearly legible. Separate petting/purr regression clip. |
 | `reduced-motion` video +stills | Seven stable destinations, four reactions, petting and live preference toggle; no oscillatory movement. |
@@ -312,7 +315,7 @@ Owner gate: **no skating, no separated parts, no jumps between poses, delayed ta
 |---|---|
 | D2 removal changes rest or hungry geometry | Fresh unchanged-main baseline, rigid bind calibration and0-pixel seated gate before other poses; never rewrite A1. |
 | Support drift or unreachable IK goals | World-space planted goals, per-leg reach/bend constraints, flat rear feet and per-frame transition/breathing sweeps; no fake pass via clamped endpoints. |
-| Three-box tail cannot reach nose / loaf wrap naturally | Verify reach/clearance in editor before locking C; preserve IDs/geometry unless owner explicitly approves a different scope. |
+| Three-box tail may not read naturally as a rigid-torso curl / loaf wrap | S19 freezes actual connected C distances, not a .04 target; preserve A1 and judge visible crossings/naturalness in real WebGL. A curled-cat video failure permits a separate rig-change spec only, not a rig change within A2. |
 | Visibility pop / mirrored pose breaks IDs | Occluded switch phases and explicit ID mapping; no negative joint scale. |
 | Determinism is lost to render timing, random mount seed or retargeting | Tick-indexed events, explicit seed/state, base-only interruption and replay tests. |
 | CPU budget or visual realism not attained | Physical-device evidence and two owner rounds, then toy style; no false mobile claims. |

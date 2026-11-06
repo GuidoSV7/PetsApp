@@ -5,7 +5,15 @@ import type { CatPoseId, CompiledCatPose } from "./cat-pose-types";
 export const BASE_SIZE = CAT_JOINT_IDS.length * 4 + 4;
 const extensions = ["forearmFL", "forearmFR", "shinBL", "shinBR", "jaw", "tongue"] as const;
 const legs = ["FL", "FR", "BL", "BR"] as const;
-export const stable = {} as Record<CatPoseId, { base: Float64Array; visible: number; supports: number }>;
+export type StablePose = {
+  base: Float64Array;
+  visible: number;
+  supports: number;
+  /** Optional setup-authored stable FK; it never changes Core's base pose. */
+  breathFK?: PoseBreathFK;
+  mirroredBreathFK?: PoseBreathFK;
+};
+export const stable = {} as Record<CatPoseId, StablePose>;
 const compiled = {} as Record<CatPoseId, CompiledCatPose>;
 function pack(pose: CompiledCatPose, output: Float64Array, offset = 0) {
   for (let i = 0; i < CAT_JOINT_IDS.length; i++) {
@@ -40,6 +48,8 @@ export type PoseTrack = {
   phaseEnds: readonly number[];
   /** Optional per-fixed-tick posture-extension mask, authored with a rig track. */
   visibility?: Uint8Array;
+  /** Setup-authored local body expansion pivot, sampled with the FK track. */
+  breathAnchors?: Float64Array;
   breathFK?: PoseBreathFK;
 };
 export const tracks = {} as Record<CatPoseId, Partial<Record<CatPoseId, PoseTrack>>>;
@@ -61,5 +71,5 @@ for (const edge of CAT_POSE_EDGES) {
 }
 
 /** Renderer-free lookup boundary. Omitted injection retains these exact tables. */
-export type CatPoseLibrary = { stable: typeof stable; tracks: typeof tracks; routes: typeof routes };
+export type CatPoseLibrary = { stable: typeof stable; tracks: typeof tracks; routes: typeof routes; playJumpFK?: PoseBreathFK };
 export const CAT_POSE_LIBRARY: CatPoseLibrary = { stable, tracks, routes };

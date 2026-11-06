@@ -1,11 +1,265 @@
-# Lying semantics incomplete — body-support foundation only
+# S19 stable rigid-torso C — numeric endpoint proof, visual gate pending
 
-**Approved D/C/B semantics are NOT complete.** Earlier GREEN evidence proves
-body support, floor, breathing and attachments—not D head rest, C nose coverage,
-full silhouette/clearance or a physically valid whole-geometry mirror. No lying
-arc authoring or mounting is admitted by that foundation.
+> **S19 controls acceptance.** Every structural child must touch/overlap its parent at its articulation within the existing .001 model-unit tolerance; floor/support remain unchanged. SAT, measured zones and pivot-distance metadata are **NONBLOCKING diagnostics**, not pose rejection gates. Visible crossings are judged separately in real WebGL front/three-quarter/diorama evidence. D authoring, original D tests and outputs remain frozen. No nasal-distance/front-plane target applies. Earlier S16–S18 checkpoints below are historical, not current gates.
 
-## Current semantic witnesses and bounded stop
+## Current C authoring and bounded proof
+
+C keeps the rigid torso and unchanged support projection. A −70° neck fold carries the head toward the hips; the composed head orientation counters the side roll and faces backward along the torso. Separate left/right tail FK routes start at the unchanged asymmetric A1 anchor. The right base reverses its cross-section to preserve the floor; both distal routes progress toward the actual head on that same body side. These authored angles exceed some initial editor guides (including C neck −70° and left tailBase 110°); guides were provisional, not anatomy changes or a claim of visual naturalness. No runtime solver, new clock, geometry, IDs, anchors or joints are added.
+
+The exact C neck signature selects its own FK family in the existing setup mirror seam. D's `CAT_SIDE_TAIL_FK`, B reflection and other residual transport keep their prior arithmetic. Both body/limb sides reflect exactly; tail translations are not falsely described as mirrored. No runtime side selector is added.
+
+Actual prepared Core/Bind proof covers four profiles × both sides × breath .99/1/1.01, plus 120 Core ticks × five alphas for awake and offset .3Hz/.006 sleep-breath inputs: **9,600 live C applications**. Tests assert head hipward, distal cap headward/same-side, every structural seam, visible finite floor corners, body support, immutable frame/base, unchanged goals/revision, unit joints and visible breathing. Existing analytic support stays LAST. These sleep-breath inputs do not claim a complete sleep-reaction integration gate.
+
+Measured distal-cap-center → head-center distances at neutral breath (model units):
+
+| Profile | left | right |
+|---|---:|---:|
+| default0 | .133019228573 | .214864986911 |
+| default100 | .062022997429 | .321486074816 |
+| compact0 | .234775039596 | .221849416341 |
+| deep100 | .287046199493 | .536166185573 |
+
+Static regression guards use ±.005 around these **actual connected endpoints**, covering the .0025 neck attachment breath excursion plus a small margin. They are not an invented reach target or an optimum-reach proof. Live Core secondary motion has separately reported measured distance ranges; the static reference is not incorrectly imposed on that additive motion.
+
+All 38 declared links are reported, with different-joint structural articulations distinguished from same-owner decorative bookkeeping. C's structural box distances are zero across the measured endpoint matrix. Six immutable head-decoration gaps remain: head/nose and head/philtrum .05; head/each whisker .014. They remain explicitly reported and tested unchanged, not fixed by anatomy edits, tolerance inflation or silently reclassified as structural acceptance. Immutable neutral structural limitations also remain: latent forearm/paw .01 all profiles; compact body/leg .01706 and body/tailBase .06706; deep body/head .25. C's actual fitted/folded geometry closes those structural seams; neutral A1 is NOT claimed universally connected. D20 proves designated head support, not all-joint connectivity.
+
+Raw identities, genuine RED, per-command stdout/stderr/exits, all contacts, per-pair penetration diagnostics and frozen NONBLOCKING overlap baselines (+.005 warning margin) live in `odd/evidence/a2-visible-curl-s19/worker/`. Full transitions, integration, browser crossings/naturalness, full-suite/build/lint/device gates remain parent-owned and unrun here. No video/owner approval, push or merge follows from numeric endpoint proof.
+
+## Prepared lying-track correction candidate — NOT physically accepted
+
+`compileCatPoseLyingTransfers` now runs after stable lying preparation in the
+existing shared Core/Bind factory. Its six directed tracks borrow the **actual**
+resolved F/D/C/B endpoints, including root offsets and separate heading. The
+initial candidate passed all 24 public endpoint/first-stable-frame regressions
+across the four mandatory profiles; that is historical evidence, not a fresh
+r2 endpoint run. No stable authoring is changed.
+
+The candidate authors nominal FK/support-hull samples, a released-foreleg FK
+lift before F↔D roll, interpolated local body breathing pivots and additive
+neck/head breath families inherited from D. Playback still uses the existing
+clock, quaternion sampling and LAST analytic planted-support IK. Optional
+`PoseTrack.breathAnchors` applies only to explicitly compiled tracks; stable and
+nonlying arithmetic remains unchanged.
+
+**This is incomplete WIP, not accepted transition authoring.** The final physical
+matrix failed all 24 protected profile/arc cases and all 72 new breath/profile/arc
+cases. That initial setup hull read unfitted reference hip boxes, whereas the
+actual adapter fits hip visuals to their rigid hinges: D↔C floated on the first
+quarter sample. The bounded fitted-hull correction below removes that source
+mismatch but still fails physical checks. Endpoint success must not be used to
+bypass these failures. No floor,
+contact, mirror, D test or tolerance was weakened. Continuous route-aware mirror
+setup and complete reflected additive motion remain unproved; the existing exact
+C neck-signature setup helper is not a continuous side selector.
+
+Initial current-WIP before/after evidence preserved all 80 D/B stable samples and
+4,992 nonlying route samples exactly. Original D20, C88/static distance guards,
+mirror24, lying64, breath24 and authoring23 regressions passed on that source
+identity; no fresh stable/nonlying certification follows from later edits. The initial baseline
+probe emitted all four records but exceeded two 5-second Vitest test budgets;
+that exit remains failed evidence, not a baseline suite pass. Exact commands,
+counts, raw channels, identities and remaining failures are in
+`odd/evidence/a2-lying-transfers-s19/VALIDATION.md` and `RESULT.md`. Parent-owned
+visual/device/full delivery gates are not implied.
+
+### Fitted-hull correction r1 — focused checks still fail
+
+The compiler now uses the same pure `createCatPoseVisualFit` setup math as Bind
+for hip half-hinge positions, orientations and capped cross-section/hinge-length
+scales. Bind's runtime fitting, pre-IK support validation and later skin adjustment
+are unchanged; setup projection uses the pre-IK geometry only. No live root
+correction or stable authoring change was added.
+
+With the original assertions intact, default0 D→C awake advances past the former
+first-quarter floating support and fails at **tick4+.5**, head floor
+**−.2910004432665273** against the unchanged −.291 limit. Default0 F→D awake
+advances past the former tick25+.25 failure and fails at **tick29+.25**, actual
+support **−.2905017116058983** against the existing three-decimal support check
+(absolute difference .0005017116058983473; required below .0005).
+
+Both focused commands exit1; 75 filtered cases per command are not passes. Per
+the bounded continuation contract, no further correction, full matrix,
+preservation regression or typecheck was run after those failures. Earlier
+stable/nonlying output checks are historical evidence, not fresh certification
+of the shared-helper extraction. Frozen source/test bytes remain unchanged;
+complete reflected additive, product and physical-phone proof is still absent.
+New raw evidence only: `odd/evidence/a2-lying-transfers-s19/fitted-hull-r1/`.
+
+### Support-local pivot and staged head FK r2 — partial physical progress
+
+The compiler selects the actual active body/fitted-hip support rather than
+blending pivots by pose label. The body's lowest local Y corner determines its
+expansion ordinate; each fitted hip uses its torso attachment Y. Closed-form
+inactive-hull intervals include both ±1% breath signs and the existing support
+budget. At zero vertical torso-Y coefficient, the pivot is vertically
+unconstrained. These setup equations do not establish fractional-sampler or
+whole-matrix feasibility; the actual public checks still decide acceptance.
+
+D↔C now lifts the resolved neck/head lever by FK toward model up, turns the head
+while elevated, and lowers to the exact frozen endpoint; C→D reverses the same
+path. Rest/parent quaternion composition is explicit. One authoring function
+supplies nominal and every breath-knot trajectory. The neutral variant copies
+nominal frames exactly, including the staged motion. The original D endpoint
+family is retained; complete D-output/near-neutral handoff proof is still pending.
+
+The two r1 failing default0 awake cases now pass full tick/quarter checks. The
+conditional expansion passes default0 F↔D and D↔C for all three requested breath
+inputs (**12 new physical cases**) and all four corresponding protected arc cases.
+It then stops at the **first failed batch**, default0 D→B: head floor fails at
+**tick1+.25** for awake −.291245469109283, opposite −.291246375899598 and sleep
+−.2912408042393669 against the unchanged −.291 limit. No correction or retry
+followed. B→D, other profiles, fresh endpoints/handoffs/stable differentials and
+types were not run. This is not whole-lying-route or visual acceptance.
+
+Bind/helper/tracks/reference/preparation/contact-plan/simulation, all tests and
+stable D/C/F/B authoring remain byte-identical to r1. S14 reflected/additive,
+product, phone and owner gates remain unproved. Exact new commands, channels,
+identities, preservation and cleanup: `odd/evidence/a2-lying-transfers-s19/authoring-model-r2/`.
+
+### Parent-aware D↔B FK r3 — default profiles pass, compact F seam blocks expansion
+
+D↔B now lifts before the parent roll, holds the resolved head lever elevated
+while the parent rolls and the head turns, then lowers after the roll. All
+orientations are composed in model space through the actual changing root/torso
+and skeleton rests; a torso-local total is not mistaken for a model-space hold.
+The same function supplies nominal and all breath knots, neutral variants still
+copy nominal frames, and exact stable endpoints/D breathing families are retained
+as source data. Parent-roll timing changes only inside the existing duration;
+contact phases, pivot rule, shared runtime and F↔D/D↔C authoring are unchanged.
+
+Fresh r3 physical coverage passes **36/72 unique new cases** (all six arcs ×
+three breath inputs × default0/default100), plus **12/24 protected arc cases**.
+The default0 D→B/B→D awake first-proof passes are included, not counted twice.
+Public pre-edit versus post-edit digests for the four previously passing default0
+tracks match exactly over **2,640 samples**, including all three breath inputs,
+frames, world transforms, visibility and contact state.
+
+Expansion stops at its first failed batch: compact0 F→D, all three breath
+inputs, **tick0+0**, structural **body/tailBase distance .017415099896644082**
+against the unchanged .001 rule. Pivot-distance metadata is diagnostic only;
+the actual positive box separation rejects this sample. This is at the F route
+boundary, not a later D/B head sample. No correction or retry followed. The
+source remains frozen for stable F; no global infeasibility or automatic authority
+to reauthor it is inferred.
+
+Remaining r3 physical proof: **3 new cases failed, 33 new and 12 protected cases
+unrun**. Fresh endpoints, complete D breathing-output/near-neutral handoffs,
+stable/nonlying differential, stable regressions and types were not reached.
+Original assertions/tolerances and frozen stable/shared surfaces are unchanged;
+the test file only adds the bounded public curve-digest probes. No whole-feature,
+route-aware reflected additive, WebGL, phone or owner acceptance follows.
+Exact evidence: `odd/evidence/a2-lying-transfers-s19/d-b-roll-r3/`.
+
+## Historical pre-S19 checkpoints (superseded acceptance criteria)
+
+
+**T4 remains partial. D contact and its independent FK tails now pass the bounded
+CPU geometry gate; S16 C near-face placement and complete C/B semantics do not.** No lying
+arc authoring, runtime mounting, browser/device proof or owner acceptance follows
+from this checkpoint.
+
+## Historical S16 C amendment — superseded by S18
+
+C no longer requires exact ≤.001 nose contact. Keep A1 unchanged; the tail curves
+toward the face, with its tip in front of nose or muzzle and actual oriented-box
+nose/tip distance ≤.04 in every mandatory variant, including deep100/breath1.
+Preserve all other contacts, floor, closed silhouette, breathing, ear/head/eye
+clearance and legitimate A1 adjacency seams. Zero forbidden penetration is
+required at stable C and every transition frame, including live breath and
+interruptions. Historical attachment-pair exceptions and consecutive-tail seams
+are measured explicitly in `odd/evidence/a2-curled-near-face/SEAMS.md`; they do
+not license tailMid/body or other new exemptions. Compact A1 body/tailBase is
+actually separated by .06706 at rest; current C overlap also exceeds rest in
+several variants. Those measurements are disclosed, not certified as acceptable
+posed seams. No new C witness is accepted using an attachment exception.
+
+Fresh public D/C matrix: all20 D cases pass unchanged; all20 C cases still fail
+at .04. D is not changed speculatively. New C front/frame-clearance tests remain
+RED. Their front check uses the actual visible tailTip distal-cap center ahead
+of the anterior nose or muzzle face, in the head's forward frame. A failed first
+frame is not a completed live sweep.
+
+The old independently admitted >.035 bound did not establish .04 feasibility.
+A new complete-domain sharpening bootstraps the negative bend projection and
+uses tighter source-derived corner radii: the mandatory deep100/breath1 case
+has nose/tip distance >.040010 whenever tailMid/body clearance holds, even with
+unrestricted rotations and the other restrictions dropped. No candidate or rig
+change was installed. New evidence/proof only:
+`odd/evidence/a2-curled-near-face/RESULT.md` and `PROOF.md`.
+The new result is self-verified, not a new independent review admission.
+
+Endpoints remain blocked; the remaining24 arcs, full transition-frame/live-breath/
+interruption clearance sweeps, mounting and visual/device gates are pending.
+Video still decides whether C reads as a curled cat; a rig change, if ever
+specified, is separate from A2. No video approval is implied. Historical checks
+and exact-contact trials below retain their original criteria and outcomes.
+
+## Stable-breath resume (S1/S4/S6/S10/S12/S14/S15)
+
+The explicit S15 grant adds optional stable breath-FK metadata in
+`cat-pose-tracks.ts` and its additive sampler in `CatPoseBind`. The existing
+preparation factory supplies the same library to Core and Bind. Core/base data,
+body affine breathing, contact goals, transition FK and LAST-layer support IK
+retain their existing ownership and arithmetic. No new controller or clock is
+introduced.
+
+D uses the actual head's lowest rest-derived corner as a fixed contact, rather
+than a static marker or a floating cheek. Ten degrees of world head roll selects
+one lower corner; two planar rigid levers author a closed-form quaternion family
+at setup. Playback interpolates 81 breath knots over .99..1.01, with separate
+canonical/reflected data and an unchanged authoritative base. Nonfinite or
+out-of-range stable breath rejects before node/support mutations, with the
+existing message: `Breathing FK input is outside the compiled physical range.`
+
+A long resolved neck lever folds backward enough to keep head/body boxes joined.
+The deep profile needs approximately 40 degrees of neck/head pitch, beyond the
+initial neck30/head35-degree guides: keeping it straight produced an actual
+head/body gap. The neutral local XYZ pitches are −39.8301°/+39.8665°. This is a
+measured authoring departure, not a new anatomical limit or a general clearance
+waiver. Default/compact neck pitch stays zero. Exact joint tables and both-side
+measurements are retained in the resume evidence.
+
+The A1 tail anchor remains asymmetric and unchanged. Body/limbs reflect exactly;
+D's left/right tails have separate FK tables, each within the initial 80-degree
+per-axis tail guide. Mirroring transports residual rotations between those
+frames, so applying it twice recovers the input. It does not claim reflection of
+tail translations. C/B involution checks do NOT certify their tail contacts,
+floor or clearance; their independently accepted side tables remain pending.
+
+Observed resume checks (one installed Vitest worker, serialized heavy lock):
+
+- Durable initial RED: 37 failed / 28 passed (8 D breath drift, 20 C contact,
+  9 mirrored-tail floor failures).
+- Current D/lying foundation/mirror/new authoring: **135 passed**, no skips.
+  Includes all previous 88 foundation cases, exact paired joint/box reflection,
+  true D head support through awake/sleep breath, connected head/body, closed
+  tail seams, tail clearance/floor, base immutability and unit joint scales.
+- Shared Bind/IK/library/accepted transfer regressions: **184 passed**, no skips.
+- Previous-source differential: **7,448 prepared samples**, seven accepted
+  directed arcs and S/Q/L/F stable poses across four profiles, plus seven default
+  Core routes; stdout, stderr and exit codes identical.
+- Final semantic file: **21 passed / 20 failed**. All remaining failures are C's
+  actual tail-tip/nose contact, still .507144/.600087/.540236/.709460 at neutral
+  breath for default0/default100/compact0/deep100. No assertion was weakened.
+
+Offline C authoring examined FK candidates, including a wider-angle diagnostic
+trial; no candidate was installed. Its best deep diagnostic still has nonzero
+nose separation and tailMid/body penetration. This is **UNKNOWN feasibility**,
+not an impossibility proof or permission to change the rig. A B tail trial inside
+the angle guide passed floor alone but failed body clearance; it was not installed.
+The existing B tailBase pitch120 and C head-guide departures remain unresolved.
+
+Current durable staging: `odd/evidence/a2-stable-breath-resume/RESULT.md`, raw
+per-command stdout/stderr/exit files, before/final identity manifests and offline
+candidate witnesses. This is local excluded evidence for parent promotion, not a
+shipped runtime asset. Full suite/types/lint/build remain unrun at this partial
+boundary; the next lying arcs and mounting stay prohibited until semantics pass.
+
+The two D stable FK families retain 162 × 92 × 8 = **119,232 bytes per resolved
+rig**, plus arrays/metadata, beyond the previous three nominal bases. This is not
+a measured mobile CPU, bundle or memory-budget acceptance result.
+
+## Historical phase8 semantic witnesses and bounded stop
 
 Actual public prepared rigs, neutral breath, oriented feature distance/SAT:
 
