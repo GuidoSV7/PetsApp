@@ -4,7 +4,7 @@ import type { CatPoseFrame } from "./cat-pose-simulation";
 import type { CatSkeleton } from "./cat-skeleton";
 import { CatPoseContacts } from "./cat-pose-contacts";
 import { createCatPoseVisualFit } from "./cat-pose-visual-fit";
-import { CatPoseContactPlan, validateSphinxGoals } from "./cat-pose-contact-plan";
+import { CatPoseContactPlan, validateSphinxGoals, type BodySupport } from "./cat-pose-contact-plan";
 import { BASE_SIZE, type CatPoseLibrary, type PoseBreathFK, type PoseTrack } from "./cat-pose-tracks";
 import { catJumpReleased } from "./cat-pose-jump";
 import { CatBathSupport } from "./cat-pose-bath";
@@ -126,6 +126,20 @@ export class CatPoseBind {
   }
 
   /** Local FK/visual layers, then LAST analytic support for an explicit mask. */
+  /** Lowest world-space corner of the boxes that carry a declared body support. */
+  private declaredBodyFloor(support: BodySupport): number {
+    this.ordered[0].node.updateWorldMatrix(true, true);
+    let floor = Infinity;
+    for (let i = 0; i < this.visuals.length; i++) {
+      const { bind, node } = this.visuals[i], id = bind.part.id;
+      if (id !== "body" && (support === "belly" || (id !== "hipL" && id !== "hipR"))) continue;
+      for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) for (let z = -1; z <= 1; z += 2) {
+        this.surface.set(x * bind.part.args[0] / 2, y * bind.part.args[1] / 2, z * bind.part.args[2] / 2).applyMatrix4(node.matrixWorld);
+        floor = Math.min(floor, this.surface.y);
+      }
+    }
+    return floor;
+  }
   apply(frame: CatPoseFrame, showHidden = false): void {
     // Invalid route input is rejected before any node/goals/counters change.
     const planned = this.plan.resolve(frame);
@@ -198,16 +212,29 @@ export class CatPoseBind {
       node?.position.set(bind.position[0], this.breatheY(bind.position[1], frame.bodyBreath, breathAnchor), bind.position[2]);
     }
     if (planned.body !== null) {
-      this.ordered[0].node.updateWorldMatrix(true, true);
-      let floor = Infinity;
-      for (let i = 0; i < this.visuals.length; i++) {
-        const { bind, node } = this.visuals[i], id = bind.part.id;
-        if (id !== "body" && (planned.body === "belly" || (id !== "hipL" && id !== "hipR"))) continue;
-        for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) for (let z = -1; z <= 1; z += 2) {
-          this.surface.set(x * bind.part.args[0] / 2, y * bind.part.args[1] / 2, z * bind.part.args[2] / 2).applyMatrix4(node.matrixWorld);
-          floor = Math.min(floor, this.surface.y);
-        }
+      let floor = this.declaredBodyFloor(planned.body);
+      const correction = this.groundY - floor;
+      // A retarget bridge interpolates rotations (slerp) and the base (linear) under the same
+      // eased weight, so two correctly grounded poses can blend into an ungrounded base. The
+      // declared support is therefore SEATED before the contact layer instead of only being
+      // rejected: the analytic support IK is the last layer, so planted feet are re-solved
+      // against their frozen goals instead of being dragged. Frames already inside the current
+      // tolerance are left untouched, which keeps stable authored poses byte-identical.
+      // Only a transition can produce this: its base is an interpolation of two authored poses.
+      // A stable pose whose declaration misses the floor is an authored lie and still refuses.
+      if (frame.transitionTo !== null && Math.abs(correction) > .001) {
+        const node = this.ordered[0].node;
+        node.getWorldPosition(this.surface);
+        this.surface.y += correction;
+        node.parent!.worldToLocal(this.surface);
+        node.position.copy(this.surface);
+        node.updateWorldMatrix(true, true);
+        this.contacts.diagnostics.bodySupportCorrection = correction;
+        floor = this.declaredBodyFloor(planned.body);
       }
+      // Post-seat assertion: whichever way the base was seated, the declared support must now be
+      // true. A projection that cannot seat (broken parent transform, scaled rig) fails loudly
+      // instead of being reported as a pass.
       if (Math.abs(floor - this.groundY) > .001) throw new RangeError(`Declared ${planned.body} support is not on the floor: ${floor}`);
     }
     if (frame.jumpPhase || frame.transitionTo !== null || frame.pose !== "seated") this.contacts.applyPlan(planned.feet, planned.goals);

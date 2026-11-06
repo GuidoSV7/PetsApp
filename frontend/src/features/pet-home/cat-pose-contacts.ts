@@ -15,8 +15,8 @@ const point = (): MutablePoint => [0, 0, 0];
  * This is NOT the transition contact planner: unresolved (-1) masks are rejected.
  */
 export class CatPoseContacts {
-  readonly diagnostics: { requestedMask: number | null; unreachableFeet: number | null; maxFootDrift: number | null } = {
-    requestedMask: null, unreachableFeet: null, maxFootDrift: null,
+  readonly diagnostics: { requestedMask: number | null; unreachableFeet: number | null; maxFootDrift: number | null; bodySupportCorrection: number | null } = {
+    requestedMask: null, unreachableFeet: null, maxFootDrift: null, bodySupportCorrection: null,
   };
   private readonly chains;
   private plannedMask = 0;
