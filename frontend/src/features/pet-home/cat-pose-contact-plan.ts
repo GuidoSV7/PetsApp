@@ -14,10 +14,7 @@ const phases: Readonly<Record<string, readonly Phase[]>> = {
   "seated:standing": [phase(0, 15, null, "seated")],
   "standing:seated": [phase(0, 15, null, "seated")],
   "seated:sphinx": [phase(0, 12, null, "seated"), phase(34 / 54, 0, "belly", "sphinx"), phase(1, 3, "belly", "sphinx")],
-  // The forefeet are released late on purpose: releasing at 20/54 exposed a foreleg FK that sits
-  // 8.6 cm under the floor while the body lands on its belly. Until 45/54 the support IK keeps
-  // the paws on the floor, and by the time it lets go the leg is already close to sphinx.
-  "standing:sphinx": [phase(0, 15, null, "standing"), phase(45 / 54, 0, "belly", "sphinx"), phase(1, 3, "belly", "sphinx")],
+  "standing:sphinx": [phase(0, 15, null, "standing"), phase(20 / 54, 0, "belly", "sphinx"), phase(1, 3, "belly", "sphinx")],
   "sphinx:seated": [phase(0, 0, "belly", "sphinx"), phase(20 / 54, 15, null, "seated")],
   "seated:loaf": [phase(0, 12, null, "seated"), phase(34 / 45, 0, "belly", "loaf")],
   "loaf:seated": [phase(0, 0, "belly", "loaf"), phase(20 / 48, 15, null, "seated")],
