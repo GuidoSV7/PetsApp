@@ -10,7 +10,7 @@ import {
   saveCatDesign,
   type CatDesignTunables,
 } from "@/features/admin/cat-design-settings";
-import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
+import { CatPoseEditor } from "./CatPoseEditor";
 import estilos from "./admin-design-3d.module.css";
 
 const Cat3DViewer = dynamic(
@@ -62,9 +62,11 @@ export function AdminDesign3DPage() {
           <p className={estilos.cardHint}>
             Vista previa local. Los ajustes se guardan solo en este navegador y no cambian el gato del inicio.
           </p>
-          <div className={estilos.previewHost}>
-            <Cat3DViewer colors={DEFAULT_GREY_COAT} design={draft} />
-          </div>
+          <CatPoseEditor renderPreview={(props) => (
+            <div className={estilos.previewHost}>
+              <Cat3DViewer {...props} design={draft} />
+            </div>
+          )} />
         </section>
 
         <section className={estilos.card} aria-labelledby="model-heading">
