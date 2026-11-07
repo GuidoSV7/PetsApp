@@ -27,6 +27,13 @@ Entry point for UI work in `frontend/`.
 Operational skills live under `.cursor/skills/` (for example `nextjs` when
 present). Do not treat `.claude/` as the skill root for this app.
 
+Before using the imported 3D skills, read `.cursor/skills/README.md` for Next.js
+compatibility and task-contract precedence; their landing examples are reference only.
+
+- `.cursor/skills/r3f-threejs/SKILL.md` — core principles first for scene work.
+- `.cursor/skills/assets-3d-pipeline/SKILL.md` — authorized imported assets only.
+- `.cursor/skills/motion-scroll/SKILL.md` — relevant accessibility and motion work.
+
 ## Commits
 
 Never add `Co-authored-by` for Claude or Cursor, nor "Generated with Claude

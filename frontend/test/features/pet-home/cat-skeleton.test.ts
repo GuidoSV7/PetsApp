@@ -11,6 +11,7 @@ import { resolveCatAnatomy } from "@/features/admin/resolve-cat-design";
 import { applyNeedVisualsToAnatomy, needVisualCues } from "@/features/pet-home/need-visuals";
 import { getCoatPatternBoxes, type CoatPattern } from "@/features/pet-home/coat-patterns";
 import type { FrozenCase, FrozenState } from "./cat-skeleton-baseline.test";
+import { a1TailSurfaceExpectedWorld } from "./cat-tail-surface-oracle";
 
 const fixtures = JSON.parse(gunzipSync(readFileSync(new URL("../../fixtures/pet-skeleton/legacy-world.json.gz", import.meta.url))).toString()).cases as FrozenCase[];
 const healthy = { hunger: 100, fun: 100, energy: 100, hygiene: 100 };
@@ -46,11 +47,12 @@ function bounds(mesh: Mesh) {
   const points = [-1, 1].flatMap(x => [-1, 1].flatMap(y => [-1, 1].map(z => new Vector3(x * width / 2, y * height / 2, z * depth / 2).applyMatrix4(mesh.matrixWorld))));
   return new Box3().setFromPoints(points);
 }
-function parity(root: Group, boxes: Map<string, Mesh>, state: FrozenState) {
+function parity(root: Group, boxes: Map<string, Mesh>, state: FrozenState, fixture: FrozenCase) {
   root.updateMatrixWorld(true);
   for (const expected of state.boxes) {
     const actual = boxes.get(expected.id); expect(actual, expected.id).toBeDefined();
-    actual!.matrixWorld.elements.forEach((v, i) => expect(v, `${expected.id}[${i}]`).toBeCloseTo(expected.matrix[i], 10));
+    const matrix = a1TailSurfaceExpectedWorld(fixture, state, expected);
+    actual!.matrixWorld.elements.forEach((v, i) => expect(v, `${expected.id}[${i}]`).toBeCloseTo(matrix[i], 10));
   }
 }
 
@@ -104,12 +106,12 @@ describe("A1 rigid graph and static bind compiler (S1–S4/S9)", () => {
     expect(skeleton.bindings.size).toBe(39);
     const before = JSON.stringify([...skeleton.bindings]);
     const { root, joints, boxes } = scene(skeleton, fixture.pattern as CoatPattern);
-    rootPose(root, fixture.rest); parity(root, boxes, fixture.rest);
+    rootPose(root, fixture.rest); parity(root, boxes, fixture.rest, fixture);
     const spy = vi.spyOn(legacy, "resolveCatPartPose");
     try {
       for (const sample of fixture.idle) {
         applyCatSkeletonMotion(skeleton, joints, boxes, sampleCatIdleMotion(sample.time, needVisualCues(needs), { seed: 13, reducedMotion: false }));
-        rootPose(root, sample.state); parity(root, boxes, sample.state);
+        rootPose(root, sample.state); parity(root, boxes, sample.state, fixture);
         expect(JSON.stringify([...skeleton.bindings])).toBe(before);
         for (const bind of skeleton.bindings.values()) expect(boxes.get(bind.part.id)!.position.toArray()).toEqual(bind.position);
         for (const joint of joints.values()) expect(joint.scale.toArray()).toEqual([1, 1, 1]);

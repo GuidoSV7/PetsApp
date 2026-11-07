@@ -19,24 +19,26 @@ Operational skills live under `.cursor/skills/`. The agent does not use `.claude
 - Deploy / Dokploy: [DEPLOY.md](./DEPLOY.md).
 - Tests: while iterating, run only the affected specs by path; run full suites only before commit or push. When a suite is slow, or to speed up tests (isolation/pools, PGlite snapshots, Postgres templates, Playwright reuse), read `.claude/skills/test-speed/SKILL.md` first. This skill is versioned under `.claude/`; a local copy may also exist under `.cursor/skills/`.
 
+## Independent verification (permanent owner authorization)
+
+Independent verifiers run offline against their own source and dependency copies,
+never against production or shared application databases. Preserve dependency
+symlinks; do not install packages or browsers. Expose installed Node/npm through
+`PATH` and existing Playwright browsers through `PLAYWRIGHT_BROWSERS_PATH`,
+read-only. Record commands, source identities, results and verified cleanup.
+
+- Preferred isolation: private scratch, `HOME`, `TMPDIR` and caches, when host
+  policy permits it.
+- Authorized plan B: when a host rule conflicts, keep the normal `HOME` and use
+  private scratch and caches. Do not write to source repositories, worktrees or
+  shared databases. Record the conflicting rule; no new permission is required
+  for this fallback. On this VPS, the rule **never isolate HOME** selects plan B.
+- Independence requires a separate agent deriving its own probes, not a different
+  `HOME`. Archive evidence before removing owned scratch, then prove its absence.
+
 ## Commits and PRs
 
 Never add `Co-authored-by` for Claude or Cursor (including
 `Co-authored-by: Cursor`), and never add "Generated with Claude Code", in
 commits or pull requests. See `.cursor/rules/no-coauthored-by.mdc`. Use
 Conventional Commits.
-
-## Agent VPS environment (Paseo agents)
-
-When running on the agent VPS (`srv1976750`, full access with Docker), these tools exist. Full rules are in the agent's global instructions.
-- **Test Postgres** (`127.0.0.1:55432`, full write, throwaway): one DB per run.
-  - Migrated clone: `URL=$(pgtest-db clone <project> <schema-source> -- <migrate cmd>)`.
-  - Empty DB: `pgtest-db create <prefix>`.
-  - Always `pgtest-db drop "$URL"` when done.
-- **Test Redis**: `REDIS_URL=$(redistest start <project>)`, a private instance per run; then `redistest stop "$REDIS_URL"`.
-- **Production: `SELECT` and `INSERT` only, never delete or modify** (`DELETE`/`UPDATE`/`TRUNCATE`/DDL), not even through Docker or admin credentials. Never migrate or run tests against prod.
-  - Postgres: `grep '^\[' ~/.pg_service.conf`, then `psql "service=<name>"`.
-  - Redis: `~/.redis_services`, then `redis-cli -u …` (`SCAN`, never `KEYS *`).
-  - On an auth error, run `agent-ro-refresh` once and retry.
-- **Docker:** only for your own builds and test containers. Never touch Dokploy/production containers, volumes or services, and never `prune`.
-- **Ports.** 3000/3001 are host services (Dokploy); use any other free port, e.g. 3002-3112. Run fixed-port E2E under `exclusive e2e-<project> -- …`, and full suites under `heavy -- …`.

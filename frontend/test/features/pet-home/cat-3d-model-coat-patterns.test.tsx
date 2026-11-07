@@ -15,6 +15,7 @@ import { resolveCatAnatomy } from "@/features/admin/resolve-cat-design";
 import { COAT_PATTERNS, getCoatPatternBoxes, deriveTabbyStripeColor, type PetCoatInput } from "@/features/pet-home/coat-patterns";
 import { applyNeedDirtToCoat, applyNeedVisualsToAnatomy, needVisualCues } from "@/features/pet-home/need-visuals";
 import type { PetNeeds } from "@/features/pet-home/pet-stats";
+import { a1TailSurfaceExpectedWorld } from "./cat-tail-surface-oracle";
 
 const frame = vi.hoisted(() => ({ current: undefined as undefined | ((state: { clock: { getElapsedTime: () => number } }, delta: number) => void) }));
 vi.mock("@react-three/fiber", () => ({ useFrame: (callback: typeof frame.current) => { frame.current = callback; } }));
@@ -56,6 +57,18 @@ function expectedWorld(needs: PetNeeds, tunables: CatDesignTunables, elapsed?: n
     node.children.forEach(c => visit(c, composed));
   };
   buildCatPartTree(CAT_ANATOMY).forEach(n => visit(n, root));
+  if (tunables.bodyDepth !== 1) {
+    const rootScale = new Vector3(), rootRotation = new Quaternion();
+    root.decompose(new Vector3(), rootRotation, rootScale);
+    const rotation = new Euler().setFromQuaternion(rootRotation);
+    const state = { root: { scale: rootScale.toArray(), rotation: [rotation.x, rotation.y, rotation.z] } };
+    for (const id of ["tailBase", "tailMid", "tailTip"]) {
+      const expected = result.get(id)!;
+      result.set(id, new Matrix4().fromArray(a1TailSurfaceExpectedWorld(
+        { need: needs.hunger, design: tunables }, state, { id, matrix: expected.elements },
+      )));
+    }
+  }
   return result;
 }
 function assertMatrix(actual: Matrix4, expected: Matrix4, label: string) {

@@ -1,0 +1,50 @@
+{
+  "status": "PASS",
+  "scope": "NEW measurement of CURRENT seated idle only; not A2 implementation, not pose/pattern/mobile/GPU cost",
+  "method": "Node eval; TS transpiled in memory before timing. seed123; elapsed28800+n/60; four energyLow/funLow profiles;100warmups+7batches*200calls/profile; worst-profile median of batch means. Timed sample+Object.keys checksum, comparable method not recovered original harness.",
+  "node": "v24.22.1",
+  "cpu": "AMD EPYC 9354P 32-Core Processor",
+  "date": "2026-11-01T01:53:58.140Z",
+  "head": "70906fdb87e2279268901ee791afeb1371051dd2",
+  "identity": {
+    "frontend/src/features/pet-home/cat-idle-motion.ts": "4f010911c1f3945565281c36e7c53209d27e7a6c169af1a7f14e3cc1c672fd5f",
+    "frontend/package.json": "0b60e13187169b1540b76da8eced0abec269c855067d89159a1db492f4761efd",
+    "frontend/package-lock.json": "db1fb3510b9be9ff838c121517124e162b0b2063a831dbdbba2f73aa78065b4c"
+  },
+  "profiles": [
+    {
+      "energyLow": false,
+      "funLow": false,
+      "batchMeanMs": [0.21297600500000016, 0.13149624499999987, 0.15818623, 0.12329906499999993, 0.11409688000000016, 0.12018287499999986, 0.11159234000000026],
+      "medianBatchMeanMs": 0.12329906499999993,
+      "maximumBatchMeanMs": 0.21297600500000016,
+      "checksum": 3104
+    },
+    {
+      "energyLow": false,
+      "funLow": true,
+      "batchMeanMs": [0.07742152499999974, 0.0802112649999998, 0.07373453499999982, 0.07655457500000011, 0.07373522999999978, 0.07949891499999978, 0.07484277499999963],
+      "medianBatchMeanMs": 0.07655457500000011,
+      "maximumBatchMeanMs": 0.0802112649999998,
+      "checksum": 3094
+    },
+    {
+      "energyLow": true,
+      "funLow": false,
+      "batchMeanMs": [0.13649963000000015, 0.13748277499999972, 0.1436778099999998, 0.16230232, 0.14064371999999992, 0.12957784500000002, 0.12519525999999984],
+      "medianBatchMeanMs": 0.13748277499999972,
+      "maximumBatchMeanMs": 0.16230232,
+      "checksum": 3284
+    },
+    {
+      "energyLow": true,
+      "funLow": true,
+      "batchMeanMs": [0.1027237150000002, 0.10142301499999974, 0.10025046999999972, 0.1092831000000001, 0.10416980500000023, 0.10271306499999923, 0.10252156000000014],
+      "medianBatchMeanMs": 0.10271306499999923,
+      "maximumBatchMeanMs": 0.1092831000000001,
+      "checksum": 3274
+    }
+  ],
+  "worstMedianMs": 0.13748277499999972,
+  "maximumBatchMeanMs": 0.21297600500000016
+}

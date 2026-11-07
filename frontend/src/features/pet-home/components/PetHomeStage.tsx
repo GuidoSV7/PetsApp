@@ -22,6 +22,7 @@ import {
   petLayoutCssVars,
 } from "@/features/pet-home/pet-layout";
 import { needVisualCues } from "@/features/pet-home/need-visuals";
+import type { CatCareEvent } from "@/features/pet-home/cat-pose-types";
 import { createPurrPlayer } from "@/features/pet-home/pet-purr";
 import {
   EMPTY_PET_NEEDS,
@@ -74,6 +75,8 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const [statusKey, setStatusKey] = useState<PetStatusKey>("idle");
   const [pulse, setPulse] = useState(0);
   const [reactPulse, setReactPulse] = useState(0);
+  const [careEvent, setCareEvent] = useState<CatCareEvent>();
+  const careSequence = useRef(0);
   const [coat, setCoat] = useState<PetCoatState>({ ...DEFAULT_GREY_COAT, pattern: "solid" });
   const [needs, setNeeds] = useState<PetNeeds>(EMPTY_PET_NEEDS);
   const [mood, setMood] = useState("Feliz");
@@ -163,6 +166,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       if (options?.purr) purrRef.current.play();
       const state = await applyPetAction(action);
       applyState(state, options?.bounce);
+      if (action !== "pet") setCareEvent({ sequence: ++careSequence.current, action });
       setLoadError(null);
     } catch {
       setLoadError("No pudimos guardar la acción.");
@@ -252,6 +256,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
               colors={coat}
               design={catDesign}
               reactPulse={reactPulse}
+              careEvent={careEvent}
               needs={needs}
               onPetInteract={() =>
                 void runAction("pet", { purr: true, bounce: true })
