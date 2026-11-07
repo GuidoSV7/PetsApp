@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 import { Color, PerspectiveCamera, Raycaster, Vector3 } from "three";
-import { createRoom, ROOM_SOLIDS, ROOM_PALETTE, VOXEL_SIZE } from "@/features/pet-home/room-geometry";
+import { createRoom, isRugVoxel, ROOM_SOLIDS, ROOM_PALETTE, ROOM_WALL_HEIGHT, VOXEL_SIZE } from "@/features/pet-home/room-geometry";
 import { ROOM_LENGTH, cellCenter, pointToCell } from "@/features/pet-home/room-grid";
 
 it("builds one caller-owned opaque mesh with no groups, caches, or shared resources", () => {
@@ -18,7 +18,8 @@ it("builds one caller-owned opaque mesh with no groups, caches, or shared resour
     expect(room.geometry).not.toBe(other.geometry);
     expect(room.material).not.toBe(other.material);
     room.geometry.computeBoundingBox();
-    expect(room.geometry.boundingBox!.max.y).toBeCloseTo(1.5 * ROOM_LENGTH, 6);
+    // The wall height is an art choice; the rule is that the mesh tops out exactly at it.
+    expect(room.geometry.boundingBox!.max.y).toBeCloseTo(ROOM_WALL_HEIGHT, 6);
     const geometryDisposed = vi.fn();
     const materialDisposed = vi.fn();
     const otherDisposed = vi.fn();
@@ -57,7 +58,10 @@ it("bakes real exposed-face AO, corner darkening, seamless coplanar edges and ch
       const u = points[1].clone().sub(points[0]).normalize();
       const v = points[3].clone().sub(points[0]).normalize();
       const center = points[0].clone().add(points[2]).multiplyScalar(0.5).addScaledVector(n, -step / 2);
-      const solid = [...ROOM_SOLIDS].reverse().find((s) => center.toArray().every((p, axis) => p / step > s.min[axis] + 1e-4 && p / step < s.max[axis] - 1e-4))!;
+      const solid: { surface: keyof typeof ROOM_PALETTE } = isRugVoxel(
+      Math.floor(center.x / step), Math.floor(center.y / step), Math.floor(center.z / step))
+      ? { surface: "rug" }
+      : [...ROOM_SOLIDS].reverse().find((s) => center.toArray().every((p, axis) => p / step > s.min[axis] + 1e-4 && p / step < s.max[axis] - 1e-4))!;
       if (!solid) throw new Error("Face has no procedural solid owner");
       surfaces.add(solid.surface);
       const base = new Color(ROOM_PALETTE[solid.surface]);

@@ -1,5 +1,6 @@
 .stage {
-  --pet-frame-max: 240px;
+  --pet-frame-max: 440px;
+  --pet-frame-height-cap: min(66dvh, 660px);
   --stage-gap: 8px;
   --care-min-height: 64px;
 
@@ -8,7 +9,7 @@
   flex-direction: column;
   gap: var(--stage-gap);
   width: min(100%, 440px);
-  height: 100%;
+  height: auto;
   margin: 0 auto;
   padding: 0 0 2px;
   text-align: left;
@@ -290,14 +291,65 @@
 
 .petFrame {
   position: relative;
-  flex: 1 1 auto;
-  width: min(100%, var(--pet-frame-max));
-  max-height: min(var(--pet-frame-max), 38dvh);
-  aspect-ratio: 1;
+  /* Authored 4:5 room viewer (plan §1). Width is capped by the column and by
+     the viewport height, so a short desktop window shrinks the frame instead of
+     stretching it, and the ratio never leaves 4:5. */
+  flex: 0 0 auto;
+  width: min(100%, var(--pet-frame-max), calc(var(--pet-frame-height-cap) * 4 / 5));
+  aspect-ratio: 4 / 5;
   display: grid;
   place-items: center;
   margin: 0 auto;
-  min-height: 150px;
+  min-height: 0;
+  border-radius: 22px;
+  box-shadow: 0 18px 44px rgba(20, 48, 34, 0.16);
+}
+
+.viewerShell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.viewerControls {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #ffffff 72%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 16px rgba(20, 48, 34, 0.18);
+}
+
+.viewerControl {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, #143022 8%, transparent);
+  color: #143022;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.viewerControl:hover {
+  background: color-mix(in srgb, #143022 14%, transparent);
+}
+
+.viewerControl:active {
+  transform: scale(0.94);
 }
 
 .canvasHost {
@@ -306,9 +358,12 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  border-radius: 18px;
+  border-radius: 22px;
   overflow: hidden;
-  background: transparent;
+  /* Room sky above the two walls; the canvas itself stays transparent. */
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 8%, #f3f8ee 0%, #e2eddc 42%, #cfdec8 100%);
+  touch-action: pan-y;
 }
 
 .interactHint {
@@ -679,9 +734,24 @@
 
 @media (min-height: 780px) {
   .stage {
-    --pet-frame-max: 280px;
     --stage-gap: 10px;
     --care-min-height: 70px;
+  }
+}
+
+@media (min-width: 900px) {
+  .stage {
+    --pet-frame-max: 520px;
+    --pet-frame-height-cap: min(66dvh, 660px);
+    width: min(100%, 640px);
+  }
+
+  .profileCard {
+    margin: 8px 4px 0;
+  }
+
+  .petViewport {
+    padding: 6px 4px 12px;
   }
 }
 

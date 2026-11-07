@@ -16,12 +16,16 @@
     #e7f5ec;
 }
 
-/** Authenticated play shell: full-bleed cozy room. */
+/** Authenticated play shell: scrolls when the 4:5 room viewer needs the space. */
 .contenedorPlay {
-  background-color: #c8dfd0;
-  background-image: url("/imagenes/pet-room-bg.png");
-  background-position: center;
-  background-size: cover;
+  height: auto;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: visible;
+  background-color: #f3e8d5;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% 0%, #fdf8ee 0%, transparent 60%),
+    radial-gradient(ellipse 120% 90% at 50% 100%, #e6d7bd 0%, transparent 65%);
   background-repeat: no-repeat;
 }
 
@@ -36,7 +40,19 @@
 
 .contenedorPlay .main {
   padding: 4px 12px 14px;
-  max-width: 480px;
+  overflow: visible;
+  max-width: 720px;
+}
+
+.contenedorPlay .main > * {
+  flex: 0 0 auto;
+}
+
+@media (min-width: 900px) {
+  .contenedorPlay .main {
+    max-width: 760px;
+    padding: 12px 24px 24px;
+  }
 }
 
 .header {

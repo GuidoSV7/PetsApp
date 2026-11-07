@@ -4,32 +4,49 @@ import { AO_FACTORS, aoLevel, flipDiagonal, type AoLevel } from "./room-ao";
 
 type Triple = readonly [number, number, number];
 export const ROOM_PALETTE = {
-  floor: "#8da185",
-  north: "#c9d4c3",
-  west: "#b5c6ad",
-  baseboard: "#5f7568",
-  window: "#e4efd7",
-  trim: "#3dff8a",
+  // Owner art direction: warm daylight room. The plan calls these proposals, and
+  // the sage set read as a grey prototype next to the grey coats. Warm wood keeps
+  // the floor clear of every coat preset (including white, orange and calico),
+  // cream walls stay lighter than the cat, and the rug gives a saturated base.
+  floor: "#b07a4e",
+  north: "#f2e4cb",
+  west: "#e6d2b3",
+  baseboard: "#6d4630",
+  window: "#cfe8ff",
+  trim: "#fbf5e8",
+  rug: "#4f8f5f",
 } as const;
 type Surface = keyof typeof ROOM_PALETTE;
 type Solid = { readonly min: Triple; readonly max: Triple; readonly surface: Surface };
 
 /** Fixed L/20 authoring lattice. Bounds are integer, half-open voxel coordinates.
  * Overlaps are unioned; later solids own the color, never duplicate faces.
- * Floor top Y=0; inner north/west boundaries at -2L; walls height 1.5L.
+ * Floor top Y=0; inner north/west boundaries at -2L; walls height L.
  */
 export const VOXEL_SIZE = ROOM_LENGTH / 20;
+/** Rug footprint and layer: the floor's top voxel layer is recoloured, never raised,
+ * so the rug face stays at Y0 and the A2 ground and floor raycast never move.
+ */
+export const ROOM_RUG = { minX: -22, maxX: 22, minZ: -22, maxZ: 22, layer: -1 } as const;
+export function isRugVoxel(x: number, y: number, z: number): boolean {
+  return y === ROOM_RUG.layer && x >= ROOM_RUG.minX && x < ROOM_RUG.maxX && z >= ROOM_RUG.minZ && z < ROOM_RUG.maxZ;
+}
+
+/** Authored wall height. Kept short on purpose: the overview frames the paw plane
+ * against the wall top, so a 30-voxel wall shrank the cat to a fifth of the frame.
+ */
+export const ROOM_WALL_HEIGHT = 20 * VOXEL_SIZE;
 export const ROOM_SOLIDS: readonly Solid[] = [
   { min: [-40, -2, -40], max: [40, 0, 40], surface: "floor" },
-  { min: [-42, -2, -42], max: [40, 30, -40], surface: "north" },
-  { min: [-42, -2, -40], max: [-40, 30, 40], surface: "west" },
+  { min: [-42, -2, -42], max: [40, 20, -40], surface: "north" },
+  { min: [-42, -2, -40], max: [-40, 20, 40], surface: "west" },
   { min: [-40, 0, -40], max: [40, 3, -39], surface: "baseboard" },
   { min: [-40, 0, -39], max: [-39, 3, 40], surface: "baseboard" },
-  { min: [-12, 12, -40], max: [12, 24, -39], surface: "window" },
-  { min: [-13, 11, -40], max: [-12, 25, -38], surface: "trim" },
-  { min: [12, 11, -40], max: [13, 25, -38], surface: "trim" },
-  { min: [-12, 11, -40], max: [12, 12, -38], surface: "trim" },
-  { min: [-12, 24, -40], max: [12, 25, -38], surface: "trim" },
+  { min: [-12, 7, -40], max: [12, 17, -39], surface: "window" },
+  { min: [-13, 6, -40], max: [-12, 18, -38], surface: "trim" },
+  { min: [12, 6, -40], max: [13, 18, -38], surface: "trim" },
+  { min: [-12, 6, -40], max: [12, 7, -38], surface: "trim" },
+  { min: [-12, 17, -40], max: [12, 18, -38], surface: "trim" },
 ];
 
 // Each tangent pair has u × v = outward normal.
@@ -59,6 +76,12 @@ export function createRoom() {
   }
   const positions: number[] = [];
   const normals: number[] = [];
+  // Rug: recolour the floor's top voxel layer instead of adding geometry, so its
+  // visible face is still Y0 and the A2 ground and the floor raycast are untouched.
+  for (let x = ROOM_RUG.minX; x < ROOM_RUG.maxX; x++) for (let z = ROOM_RUG.minZ; z < ROOM_RUG.maxZ; z++) {
+    const top = key(x, ROOM_RUG.layer, z);
+    if (voxels.get(top) === "floor") voxels.set(top, "rug");
+  }
   const colors: number[] = [];
   const indices: number[] = [];
   // Color(hex) performs sRGB -> Linear-sRGB conversion with Three color management.
