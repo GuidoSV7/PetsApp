@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
   applyPetAction,
@@ -17,10 +16,7 @@ import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
 import type { PetCoatInput, PetCoatState } from "@/features/pet-home/coat-patterns";
 import { moodCaption } from "@/features/pet-home/pet-customize";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
-import {
-  PET_LAYOUT_MODE,
-  petLayoutCssVars,
-} from "@/features/pet-home/pet-layout";
+import { PET_LAYOUT_MODE } from "@/features/pet-home/pet-layout";
 import { needVisualCues } from "@/features/pet-home/need-visuals";
 import type { CatCareEvent } from "@/features/pet-home/cat-pose-types";
 import { createPurrPlayer } from "@/features/pet-home/pet-purr";
@@ -199,7 +195,6 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       data-fun-low={needCues.funLow ? "true" : "false"}
       data-energy-low={needCues.energyLow ? "true" : "false"}
       data-hygiene-low={needCues.hygieneLow ? "true" : "false"}
-      style={petLayoutCssVars() as CSSProperties}
     >
       <div className={styles.stageCard}>
         <div
@@ -253,6 +248,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
 
           <div className={styles.petFrame}>
             <Cat3DViewer
+              variant="home"
               colors={coat}
               design={catDesign}
               reactPulse={reactPulse}

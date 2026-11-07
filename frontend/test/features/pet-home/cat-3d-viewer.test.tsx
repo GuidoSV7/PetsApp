@@ -2,9 +2,19 @@
 import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { Cat3DViewer } from "@/features/pet-home/components/Cat3DViewer";
+import {
+  CAT_VIEW_LIGHTS,
+  CAT_VIEW_SHADOW,
+  Cat3DViewer,
+  ROOM_VIEW,
+} from "@/features/pet-home/components/Cat3DViewer";
+import { catRoleMaterials } from "@/features/pet-home/components/Cat3DModel";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
-import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
+import {
+  DEFAULT_GREY_COAT,
+  type PetCoatColors,
+} from "@/features/pet-home/extract-coat-colors";
+import { CAT_MODEL_SCALE, catGroundY } from "@/features/pet-home/pet-layout";
 import { PREVIEW_PET_NEEDS } from "@/features/pet-home/pet-stats";
 
 type MonitorProps = {
@@ -19,12 +29,24 @@ const { procedural, canvas, controls, monitor, shadow, stats, statsCleanup } = v
   procedural: vi.fn(), canvas: vi.fn(), controls: vi.fn(), monitor: vi.fn(),
   shadow: vi.fn(), stats: vi.fn(), statsCleanup: vi.fn(),
 }));
-vi.mock("@react-three/fiber", () => ({
-  Canvas: ({ children, ...props }: { children: React.ReactNode }) => {
-    canvas(props);
-    return <div>{React.Children.toArray(children).filter((child) => React.isValidElement(child) && typeof child.type !== "string")}</div>;
-  },
-}));
+vi.mock("@react-three/fiber", async () => {
+  // The home variant reads the live camera/raycaster/clock; the preview does not.
+  const THREE = await import("three");
+  const state = {
+    camera: new THREE.PerspectiveCamera(),
+    scene: new THREE.Scene(),
+    raycaster: new THREE.Raycaster(),
+    clock: { getDelta: () => 0.016 },
+  };
+  return {
+    Canvas: ({ children, ...props }: { children: React.ReactNode }) => {
+      canvas(props);
+      return <div>{React.Children.toArray(children).filter((child) => React.isValidElement(child) && typeof child.type !== "string")}</div>;
+    },
+    useThree: (selector: (value: typeof state) => unknown) => selector(state),
+    useFrame: () => undefined,
+  };
+});
 vi.mock("@react-three/drei", () => ({
   ContactShadows: (props: unknown) => { shadow(props); return null; },
   PerformanceMonitor: (props: MonitorProps) => { monitor(props); return null; },
@@ -45,12 +67,16 @@ vi.mock("@react-three/drei", () => ({
     return <><button onClick={props.onStart}>Orbit start</button><button onClick={props.onEnd}>Orbit end</button></>;
   },
 }));
-vi.mock("@/features/pet-home/components/Cat3DModel", () => ({
-  Cat3DModel: (props: { onPetInteract?: () => void }) => {
+vi.mock("@/features/pet-home/components/Cat3DModel", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/features/pet-home/components/Cat3DModel")>();
+  return {
+    ...actual,
+    Cat3DModel: (props: { onPetInteract?: () => void }) => {
     procedural(props);
     return <button onClick={props.onPetInteract}>Procedural cat</button>;
-  },
-}));
+    },
+  };
+});
 const originals = [
   [window, "devicePixelRatio"], [navigator, "deviceMemory"], [navigator, "hardwareConcurrency"],
 ].map(([object, key]) => ({ object: object as object, key: key as string, descriptor: Object.getOwnPropertyDescriptor(object, key as string) }));
@@ -188,8 +214,108 @@ describe("Cat3DViewer", () => {
     expect(screen.queryByTestId("pet-fps-panel")).toBeNull();
   });
 
-  it("uses fixed256 shadow resolution and preserves every other appearance prop", () => {
+  it("derives the contact-shadow plane from the rig ground instead of the old -0.62 float", () => {
     render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
-    expect(shadow.mock.lastCall![0]).toEqual({ resolution: 256, position: [0, -0.62, 0], opacity: 0.28, scale: 3.4, blur: 2.6, far: 2.2, color: "#1c2b22" });
+    // The A2 floor oracle plants every pose on catGroundY(modelScale): root -0.22
+    // plus 0.78 × the neutral paw bottom -0.29 = -0.4462, not the hardcoded -0.62.
+    const expected = catGroundY(CAT_MODEL_SCALE) + CAT_VIEW_SHADOW.offset;
+    expect(expected).toBeCloseTo(-0.4382, 4);
+    expect(shadow.mock.lastCall![0]).toEqual({
+      resolution: 256,
+      position: [0, expected, 0],
+      opacity: CAT_VIEW_SHADOW.opacity,
+      scale: CAT_VIEW_SHADOW.scale,
+      blur: CAT_VIEW_SHADOW.blur,
+      far: CAT_VIEW_SHADOW.far,
+      color: CAT_VIEW_SHADOW.color,
+    });
+  });
+});
+
+describe("cat look: smooth like the landing dog (S1: better, even texture)", () => {
+  it("renders flat with no tone mapping, like the landing dog's HeroIsland canvas", () => {
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(canvas.mock.lastCall![0].flat).toBe(true);
+  });
+
+  it("replaces ambient with a warm sky / cool ground hemisphere fill and keeps the key lit", () => {
+    expect(CAT_VIEW_LIGHTS.hemisphere.args[0]).toBe("#fff6ea");
+    expect(CAT_VIEW_LIGHTS.hemisphere.args[1]).toBe("#f4c7a8");
+    expect(CAT_VIEW_LIGHTS.hemisphere.args[2]).toBeGreaterThan(0.7);
+    expect(CAT_VIEW_LIGHTS.hemisphere.args[2]).toBeLessThan(1.2);
+    expect(CAT_VIEW_LIGHTS.key.intensity).toBeGreaterThan(1.2);
+    expect(CAT_VIEW_LIGHTS.key.position).toEqual([2.8, 4.2, 2.2]);
+    expect(CAT_VIEW_LIGHTS.fill.color).toBe("#d7e8ff");
+    expect(CAT_VIEW_LIGHTS.fill.intensity).toBeCloseTo(0.4, 6);
+    // The underside stays shaded: the fill never outruns the hemisphere.
+    expect(CAT_VIEW_LIGHTS.fill.intensity).toBeLessThan(CAT_VIEW_LIGHTS.key.intensity);
+    expect(CAT_VIEW_LIGHTS.rim.intensity).toBeLessThan(CAT_VIEW_LIGHTS.key.intensity);
+  });
+
+  it("softens every coat role toward the dog's roughness with no metalness", () => {
+    const coat: PetCoatColors = {
+      primary: "#8a8f96",
+      secondary: "#d8dde3",
+      accent: "#c2410c",
+    };
+    const roles = catRoleMaterials(coat);
+    expect(roles.primary.color).toBe(coat.primary);
+    expect(roles.secondary.color).toBe(coat.secondary);
+    expect(roles.accent.color).toBe(coat.accent);
+    for (const role of Object.values(roles)) expect(role.metalness).toBe(0);
+    expect(roles.primary.roughness).toBeCloseTo(0.45, 6);
+    expect(roles.secondary.roughness).toBeCloseTo(0.48, 6);
+    expect(roles.accent.roughness).toBeCloseTo(0.42, 6);
+    // Smooth, not shiny: every coat role stays inside the dog's 0.3-0.5 band.
+    for (const role of [roles.primary, roles.secondary, roles.accent]) {
+      expect(role.roughness).toBeGreaterThanOrEqual(0.3);
+      expect(role.roughness).toBeLessThanOrEqual(0.5);
+    }
+    // The eye and pupil read: dark, glossy, and the pupil keeps its own emissive.
+    expect(roles.eye.color).toBe("#1c1c1c");
+    expect(roles.pupil.emissive).toBe("#5fd98f");
+    expect(roles.pupil.emissiveIntensity).toBeCloseTo(0.28, 6);
+  });
+});
+
+describe("home diorama camera and accessible rotation (S1/S2)", () => {
+  it("turns a cat tap into one pet plus a head focus, never a second care call", () => {
+    const onPetInteract = vi.fn();
+    render(<Cat3DViewer variant="home" colors={DEFAULT_GREY_COAT} onPetInteract={onPetInteract} />);
+    const host = () => screen.getByRole("img");
+    expect(host().getAttribute("data-camera-focus")).toBe("overview");
+    fireEvent.click(screen.getByRole("button", { name: "Procedural cat" }));
+    expect(onPetInteract).toHaveBeenCalledTimes(1);
+    expect(host().getAttribute("data-camera-focus")).toBe("head");
+    fireEvent.click(screen.getByRole("button", { name: "Ver la habitación completa" }));
+    expect(host().getAttribute("data-camera-focus")).toBe("overview");
+    expect(onPetInteract).toHaveBeenCalledTimes(1);
+  });
+
+  it("rotates and zooms only through the labelled accessible controls, inside the bounds", () => {
+    render(<Cat3DViewer variant="home" colors={DEFAULT_GREY_COAT} />);
+    const host = () => screen.getByRole("img");
+    const yaw = () => Number(host().getAttribute("data-camera-yaw"));
+    const zoom = () => Number(host().getAttribute("data-camera-zoom"));
+    expect(yaw()).toBe(ROOM_VIEW.yawDeg);
+    expect(zoom()).toBe(1);
+    fireEvent.click(screen.getByRole("button", { name: "Girar la cámara a la derecha" }));
+    expect(yaw()).toBe(ROOM_VIEW.yawDeg + ROOM_VIEW.yawStepDeg);
+    for (let i = 0; i < 8; i++) fireEvent.click(screen.getByRole("button", { name: "Girar la cámara a la derecha" }));
+    expect(yaw()).toBe(ROOM_VIEW.yawDeg + ROOM_VIEW.yawLimitDeg);
+    for (let i = 0; i < 12; i++) fireEvent.click(screen.getByRole("button", { name: "Girar la cámara a la izquierda" }));
+    expect(yaw()).toBe(ROOM_VIEW.yawDeg - ROOM_VIEW.yawLimitDeg);
+    // The zoom state is a radius scale: 0.8R is closer, 1.2R is further away.
+    for (let i = 0; i < 8; i++) fireEvent.click(screen.getByRole("button", { name: "Alejar la cámara" }));
+    expect(zoom()).toBeCloseTo(ROOM_VIEW.zoomRange[1], 6);
+    for (let i = 0; i < 12; i++) fireEvent.click(screen.getByRole("button", { name: "Acercar la cámara" }));
+    expect(zoom()).toBeCloseTo(ROOM_VIEW.zoomRange[0], 6);
+    expect(screen.getByRole("group", { name: "Cámara de la habitación" })).toBeTruthy();
+  });
+
+  it("leaves the admin preview without room controls or focus state", () => {
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(screen.queryByRole("group", { name: "Cámara de la habitación" })).toBeNull();
+    expect(screen.getByRole("img").getAttribute("data-camera-focus")).toBeNull();
   });
 });

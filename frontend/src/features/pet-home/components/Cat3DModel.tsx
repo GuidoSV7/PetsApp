@@ -63,20 +63,24 @@ type RolePalette = Record<
   { color: string; roughness: number; metalness: number; emissive?: string; emissiveIntensity?: number }
 >;
 
-function paletteFromCoat(colors: PetCoatColors): RolePalette {
+/** Coat materials, softened toward the landing dog's look: the dog ships baked
+ * smooth normals with roughness .3-.49 and zero metalness, which is why it reads
+ * flat and even. NoToneMapping (the Canvas `flat` prop) completes that look.
+ */
+export function catRoleMaterials(colors: PetCoatColors): RolePalette {
   return {
-    primary: { color: colors.primary, roughness: 0.88, metalness: 0.02 },
-    secondary: { color: colors.secondary, roughness: 0.9, metalness: 0.01 },
-    accent: { color: colors.accent, roughness: 0.55, metalness: 0.05 },
-    eye: { color: "#1c1c1c", roughness: 0.25, metalness: 0.15 },
+    primary: { color: colors.primary, roughness: 0.45, metalness: 0 },
+    secondary: { color: colors.secondary, roughness: 0.48, metalness: 0 },
+    accent: { color: colors.accent, roughness: 0.42, metalness: 0 },
+    eye: { color: "#1c1c1c", roughness: 0.22, metalness: 0 },
     pupil: {
       color: "#8dffb2",
       roughness: 0.2,
-      metalness: 0.05,
+      metalness: 0,
       emissive: "#5fd98f",
       emissiveIntensity: 0.28,
     },
-    whisker: { color: "#f3efe8", roughness: 0.45, metalness: 0.05 },
+    whisker: { color: "#f3efe8", roughness: 0.45, metalness: 0 },
   };
 }
 
@@ -151,7 +155,7 @@ export function Cat3DModel({
     () => applyNeedDirtToCoat(colors, cues),
     [colors.accent, colors.primary, colors.secondary, cues],
   );
-  const palette = useMemo(() => paletteFromCoat(coatForNeeds), [
+  const palette = useMemo(() => catRoleMaterials(coatForNeeds), [
     coatForNeeds.accent,
     coatForNeeds.primary,
     coatForNeeds.secondary,
