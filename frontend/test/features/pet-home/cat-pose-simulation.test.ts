@@ -89,23 +89,46 @@ describe("fixed-step A2 pose simulation", () => {
     expect(opposite.gazePitch).toBeCloseTo(-25, 2);
   });
 
-  it("redirects within18 ticks from the instantaneous base, never the additive rendered pose", () => {
+  it("redirects within ten ticks from the instantaneous base, never the additive rendered pose", () => {
     const sim = create();
     sim.enqueue({ tick: 1, kind: "care", action: "feed", sequence: 1 });
     step(sim, 16);
     expect(sim.sample(1).transitionTo).toBe("standing");
-    sim.enqueue({ tick: sim.tick + 1, kind: "care", action: "sleep", sequence: 2 });
-    let changed = false;
-    for (let i = 0; i <= 18; i++) {
-      const previous = sim.sample(1).base.slice();
-      const current = step(sim, 1);
-      if (current.transitionTo !== "standing") {
-        expect(current.transitionTo).toBe("sphinx");
-        expect([...current.base]).toEqual([...previous]);
-        changed = true; break;
+    const requestTick = sim.tick + 1;
+    sim.enqueue({ tick: requestTick, kind: "care", action: "sleep", sequence: 2 });
+    // Owner decision A (S7): the unfinished authored leg is COMPLETED at its authored endpoint and
+    // the newest intention only then publishes, from that landed simulation base - never from the
+    // breath/spring-modified rendered pose. The whole interruption costs <= 300 ms at 30 Hz.
+    const standing = compileCatPose(CAT_POSES.standing);
+    let landed: CatPoseFrame | null = null, published: CatPoseFrame | null = null;
+    for (let i = 0; i <= 10 && published === null; i++) {
+      sim.step();
+      const current = structuredClone(sim.sample(1));
+      expect(current.bridging, `tick ${current.tick}`).toBe(false);
+      if (landed === null) {
+        if (current.transitionTo !== null) expect(current.transitionTo).toBe("standing");
+        else {
+          expect(current.transitionFrom).toBe(null);
+          expect(current.pose).toBe("standing");
+          expect(current.transitionProgress).toBe(1);
+          expect([...current.rootOffset]).toEqual([...standing.rootOffset]);
+          for (const [index, id] of CAT_JOINT_IDS.entries()) {
+            expect(Array.from(current.base.slice(index * 4, index * 4 + 4)), `tick ${current.tick}: ${id}`).toEqual([...standing.rotations[id]]);
+          }
+          landed = current;
+        }
+      } else {
+        // Only now does the pending arc publish, at progress 0, from the landed base.
+        expect(current.tick).toBe(landed.tick + 1);
+        expect(current.transitionProgress).toBe(0);
+        expect([...current.base]).toEqual([...landed.base]);
+        published = current;
       }
     }
-    expect(changed).toBe(true);
+    expect(landed).not.toBe(null); expect(published).not.toBe(null);
+    // The seeded sleep goal leaves standing through sphinx (standing -> sphinx -> side -> curled).
+    expect(published!.transitionFrom).toBe("standing"); expect(published!.transitionTo).toBe("sphinx");
+    expect(published!.tick - requestTick, `redirect in effect ${published!.tick - requestTick} ticks after the request`).toBeLessThanOrEqual(10);
   });
 
   it("keeps nonzero secondary tail motion through an interruption instead of resetting springs", () => {
