@@ -38,6 +38,10 @@ export type CatPoseFrame = {
   sleeping: boolean;
   bounce: number;
   jumpPhase: CatJumpPhase | null;
+  /** Read-only: a bridge blends a mid-leg base into another leg instead of sampling one. */
+  bridging: boolean;
+  /** Read-only: ticks left in an interrupted leg's compressed landing window, else 0. */
+  landingTicks: number;
   /** Bath-only torso gesture roll, including outgoing fade; never base data. */
   bathRoll: number;
 };
@@ -46,6 +50,10 @@ export type CatSimulationOptions = { seed: number; reducedMotion?: boolean; cues
 
 const DT = 1 / 60;
 const RAD = Math.PI / 180;
+/** S7: a complete interruption costs at most 300 ms of the current support leg (30 Hz). */
+const LANDING_TICKS = 9;
+/** A compressed landing of the interrupted authored leg, then the pending route. */
+type Landing = { goal: CatPoseId; startTick: number; from: number; ticks: number; step: number };
 const durations = { feed: 144, sleep: 120, bathe: 99, play: 48 };
 const frequencies = [7, 9, 11, 14, 14, 12, 12];
 const damping = [.7, .65, .6, .72, .72, .85, .85];
@@ -59,6 +67,7 @@ function createFrame(initial = CAT_POSE_LIBRARY.stable.seated): CatPoseFrame {
     rootOffset: new Float64Array(3), headingDeg: 0, visibleMask: 0, supportMask: 15,
     bodyBreath: 1, eyeScale: 1, gazeYaw: 0, gazePitch: 0, earInterest: 0, idleEarSide: null,
     plateVisible: false, sleeping: false, bounce: 0, jumpPhase: null, bathRoll: 0,
+    bridging: false, landingTicks: 0,
   };
 }
 function copyFrame(from: CatPoseFrame, to: CatPoseFrame) {
@@ -69,6 +78,7 @@ function copyFrame(from: CatPoseFrame, to: CatPoseFrame) {
   to.bodyBreath = from.bodyBreath; to.eyeScale = from.eyeScale; to.gazeYaw = from.gazeYaw; to.gazePitch = from.gazePitch;
   to.earInterest = from.earInterest; to.idleEarSide = from.idleEarSide; to.plateVisible = from.plateVisible;
   to.sleeping = from.sleeping; to.bounce = from.bounce; to.jumpPhase = from.jumpPhase; to.bathRoll = from.bathRoll;
+  to.bridging = from.bridging; to.landingTicks = from.landingTicks;
 }
 
 /**
@@ -116,6 +126,8 @@ export class CatPoseSimulation {
   private goal: CatPoseId = "seated";
   private pendingGoal: CatPoseId | null = null;
   private redirectAt = 0;
+  /** Active compressed landing of the interrupted leg; null unless an interruption landed. */
+  private landing: Landing | null = null;
   private restPose: CatPoseId = "seated";
   private returnPose: CatPoseId = "seated";
   private action: CatCareAction | null = null;
@@ -216,7 +228,15 @@ export class CatPoseSimulation {
       this.applyInput(this.inputs[this.inputIndex++]);
     }
     if (this.pendingGoal !== null && this.tick >= this.redirectAt) {
-      const goal = this.pendingGoal; this.pendingGoal = null; this.startRoute(goal);
+      const goal = this.pendingGoal; this.pendingGoal = null;
+      // An interruption never bridges across the next leg (S7, owner decision A): when the newest
+      // destination does not share the unfinished authored leg, that leg is finished first and
+      // the newest intention starts from the landed configuration. A newer intention simply
+      // replaces the landing's destination. Sharing the leg needs no landing: it keeps sampling
+      // the same authored support transfer and only redirects the route suffix.
+      if (this.landing !== null) this.landing.goal = goal;
+      else if (this.track === null || this.sharedLeg(goal)) this.startRoute(goal);
+      else this.beginLanding(goal);
     }
     this.advanceBase();
     this.advanceReaction();
@@ -295,24 +315,49 @@ export class CatPoseSimulation {
   private requestGoal(goal: CatPoseId) {
     if (this.reduced || (!this.track && !this.bridgeOnly)) { this.startRoute(goal); return; }
     this.pendingGoal = goal;
+    // S7/owner decision A: the WHOLE interruption costs at most 300 ms, so a destination that does
+    // not share the unfinished authored leg starts landing the leg on the NEXT tick (the landing
+    // itself is capped at LANDING_TICKS). The phase-boundary deferral below is kept only for the
+    // two cases that never blend: a destination that DOES share the unfinished leg (its route
+    // suffix is redirected and the same authored support transfer keeps being sampled) and the
+    // bridgeOnly fallback used when there is no authored track at all.
+    if (this.track !== null && !this.sharedLeg(goal)) { this.redirectAt = this.tick + 1; return; }
     let remaining = 18;
     if (this.track) for (let i = 0; i < this.track.phaseEnds.length; i++) {
       if (this.track.phaseEnds[i] > this.age) { remaining = this.track.phaseEnds[i] - this.age; break; }
     }
     this.redirectAt = this.tick + Math.min(18, Math.max(0, remaining));
   }
+  /**
+   * S7 (owner decision A): an interruption finishes the CURRENT authored support segment instead of
+   * blending it into the next leg. The landing starts on the trigger tick - one tick after the
+   * request, because that is when the deferral above expires - and drives what is left of the leg to
+   * its authored endpoint in at most LANDING_TICKS simulation ticks (300 ms at 30 Hz) by sampling
+   * that same track at a compressed, interpolated progress. Landing on the endpoint makes
+   * `startRoute` derive bridging = false by itself, so the pending leg is the plain authored leg
+   * instead of a blend of two grounded poses.
+   */
+  private beginLanding(goal: CatPoseId) {
+    const track = this.track!;
+    const from = Math.min(track.duration, this.age);
+    const remaining = Math.max(1, track.duration - from);
+    this.landing = { goal, startTick: this.tick, from, ticks: Math.min(LANDING_TICKS, remaining), step: 0 };
+  }
+  /** A destination that keeps the unfinished authored leg: redirect its suffix, never a bridge. */
+  private sharedLeg(goal: CatPoseId) {
+    if (this.reduced || !this.track || this.bridging || goal === this.goal) return false;
+    return this.library.routes[this.track.from][goal][1] === this.track.to;
+  }
   private startRoute(goal: CatPoseId) {
     this.pendingGoal = null; // A newer immediate route supersedes an old queued one.
-    if (!this.reduced && this.track && !this.bridging && goal !== this.goal) {
-      const route = this.library.routes[this.track.from][goal];
-      if (route[1] === this.track.to) {
-        // A new destination can share the unfinished authored leg. Redirect its
-        // suffix at the support deadline, without pretending the nearer stable
-        // endpoint has already been reached. Restarting here would blend an
-        // unfinished support transfer under the next edge's contact schedule.
-        this.goal = goal; this.route = route; this.routeIndex = 0;
-        return;
-      }
+    this.landing = null; // An immediate route also supersedes an in-flight landing window.
+    if (this.sharedLeg(goal)) {
+      // A new destination can share the unfinished authored leg. Redirect its
+      // suffix at the support deadline, without pretending the nearer stable
+      // endpoint has already been reached. Restarting here would blend an
+      // unfinished support transfer under the next edge's contact schedule.
+      this.goal = goal; this.route = this.library.routes[this.track!.from][goal]; this.routeIndex = 0;
+      return;
     }
     const from = this.track ? (this.age < this.track.duration / 2 ? this.track.from : this.track.to) : this.current.pose;
     this.bridgeStart.set(this.current.base);
@@ -353,6 +398,10 @@ export class CatPoseSimulation {
     for (let i = 88; i < BASE_SIZE; i++) output[i] = a[i] + (b[i] - a[i]) * t;
   }
   private advanceBase() {
+    const landing = this.landing;
+    if (landing !== null && this.track !== null && this.tick >= landing.startTick) {
+      this.advanceLanding(this.track, landing); return;
+    }
     const track = this.track;
     if (track) {
       const tick = Math.min(this.age, track.duration), offset = tick * BASE_SIZE;
@@ -382,6 +431,45 @@ export class CatPoseSimulation {
     this.current.supportMask = this.current.transitionTo ? -1 : pose.supports;
     if (this.current.transitionTo) this.current.visibleMask |= this.library.stable[this.current.transitionTo].visible;
     if (track?.visibility && this.current.transitionTo) this.current.visibleMask |= track.visibility[Math.min(this.age - 1, track.duration)];
+    this.current.bridging = this.bridgeOnly || this.bridging;
+    this.current.landingTicks = 0;
+  }
+  /** One compressed tick of the interrupted leg; reuses `blend` for the fractional sample. */
+  private advanceLanding(track: PoseTrack, landing: Landing) {
+    landing.step++;
+    const time = landing.step >= landing.ticks ? track.duration
+      : landing.from + (track.duration - landing.from) * (landing.step / landing.ticks);
+    if (time >= track.duration) {
+      // Landed on the authored endpoint. Its base equals the stable pose, so the newest
+      // intention is a plain authored leg rather than a bridge from a moving base.
+      const end = track.duration * BASE_SIZE;
+      for (let i = 0; i < BASE_SIZE; i++) this.current.base[i] = track.frames[end + i];
+      this.current.pose = track.to;
+      this.current.transitionFrom = null; this.current.transitionTo = null;
+      this.current.transitionProgress = 1;
+      this.completedSpan = true;
+      this.age = track.duration; this.track = null; this.bridging = false;
+      // The newest intention wins at the handoff: a request that arrived during the window and was
+      // waiting for its own deferral must not be dropped by the landing's own destination.
+      const goal = this.pendingGoal ?? landing.goal; this.landing = null;
+      this.startRoute(goal);
+      const pose = this.library.stable[this.current.pose];
+      this.current.visibleMask = pose.visible;
+      this.current.supportMask = pose.supports;
+      this.current.bridging = false; this.current.landingTicks = 0;
+      return;
+    }
+    const tick = Math.min(track.duration, Math.floor(time)), next = Math.min(track.duration, tick + 1);
+    this.blend(track.frames.subarray(tick * BASE_SIZE, (tick + 1) * BASE_SIZE),
+      track.frames.subarray(next * BASE_SIZE, (next + 1) * BASE_SIZE), time - tick, this.current.base);
+    this.age = time;
+    this.current.pose = track.from;
+    this.current.transitionFrom = track.from; this.current.transitionTo = track.to;
+    this.current.transitionProgress = time / track.duration;
+    this.current.supportMask = -1;
+    this.current.visibleMask = this.library.stable[track.from].visible | this.library.stable[track.to].visible;
+    if (track.visibility) this.current.visibleMask |= track.visibility[tick];
+    this.current.bridging = false; this.current.landingTicks = landing.ticks - landing.step;
   }
   private advanceReaction() {
     if (this.phase === "gesture" && this.action) {
@@ -531,6 +619,7 @@ export class CatPoseSimulation {
       output.jumpPhase = previous.jumpPhase;
       // Posture extensions follow geometry; discrete gesture feedback stays current.
       output.visibleMask = (previous.visibleMask & 15) | (current.visibleMask & 48);
+      output.bridging = previous.bridging; output.landingTicks = previous.landingTicks;
       if (previous.transitionTo !== null) {
         const sameSpan = previous.transitionFrom === current.transitionFrom && previous.transitionTo === current.transitionTo
           && current.transitionProgress >= previous.transitionProgress;
