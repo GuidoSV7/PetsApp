@@ -67,7 +67,7 @@ function contactAndSupport(rig: Rig) {
     expect(p.toArray().every(Number.isFinite), id).toBe(true);
     expect(p.y, `${id}/floor`).toBeGreaterThanOrEqual(-.291);
   }
-  expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null });
+  expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
   for (const node of rig.joints.values()) expect(node.scale.toArray()).toEqual([1, 1, 1]);
 }
 describe("S19 rigid-torso curl, connected articulations and unchanged support", () => {

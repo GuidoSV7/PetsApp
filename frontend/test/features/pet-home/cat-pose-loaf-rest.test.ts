@@ -20,7 +20,7 @@ describe("stable loaf body contact before transition authoring (S1/S4/S6/S12)", 
       expect(() => rig.bind.apply(rig.frame)).not.toThrow();
       rig.root.updateMatrixWorld(true);
       expect(Math.min(...rig.corners("body").map(p => p.y))).toBeCloseTo(-.29, 10);
-      expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null });
+      expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
       for (const [id, box] of rig.boxes) if (box.visible) {
         for (const corner of rig.corners(id)) expect(corner.y, id + " visible floor corner").toBeGreaterThanOrEqual(-.291);
       }

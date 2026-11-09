@@ -47,7 +47,7 @@ describe("prepared lying real affine breathing", () => {
           expect(frame.base).toEqual(base); expect(frame.pose).toBe(pose); expect(frame.transitionTo).toBeNull();
           const rotations = frame.rotations.slice(); rig.bind.apply(frame); rig.root.updateMatrixWorld(true);
           expect(frame.base).toEqual(base); expect(frame.rotations).toEqual(rotations);
-          expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null });
+          expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
           expect(rig.bind.contacts.copyGoalsInto(new Float64Array(12))).toEqual(goals); expect(rig.bind.contacts.goalRevision).toBe(revision);
           expect(rig.bind.plan.output.body).toBe(pose === "bellyUp" ? "back" : "side");
           expect(Math.min(...rig.corners("body").map(p => p.y))).toBeCloseTo(ground, 3);

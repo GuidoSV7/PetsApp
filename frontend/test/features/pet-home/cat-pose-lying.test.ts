@@ -19,7 +19,7 @@ function physical(rig: Rig, pose: typeof poses[number], ground: number, breath: 
   expect(() => rig.bind.apply(frame)).not.toThrow(); rig.root.updateMatrixWorld(true);
   expect(frame.base).toEqual(base); expect(frame.rotations).toEqual(rotations);
   expect(rig.bind.plan.output.body).toBe(pose === "bellyUp" ? "back" : "side");
-  expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null });
+  expect(rig.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
   expect(rig.bind.contacts.copyGoalsInto(new Float64Array(12))).toEqual(goals); expect(rig.bind.contacts.goalRevision).toBe(revision);
   expect(Math.min(...["body", "hipL", "hipR"].flatMap(id => rig.corners(id).map(p => p.y))), "actual declared support").toBeCloseTo(ground, 3);
   expect(Math.min(...rig.corners("body").map(p => p.y)), "body itself bears support").toBeCloseTo(ground, 3);

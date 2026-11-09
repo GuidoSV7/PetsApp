@@ -40,7 +40,7 @@ describe("rest-aware canonical-side mirror", () => {
         const a = left.corners(id).map(p => { p.x = -p.x; return p; }), b = right.corners(paired(id));
         for (const point of a) expect(Math.min(...b.map(p => p.distanceTo(point))), id).toBeLessThan(1e-12);
       }
-      expect(right.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null });
+      expect(right.bind.contacts.diagnostics).toEqual({ requestedMask: 0, unreachableFeet: 0, maxFootDrift: null, bodySupportCorrection: null, freeFootCorrection: null, freeFootUnreachable: null });
       expect(Math.min(...right.corners("body").map(p => p.y))).toBeCloseTo(ground, 3);
       for (const [id, node] of right.boxes) if (node.visible) for (const p of right.corners(id)) {
         expect(p.toArray().every(Number.isFinite), id).toBe(true); expect(p.y, `${id}/mirrored floor`).toBeGreaterThanOrEqual(ground - .001);
