@@ -4,9 +4,13 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, OrbitControls, PerformanceMonitor, Stats } from "@react-three/drei";
 import type { PerspectiveCamera, Raycaster, Scene } from "three";
-import { Vector3 } from "three";
 import { useReducedMotion } from "@/features/pet-home/use-reduced-motion";
-import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-quality";
+import {
+  antialiasForDevice,
+  dprForFactor,
+  initialDprForDevice,
+  maxDprForDevice,
+} from "@/features/pet-home/pet-render-quality";
 import { defaultCatDesign, type CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { resolveModelScale } from "@/features/admin/resolve-cat-design";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
@@ -14,7 +18,6 @@ import type { PetCoatInput } from "@/features/pet-home/coat-patterns";
 import type { CatCareEvent } from "@/features/pet-home/cat-pose-types";
 import type { CatPosePreview } from "@/features/pet-home/cat-pose-preview";
 import { CatPoseMountContext } from "@/features/pet-home/cat-pose-mount-context";
-import { CAT_ANATOMY } from "@/features/pet-home/cat-anatomy";
 import {
   describeNeedVisuals,
   needVisualCues,
@@ -24,15 +27,40 @@ import {
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
 import { PET_NAME } from "@/features/pet-home/pet-status";
-import { createRoom, ROOM_WALL_HEIGHT } from "@/features/pet-home/room-geometry";
-import { ROOM_HALF } from "@/features/pet-home/room-grid";
+import { createField } from "@/features/pet-home/field-geometry";
+import {
+  dioramaCameraPose,
+  FIELD_VIEW,
+  homeCameraView,
+  nextDioramaYaw,
+  nextDioramaZoom,
+  tweenProgress,
+  type HomeCameraView,
+} from "@/features/pet-home/field-view";
 import {
   CAT_MODEL_SCALE,
   ROOM_SHADOW_OFFSET,
   catGroundY,
-  catPartWorldY,
 } from "@/features/pet-home/pet-layout";
+import { FieldBackdrop } from "./FieldBackdrop";
 import styles from "./pet-home.module.css";
+
+/** The home-camera contract now lives in the three-free `field-view` module so the
+ * loading placeholder can project the field with the very same pose (S6). It stays
+ * re-exported here for the viewer's existing consumers. */
+export {
+  dioramaCameraPose,
+  dioramaDirection,
+  FIELD_VIEW,
+  focusFraming,
+  nextDioramaYaw,
+  nextDioramaZoom,
+  overviewFraming,
+  resolveDioramaRadius,
+  solveDioramaFraming,
+  tweenProgress,
+} from "@/features/pet-home/field-view";
+export type { DioramaFraming, FramePoint, Vec3 } from "@/features/pet-home/field-view";
 
 const performanceBounds = (): [number, number] => [45, 58];
 
@@ -63,190 +91,15 @@ export const CAT_VIEW_SHADOW = {
   offset: ROOM_SHADOW_OFFSET,
 } as const;
 
-/** Bounded three-quarter diorama (plan §2). +Y up, cat forward +Z. */
-export const ROOM_VIEW = {
-  fovDeg: 35,
-  yawDeg: 45,
-  yawLimitDeg: 20,
-  yawStepDeg: 10,
-  elevationDeg: 35,
-  elevationLimitDeg: 5,
-  zoomRange: [0.8, 1.2] as readonly [number, number],
-  zoomStep: 0.1,
-  focusMs: 250,
-  /** Paws land on the lower third; the far wall top keeps a 10% sky margin. */
-  lowerNdcY: -0.45,
-  upperNdcY: 0.9,
-  /** Head close-up after a cat tap: symmetric band, so the visible face is
-   * framed with the eyes just under the centre and the ear tips in frame. */
-  focusLowerNdcY: -0.62,
-  focusUpperNdcY: 0.62,
-} as const;
-
+/** Nearest authoring plane for the home camera. */
 const near = 0.05;
-
-/** Unit vector from the orbit target back to the camera. */
-export function dioramaDirection(yawDeg: number, elevationDeg: number): Vec3 {
-  const yaw = (yawDeg * Math.PI) / 180;
-  const elevation = (elevationDeg * Math.PI) / 180;
-  return [
-    Math.sin(yaw) * Math.cos(elevation),
-    Math.sin(elevation),
-    Math.cos(yaw) * Math.cos(elevation),
-  ];
-}
-
-/** Camera up axis for a look-at with world up, independent of the target. */
-function dioramaUp([dx, dy, dz]: Vec3): Vec3 {
-  const x = -dx * dy;
-  const y = 1 - dy * dy;
-  const z = -dz * dy;
-  const length = Math.hypot(x, y, z);
-  return [x / length, y / length, z / length];
-}
-
-export type DioramaFraming = {
-  radius: number;
-  targetX: number;
-  targetY: number;
-  targetZ: number;
-};
-
-/** Solves the camera distance and target height that put `lower` at `lowerNdcY`
- * and `upper` at `upperNdcY` in the 4:5 frame. NDC y projects a point as
- * `(P - T)·up / (tan(fov/2) * (R - (P - T)·dir))`, which is linear in R and the
- * target height, so the two anchors give one exact 2×2 solution.
- */
-export function solveDioramaFraming(input: {
-  lower: Vec3;
-  upper: Vec3;
-  yawDeg: number;
-  elevationDeg: number;
-  lowerNdcY: number;
-  upperNdcY: number;
-  targetX?: number;
-  targetZ?: number;
-  fovDeg?: number;
-}): DioramaFraming {
-  const dir = dioramaDirection(input.yawDeg, input.elevationDeg);
-  const up = dioramaUp(dir);
-  const tan = Math.tan(((input.fovDeg ?? ROOM_VIEW.fovDeg) * Math.PI) / 360);
-  const origin: Vec3 = [input.targetX ?? 0, 0, input.targetZ ?? 0];
-  const row = (point: Vec3, ndcY: number) => {
-    const offset = new Vector3(...point).sub(new Vector3(...origin));
-    const k = ndcY * tan;
-    return {
-      s: offset.dot(new Vector3(...up)) + k * offset.dot(new Vector3(...dir)),
-      c: up[1] + k * dir[1],
-      k,
-    };
-  };
-  const lower = row(input.lower, input.lowerNdcY);
-  const upper = row(input.upper, input.upperNdcY);
-  const radius = (lower.s * upper.c - upper.s * lower.c) /
-    (lower.k * upper.c - upper.k * lower.c);
-  return {
-    radius,
-    targetX: origin[0],
-    targetY: (lower.s - lower.k * radius) / lower.c,
-    targetZ: origin[2],
-  };
-}
-
-const partById = (id: string) => {
-  const part = CAT_ANATOMY.find((candidate) => candidate.id === id);
-  if (!part) throw new RangeError(`Missing canonical cat part: ${id}`);
-  return part;
-};
-const frontPaw = partById("pawFL");
-const headPart = partById("head");
-const earPart = partById("earL");
-const eyePart = partById("eyeL");
-
-/** Whole diorama: room corner, wall top and the rig paw plane. */
-export function overviewFraming(modelScale: number = CAT_MODEL_SCALE): DioramaFraming {
-  const floorY = catGroundY(modelScale);
-  return solveDioramaFraming({
-    lower: [0, floorY, frontPaw.position[2] * modelScale],
-    upper: [-ROOM_HALF, floorY + ROOM_WALL_HEIGHT, -ROOM_HALF],
-    yawDeg: ROOM_VIEW.yawDeg,
-    elevationDeg: ROOM_VIEW.elevationDeg,
-    lowerNdcY: ROOM_VIEW.lowerNdcY,
-    upperNdcY: ROOM_VIEW.upperNdcY,
-  });
-}
-
-/** Head close-up after a cat tap: anchor the visible face (the head's front
- * plane, not its mid plane) on the lower band and the ear tips on the upper
- * band, so the whole head stays inside the frame with the eyes readable just
- * under the centre. Anchors come from the rig root via `catPartWorldY`; taking
- * them from the paw plane was the defect that pushed the head out of frame.
- */
-export function focusFraming(modelScale: number = CAT_MODEL_SCALE): DioramaFraming {
-  const faceZ = (headPart.position[2] + headPart.args[2] / 2) * modelScale;
-  return solveDioramaFraming({
-    lower: [0, catPartWorldY(headPart.position[1] - headPart.args[1] / 2, modelScale), faceZ],
-    upper: [
-      0,
-      catPartWorldY(earPart.position[1] + earPart.args[1] / 2, modelScale),
-      earPart.position[2] * modelScale,
-    ],
-    yawDeg: ROOM_VIEW.yawDeg,
-    elevationDeg: ROOM_VIEW.elevationDeg,
-    lowerNdcY: ROOM_VIEW.focusLowerNdcY,
-    upperNdcY: ROOM_VIEW.focusUpperNdcY,
-    // Look straight at the eye plane, or the face slides to the frame edge.
-    targetZ: eyePart.position[2] * modelScale,
-  });
-}
-
-export function nextDioramaYaw(current: number, step: number): number {
-  if (!Number.isFinite(step)) return current;
-  const next = current + step;
-  const minimum = ROOM_VIEW.yawDeg - ROOM_VIEW.yawLimitDeg;
-  const maximum = ROOM_VIEW.yawDeg + ROOM_VIEW.yawLimitDeg;
-  return Math.min(maximum, Math.max(minimum, next));
-}
-
-export function nextDioramaZoom(current: number, step: number): number {
-  if (!Number.isFinite(step)) return current;
-  const next = current + step;
-  return Math.min(ROOM_VIEW.zoomRange[1], Math.max(ROOM_VIEW.zoomRange[0], next));
-}
-
-export function resolveDioramaRadius(baseRadius: number, zoom: number): number {
-  const clamped = Math.min(ROOM_VIEW.zoomRange[1], Math.max(ROOM_VIEW.zoomRange[0], zoom));
-  return baseRadius * clamped;
-}
-
-/** 0 → 1 over `focusMs`; reduced motion cuts straight to the final camera. */
-export function tweenProgress(startedAt: number, now: number, reducedMotion: boolean): number {
-  if (reducedMotion) return 1;
-  const elapsed = now - startedAt;
-  if (!Number.isFinite(elapsed) || elapsed >= ROOM_VIEW.focusMs) return 1;
-  return Math.max(0, elapsed / ROOM_VIEW.focusMs);
-}
 
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
 
-export function dioramaCameraPose(
-  framing: DioramaFraming & { yawDeg: number; elevationDeg: number },
-): { position: Vec3; target: Vec3 } {
-  const dir = dioramaDirection(framing.yawDeg, framing.elevationDeg);
-  return {
-    position: [
-      framing.targetX + dir[0] * framing.radius,
-      framing.targetY + dir[1] * framing.radius,
-      framing.targetZ + dir[2] * framing.radius,
-    ],
-    target: [framing.targetX, framing.targetY, framing.targetZ],
-  };
-}
-
-type CameraView = DioramaFraming & { yawDeg: number };
+type CameraView = HomeCameraView;
 
 function applyCamera(camera: PerspectiveCamera, view: CameraView) {
-  const pose = dioramaCameraPose({ ...view, elevationDeg: ROOM_VIEW.elevationDeg });
+  const pose = dioramaCameraPose({ ...view, elevationDeg: FIELD_VIEW.elevationDeg });
   camera.position.fromArray([...pose.position]);
   camera.lookAt(...pose.target);
   camera.updateProjectionMatrix();
@@ -271,16 +124,16 @@ function HomeCamera({
   modelScale: number;
 }) {
   const camera = useThree((state) => state.camera) as PerspectiveCamera;
-  const goal = useMemo<CameraView>(() => {
-    const base = focus ? focusFraming(modelScale) : overviewFraming(modelScale);
-    return { ...base, radius: resolveDioramaRadius(base.radius, zoom), yawDeg };
-  }, [focus, modelScale, zoom, yawDeg]);
+  const goal = useMemo<CameraView>(
+    () => homeCameraView({ yawDeg, zoom, focus, modelScale }),
+    [focus, modelScale, zoom, yawDeg],
+  );
   const current = useRef<CameraView | null>(null);
   const tween = useRef<{ from: CameraView; to: CameraView; start: number } | null>(null);
 
   useLayoutEffect(() => {
     camera.near = near;
-    if (camera.fov !== ROOM_VIEW.fovDeg) camera.fov = ROOM_VIEW.fovDeg;
+    if (camera.fov !== FIELD_VIEW.fovDeg) camera.fov = FIELD_VIEW.fovDeg;
     if (!current.current) {
       current.current = goal;
       applyCamera(camera, goal);
@@ -327,21 +180,6 @@ function HomeCamera({
   return null;
 }
 
-/** Defers the ~0.4 s procedural room build past the first painted frame. */
-function scheduleIdle(task: () => void): () => void {
-  if (typeof window === "undefined") return () => undefined;
-  const idleWindow = window as Window & {
-    requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-    cancelIdleCallback?: (handle: number) => void;
-  };
-  if (typeof idleWindow.requestIdleCallback === "function") {
-    const handle = idleWindow.requestIdleCallback(task, { timeout: 400 });
-    return () => idleWindow.cancelIdleCallback?.(handle);
-  }
-  const handle = window.setTimeout(task, 60);
-  return () => window.clearTimeout(handle);
-}
-
 /** Reads the clock once on resume so the first frame after a pause is normal. */
 function ClockGuard({ paused }: { paused: boolean }) {
   const clock = useThree((state) => state.clock);
@@ -353,33 +191,30 @@ function ClockGuard({ paused }: { paused: boolean }) {
   return null;
 }
 
-/** Mounts the merged room on layer 1 and scopes the layer masks to this view. */
-function RoomScene({ floorY }: { floorY: number }) {
+/** Mounts the open field on layer 1 and scopes the layer masks to this view.
+ *
+ * The field is one cheap merged geometry (a plate plus its lattice), so it is
+ * built in this effect instead of being deferred to an idle callback: the first
+ * painted frame already shows the field, never an empty stage (S6). The voxel
+ * room shell is no longer mounted; `createRoom` stays available for the walls
+ * that become placeable items later (S3/S4).
+ */
+function FieldScene({ floorY }: { floorY: number }) {
   const scene = useThree((state) => state.scene) as Scene;
   const camera = useThree((state) => state.camera) as PerspectiveCamera;
   const raycaster = useThree((state) => state.raycaster) as Raycaster;
 
   useEffect(() => {
     const previous = { camera: camera.layers.mask, raycaster: raycaster.layers.mask };
-    // Home sees the room; the contact-shadow depth pass stays on layer 0.
+    // Home sees the field; the contact-shadow depth pass stays on layer 0.
     camera.layers.enable(1);
     raycaster.layers.enable(1);
-    let cancelled = false;
-    let room: ReturnType<typeof createRoom> | null = null;
-    const attach = () => {
-      if (cancelled || room) return;
-      room = createRoom();
-      room.mesh.position.y = floorY;
-      scene.add(room.mesh);
-    };
-    const cancel = scheduleIdle(attach);
+    const field = createField();
+    field.mesh.position.y = floorY;
+    scene.add(field.mesh);
     return () => {
-      cancelled = true;
-      cancel();
-      if (room) {
-        scene.remove(room.mesh);
-        room.dispose();
-      }
+      scene.remove(field.mesh);
+      field.dispose();
       camera.layers.mask = previous.camera;
       raycaster.layers.mask = previous.raycaster;
     };
@@ -420,17 +255,21 @@ export function Cat3DViewer({
   const isHome = variant === "home";
   const [orbiting, setOrbiting] = useState(false);
   const poseMount = useMemo(() => ({ careEvent, posePreview }), [careEvent, posePreview]);
-  const [ceiling] = useState(() => typeof window === "undefined" ? 1 : maxDprForDevice({
+  const [hints] = useState(() => typeof window === "undefined" ? null : {
     deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
     hardwareConcurrency: navigator.hardwareConcurrency,
     devicePixelRatio: window.devicePixelRatio,
-  }));
-  const [selectedDpr, setSelectedDpr] = useState(ceiling);
+  });
+  const [ceiling] = useState(() => hints ? maxDprForDevice(hints) : 1);
+  /** S6: the low tier opens at DPR 1 with no MSAA and adapts from there. */
+  const [initialDpr] = useState(() => hints ? initialDprForDevice(hints) : 1);
+  const [antialias] = useState(() => hints ? antialiasForDevice(hints) : false);
+  const [selectedDpr, setSelectedDpr] = useState(initialDpr);
   const [statsEnabled] = useState(() => typeof window !== "undefined"
     && new URLSearchParams(window.location.search).get("pet3dStats") === "1");
   const [statsParent, setStatsParent] = useState<HTMLDivElement | null>(null);
   const statsParentRef = useMemo(() => statsParent ? { current: statsParent } : undefined, [statsParent]);
-  const selectedDprRef = useRef(ceiling);
+  const selectedDprRef = useRef(initialDpr);
   const frozen = useRef(false);
   const applyFactor = useCallback((factor: number) => {
     if (frozen.current) return;
@@ -447,7 +286,7 @@ export function Cat3DViewer({
     frozen.current = true;
   }, [applyFactor]);
 
-  const [yawDeg, setYawDeg] = useState<number>(ROOM_VIEW.yawDeg);
+  const [yawDeg, setYawDeg] = useState<number>(FIELD_VIEW.yawDeg);
   const [zoom, setZoom] = useState<number>(1);
   const [focus, setFocus] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -534,9 +373,12 @@ export function Cat3DViewer({
 
   return (
     <div className={styles.viewerShell}>
+      {/* S6: the field the 3D canvas is about to paint, always underneath it, so
+          the loading state and the loaded state are the same picture. */}
+      {isHome && <FieldBackdrop modelScale={modelScale} yawDeg={yawDeg} zoom={zoom} />}
       <div
         ref={hostRef}
-        className={styles.canvasHost}
+        className={isHome ? `${styles.canvasHost} ${styles.canvasHostField}` : styles.canvasHost}
         role="img"
         aria-label={ariaLabel}
         {...(isHome
@@ -557,7 +399,7 @@ export function Cat3DViewer({
           dpr={selectedDpr}
           frameloop={isHome && paused ? "never" : "always"}
           flat
-          gl={{ antialias: true, alpha: true }}
+          gl={{ antialias, alpha: true }}
         >
           <PerformanceMonitor
             factor={1}
@@ -609,7 +451,7 @@ export function Cat3DViewer({
           {isHome ? (
             <>
               <ClockGuard paused={paused} />
-              <RoomScene floorY={groundY} />
+              <FieldScene floorY={groundY} />
               <HomeCamera
                 yawDeg={yawDeg}
                 zoom={zoom}
@@ -637,13 +479,13 @@ export function Cat3DViewer({
       {isHome && (
         <div className={styles.viewerControls} role="group" aria-label="Cámara de la habitación">
           <button type="button" className={styles.viewerControl} aria-label="Girar la cámara a la izquierda"
-            onClick={() => rotate(-ROOM_VIEW.yawStepDeg)}>‹</button>
+            onClick={() => rotate(-FIELD_VIEW.yawStepDeg)}>‹</button>
           <button type="button" className={styles.viewerControl} aria-label="Girar la cámara a la derecha"
-            onClick={() => rotate(ROOM_VIEW.yawStepDeg)}>›</button>
+            onClick={() => rotate(FIELD_VIEW.yawStepDeg)}>›</button>
           <button type="button" className={styles.viewerControl} aria-label="Acercar la cámara"
-            onClick={() => zoomBy(-ROOM_VIEW.zoomStep)}>+</button>
+            onClick={() => zoomBy(-FIELD_VIEW.zoomStep)}>+</button>
           <button type="button" className={styles.viewerControl} aria-label="Alejar la cámara"
-            onClick={() => zoomBy(ROOM_VIEW.zoomStep)}>−</button>
+            onClick={() => zoomBy(FIELD_VIEW.zoomStep)}>−</button>
           <button type="button" className={styles.viewerControl} aria-label="Ver la habitación completa"
             onClick={overview}>⟲</button>
         </div>

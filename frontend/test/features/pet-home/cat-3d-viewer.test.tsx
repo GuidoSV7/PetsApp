@@ -6,7 +6,7 @@ import {
   CAT_VIEW_LIGHTS,
   CAT_VIEW_SHADOW,
   Cat3DViewer,
-  ROOM_VIEW,
+  FIELD_VIEW,
 } from "@/features/pet-home/components/Cat3DViewer";
 import { catRoleMaterials } from "@/features/pet-home/components/Cat3DModel";
 import { defaultCatDesign } from "@/features/admin/cat-design-settings";
@@ -139,15 +139,40 @@ describe("Cat3DViewer", () => {
   });
 
   it.each([
-    [0.5, 8, 3, 1.25], [1, 8, 3, 1.25], [2, 8, 3, 1.25],
     [2.01, 2, 3, 1.5], [4, undefined, 3, 1.5], [8, 2, 3, 1.75], [8, undefined, 3, 1.75],
-    [undefined, 1, 3, 1.25], [undefined, 2, 3, 1.25], [undefined, undefined, 3, 1.5], [undefined, 8, 3, 1.5],
-    [8, 8, 1, 1], [8, 8, 1.37, 1.35], [4, 8, 1.49, 1.45], [8, 8, 1.74, 1.7], [2, 8, 1.23, 1.2],
-    [8, 8, 0.8, 1], [undefined, 2, 0.8, 1], [8, 8, 1.15, 1.15],
-  ])("starts at numeric ceiling for memory=%s cores=%s dpr=%s", (memory, cores, dpr, expected) => {
+    [undefined, undefined, 3, 1.5], [undefined, 8, 3, 1.5],
+    [8, 8, 1, 1], [8, 8, 1.37, 1.35], [4, 8, 1.49, 1.45], [8, 8, 1.74, 1.7],
+    [8, 8, 0.8, 1], [8, 8, 1.15, 1.15], [4, 2, 1.5, 1.5], [8, 2, 1.75, 1.75],
+  ])("starts the first frame at the numeric ceiling for memory=%s cores=%s dpr=%s", (memory, cores, dpr, expected) => {
     hints(memory, cores, dpr!);
     render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
     expect(selected()).toBe(expected);
+    expect(canvas.mock.lastCall![0].gl).toMatchObject({ antialias: true });
+  });
+
+  it.each([
+    [0.5, 8, 3], [1, 8, 3], [2, 8, 3], [undefined, 1, 3], [undefined, 2, 3],
+    [2, 8, 1.23], [2, 2, 1.25], [undefined, 2, 0.8],
+  ])("starts the low tier at DPR 1 with no MSAA for memory=%s cores=%s dpr=%s (S6)", (memory, cores, dpr) => {
+    hints(memory, cores, dpr!);
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    // The first frame is the expensive one on a low-end phone: one device pixel
+    // per CSS pixel and no multisample buffer.
+    expect(selected()).toBe(1);
+    expect(canvas.mock.lastCall![0].gl).toMatchObject({ antialias: false });
+  });
+
+  it("keeps the adaptive DPR after the cheap low-tier first frame", () => {
+    hints(2, 8, 3);
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(selected()).toBe(1);
+    act(() => callbacks().onChange({ factor: 1 }));
+    expect(selected()).toBe(1.25);
+    act(() => callbacks().onChange({ factor: 0.5 }));
+    expect(selected()).toBe(1.1);
+    act(() => callbacks().onFallback({ factor: 0 }));
+    expect(selected()).toBe(1);
+    expect(canvas.mock.lastCall![0].gl).toMatchObject({ antialias: false });
   });
 
   it("sets the requested monitor props, including a bounds function and flipflops eight", () => {
@@ -297,19 +322,19 @@ describe("home diorama camera and accessible rotation (S1/S2)", () => {
     const host = () => screen.getByRole("img");
     const yaw = () => Number(host().getAttribute("data-camera-yaw"));
     const zoom = () => Number(host().getAttribute("data-camera-zoom"));
-    expect(yaw()).toBe(ROOM_VIEW.yawDeg);
+    expect(yaw()).toBe(FIELD_VIEW.yawDeg);
     expect(zoom()).toBe(1);
     fireEvent.click(screen.getByRole("button", { name: "Girar la cámara a la derecha" }));
-    expect(yaw()).toBe(ROOM_VIEW.yawDeg + ROOM_VIEW.yawStepDeg);
+    expect(yaw()).toBe(FIELD_VIEW.yawDeg + FIELD_VIEW.yawStepDeg);
     for (let i = 0; i < 8; i++) fireEvent.click(screen.getByRole("button", { name: "Girar la cámara a la derecha" }));
-    expect(yaw()).toBe(ROOM_VIEW.yawDeg + ROOM_VIEW.yawLimitDeg);
+    expect(yaw()).toBe(FIELD_VIEW.yawDeg + FIELD_VIEW.yawLimitDeg);
     for (let i = 0; i < 12; i++) fireEvent.click(screen.getByRole("button", { name: "Girar la cámara a la izquierda" }));
-    expect(yaw()).toBe(ROOM_VIEW.yawDeg - ROOM_VIEW.yawLimitDeg);
+    expect(yaw()).toBe(FIELD_VIEW.yawDeg - FIELD_VIEW.yawLimitDeg);
     // The zoom state is a radius scale: 0.8R is closer, 1.2R is further away.
     for (let i = 0; i < 8; i++) fireEvent.click(screen.getByRole("button", { name: "Alejar la cámara" }));
-    expect(zoom()).toBeCloseTo(ROOM_VIEW.zoomRange[1], 6);
+    expect(zoom()).toBeCloseTo(FIELD_VIEW.zoomRange[1], 6);
     for (let i = 0; i < 12; i++) fireEvent.click(screen.getByRole("button", { name: "Acercar la cámara" }));
-    expect(zoom()).toBeCloseTo(ROOM_VIEW.zoomRange[0], 6);
+    expect(zoom()).toBeCloseTo(FIELD_VIEW.zoomRange[0], 6);
     expect(screen.getByRole("group", { name: "Cámara de la habitación" })).toBeTruthy();
   });
 

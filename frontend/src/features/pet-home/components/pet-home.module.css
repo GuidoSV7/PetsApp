@@ -366,6 +366,62 @@
   touch-action: pan-y;
 }
 
+/* Home viewer: the field backdrop paints the sky and the ground, so the canvas
+   host itself stays transparent and nothing changes colour when WebGL arrives. */
+.canvasHostField {
+  background: none;
+}
+
+/* S6: sky plus the 16 × 16 field, drawn in the same 4:5 frame and with the same
+   camera pose as the 3D field. It is the loading placeholder and it also stays
+   behind the transparent canvas, so loading and loaded look identical. */
+.fieldBackdrop {
+  --field-ground: #5b9b52;
+  --field-line: #4a8643;
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 70% at 50% 8%, #f3f8ee 0%, #e2eddc 42%, #cfdec8 100%);
+}
+
+.fieldCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fieldPlate {
+  fill: var(--field-ground);
+  stroke: none;
+}
+
+.fieldLine {
+  fill: none;
+  stroke: var(--field-line);
+  stroke-width: 1px;
+  /* The SVG viewBox is stretched to the 4:5 frame, so keep strokes 1 CSS px. */
+  vector-effect: non-scaling-stroke;
+}
+
+/* Announced to assistive tech, never drawn: the loading state must not paint a
+   bare text node over the field. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .interactHint {
   margin: 6px 0 0;
   padding: 6px 12px;

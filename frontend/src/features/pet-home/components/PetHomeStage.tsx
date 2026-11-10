@@ -10,6 +10,7 @@ import {
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
+import { FieldPlaceholder } from "@/features/pet-home/components/FieldBackdrop";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
@@ -39,11 +40,10 @@ const Cat3DViewer = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className={styles.canvasHost} role="status">
-        Cargando a {DEFAULT_PET_NAME}…
-      </div>
-    ),
+    // S6: the fallback is the field itself, never an empty green rectangle with a
+    // loose line of text. Next starts this import on first render, so the chunk is
+    // already loading while the placeholder is on screen.
+    loading: () => <FieldPlaceholder />,
   },
 );
 

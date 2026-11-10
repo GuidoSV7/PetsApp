@@ -1,5 +1,16 @@
 # B1 — A procedural room for the home cat
 
+> **Partially superseded by [`pet-open-world`](../pet-open-world/plan.md) (task T1: S1, S2).**
+> The owner then asked for an open green field with no walls (S1) made of 16 × 16 squares (S2),
+> so the room this document specifies is **no longer the default world**. Superseded here, marked
+> inline below and kept as history, never deleted: the two walls / baseboard / fixed window
+> (§Decision summary “Room”, §3, §4 palette), the 8 × 8 extent (§Decision summary “Grid”, §3) and
+> the wall-anchored overview framing (§2 “Framing and zoom”). Still in force: the 4:5 frame,
+> bounded camera controls, grid cell size/inverse mapping/orientation, layer and contact-shadow
+> ownership, offscreen pause, accessible controls, admin-preview isolation and every preserved UI
+> surface. `createRoom()` itself survives unmodified and unmounted as the builder the placeable
+> walls will use (§3 of the superseding plan).
+
 **Plan only. Do not implement until A2 has an owner-authorized merge into main.**
 Branch `feat/pet-room-shell` starts at verified main `70906fdb87e2279268901ee791afeb1371051dd2`. This document proposes a home-only room, not locomotion, inventory, purchases or decoration. No application code, assets, tests, environments or production state were changed for this plan.
 
@@ -15,6 +26,11 @@ Branch `feat/pet-room-shell` starts at verified main `70906fdb87e2279268901ee791
 | Layers | Room render mesh exclusively layer 1; main camera/raycaster layers 0+1 | Contact-shadow camera remains layer 0 |
 | Visibility | Visible: normal render loop. Hidden: `never`, with input/tween invalidation suspended | No second clock/manual advance or hidden catch-up |
 | Implementation | Merge approved A2 main with a merge commit first | Never rebase or modify another task worktree |
+
+Superseded rows (see the banner above): **Room** — the default world has ground only, walls
+becomes placeable items; **Grid** — 16 × 16, not 8 × 8; **Camera** — the overview is anchored on
+the field's far corner, not on a wall top. The rows about layout, focus, layers, visibility and
+implementation still hold.
 
 Proposals below are not browser/performance results. Evidence and official links: [source notes](evidence/source-notes.md).
 
@@ -35,6 +51,10 @@ The admin preview must retain its existing framing and behavior. New room/camera
 ### Framing and zoom
 
 Use +Y up and the cat's canonical +Z forward. Initial yaw is 45°, bounded to [25°, 65°]; elevation is 35°, bounded to [30°, 40°]. These are proposed authoring values, to validate against all room corners and both walls. Disable pan and unrestricted orbit.
+
+> **Superseded by [`pet-open-world`](../pet-open-world/specs/open-field.md) R6:** with no walls
+> there is no room bound to fit, so `R` is solved from the front paw plane and the far field
+> corner. The bounded yaw/elevation/zoom limits and the tween below remain in force.
 
 Compute overview radius `R` by fitting the projected room bounds at the actual 4:5 viewport, with a 10% safe margin; do not reuse the current distance 3.05. Keep a fixed proposed perspective FOV of 35°. Overview manual zoom is clamped to [0.8R, 1.2R]. Automatic focus uses a separate bounded head-framing radius `F`, with manual focus zoom [0.9F, 1.2F]; fit eye/pupil readability and avoid wall/near-plane clipping before freezing F. Neither radius follows live breathing bounds.
 
@@ -59,6 +79,11 @@ Implementation follows A2's actual merged look-input and pause contracts. Names/
 
 ## 3. Grid: the contract for B2, B3 and A4
 
+> **Partially superseded by [`pet-open-world`](../pet-open-world/specs/open-field.md) R2/R3:**
+> the grid is now a 16 × 16 field (`FIELD_SIZE`) and the north/west walls are not part of the
+> default world. The cell size `c = L/2`, the cell centres, the half-open inverse mapping, the
+> quarter-turn orientation convention and the frozen `Yfloor = 0` remain in force unchanged.
+
 Define the room in a room-local, right-handed frame: +X east/right, +Y up, −Z north/back. Cat canonical forward remains +Z. Walls occupy the north and west perimeter; camera yaw bounds remain on the open south/east side.
 
 Freeze `L` as the longitudinal Z extent of the immutable canonical A1 neutral visible boxes at the default design, multiplied by the fixed default model scale. Derive it from immutable box corners once, not live scene bounds; exclude coat patches, animation, hunger/depth variants, UI yaw and newly visible animation extensions. Record the derived numeric value in the future grid fixture before B2 consumes it. The research proposal `L ≈ .9126` (1.17 × .78) is an estimate to check, **not a certified measurement or a second definition**. The source-derived definition is authoritative.
@@ -76,6 +101,11 @@ Freeze room-local `Yfloor=0`. Align the existing model into that frame with an o
 North wall local origin: `(-4c,Yfloor,-4c)`, wall U east (+X), V up. West wall origin: `(-4c,Yfloor,+4c)`, U north (−Z), V up. Proposed wall height is 1.5L. Wall thickness/baseboard/window dimensions are authored in L and remain fixed; a fixed opaque inset window panel needs no transparency or external scenery. Window/baseboard geometry is not an inventory item.
 
 ## 4. Geometry, AO, lighting and palette
+
+> **Superseded for the default world by [`pet-open-world`](../pet-open-world/specs/open-field.md)
+> R4/R5:** the world is a flat unlit plate with one lattice, no AO, no walls, baseboard, window or
+> rug. Every palette value below survives only inside the retained, unmounted wall builder
+> (`ROOM_PALETTE` in `room-geometry.ts`); the shipped field palette is `FIELD_PALETTE`.
 
 Construct floor, walls, baseboard and window procedurally once per immutable room-design key. Merge compatible geometries without groups, with a color attribute and one opaque material [Three optimization](https://threejs.org/manual/pages/optimize-lots-of-objects.html). One geometry is not one draw if it contains material groups [BufferGeometry](https://threejs.org/docs/pages/BufferGeometry.html). No texture, GLB, HDRI, SSAO, physics engine or new geometry dependency is planned.
 
