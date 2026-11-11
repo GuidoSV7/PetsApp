@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   applyCare,
   applyCoat,
@@ -14,6 +19,8 @@ import {
 } from './pet-rules.js';
 import {
   PET_REPOSITORY,
+  PetStateMissingError,
+  type PetMutate,
   type PetRepository,
   type PetStateRow,
 } from './ports/pet-repository.port.js';
@@ -54,10 +61,9 @@ export class PetService {
       throw new BadRequestException(`Unknown care action: ${actionRaw}`);
     }
     const action: CareAction = actionRaw;
-    const current = await this.requireRow(key);
-    const result = applyCare(this.toSnapshot(current), action);
-    const saved = await this.pets.update(key, result.snapshot);
-    return this.toDto(saved);
+    return this.mutate(key, (current) =>
+      applyCare(this.toSnapshot(current), action).snapshot,
+    );
   }
 
   async setCoat(
@@ -75,15 +81,14 @@ export class PetService {
     if (coat.pattern !== undefined && !isCoatPattern(coat.pattern)) {
       throw new BadRequestException('Unknown coat pattern');
     }
-    const current = await this.requireRow(key);
-    const next = applyCoat(this.toSnapshot(current), {
-      primary: coat.primary.toLowerCase(),
-      secondary: coat.secondary.toLowerCase(),
-      accent: coat.accent.toLowerCase(),
-      pattern: coat.pattern,
-    });
-    const saved = await this.pets.update(key, next);
-    return this.toDto(saved);
+    return this.mutate(key, (current) =>
+      applyCoat(this.toSnapshot(current), {
+        primary: coat.primary.toLowerCase(),
+        secondary: coat.secondary.toLowerCase(),
+        accent: coat.accent.toLowerCase(),
+        pattern: coat.pattern,
+      }),
+    );
   }
 
   async rename(
@@ -91,19 +96,36 @@ export class PetService {
     rawName: string,
   ): Promise<PetStateDto> {
     const key = this.assertGuestKey(guestKey);
-    const current = await this.requireRow(key);
-    const result = applyRename(this.toSnapshot(current), rawName);
-    if (!result.ok && result.reason === 'invalid') {
-      throw new BadRequestException('Invalid pet name');
-    }
-    const saved = await this.pets.update(key, result.snapshot);
-    return this.toDto(saved);
+    return this.mutate(key, (current) => {
+      const result = applyRename(this.toSnapshot(current), rawName);
+      if (!result.ok && result.reason === 'invalid') {
+        throw new BadRequestException('Invalid pet name');
+      }
+      return result.snapshot;
+    });
   }
 
-  private async requireRow(guestKey: string): Promise<PetStateRow> {
+  /**
+   * Mutates the pet under a row lock so concurrent writes cannot lose updates.
+   * A pet never seen before is created first (race-safe); a row that vanishes
+   * after it was known answers 404 instead of a plain 500.
+   */
+  private async mutate(
+    guestKey: string,
+    compute: PetMutate,
+  ): Promise<PetStateDto> {
     const existing = await this.pets.findByGuestKey(guestKey);
-    if (existing) return existing;
-    return this.pets.create(guestKey, initialSnapshot());
+    if (!existing) {
+      await this.pets.create(guestKey, initialSnapshot());
+    }
+    try {
+      return this.toDto(await this.pets.mutateLocked(guestKey, compute));
+    } catch (error) {
+      if (error instanceof PetStateMissingError) {
+        throw new NotFoundException('Pet state not found');
+      }
+      throw error;
+    }
   }
 
   private toSnapshot(row: PetStateRow): PetSnapshot {
