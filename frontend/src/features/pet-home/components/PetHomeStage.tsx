@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   applyPetAction,
   applyPetCoat,
@@ -102,7 +102,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     return () => window.clearTimeout(timer);
   }, [statusKey]);
 
-  const applyState = (state: PetStateResponse, bounce = false) => {
+  const applyState = useCallback((state: PetStateResponse, bounce = false) => {
     onCoinsChangeRef.current?.(state.coins);
     setNeeds(state.needs);
     setCoat(state.coat);
@@ -115,28 +115,29 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     setReady(true);
     setPulse((n) => n + 1);
     if (bounce) setReactPulse((n) => n + 1);
-  };
+  }, []);
+
+  const cargarEstado = useCallback(async () => {
+    try {
+      const state = await fetchPetState();
+      applyState(state);
+      setLoadError(null);
+    } catch {
+      setReady(false);
+      setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
+    }
+  }, [applyState]);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        const state = await fetchPetState();
-        if (!cancelled) {
-          applyState(state);
-          setLoadError(null);
-        }
-      } catch {
-        if (!cancelled) {
-          setReady(false);
-          setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
-        }
-      }
+      if (cancelled) return;
+      await cargarEstado();
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [cargarEstado]);
 
   const onRename = async (nextName: string) => {
     if (locked) return;
@@ -222,9 +223,18 @@ export function PetHomeStage({ onCoinsChange }: Props) {
               <span className={styles.moodValue}>{moodCaption(mood)}</span>
             </p>
             {loadError ? (
-              <p className={styles.loadError} role="alert">
-                {loadError}
-              </p>
+              <div className={styles.loadErrorRow}>
+                <p className={styles.loadError} role="alert">
+                  {loadError}
+                </p>
+                <button
+                  type="button"
+                  className={styles.loadRetry}
+                  onClick={() => void cargarEstado()}
+                >
+                  Reintentar
+                </button>
+              </div>
             ) : null}
           </div>
           <PersonalizeStrip
@@ -263,6 +273,15 @@ export function PetHomeStage({ onCoinsChange }: Props) {
       </div>
 
       <div className={styles.actions}>
+        <button
+          type="button"
+          className={`${styles.careButton} ${styles.carePet}`}
+          disabled={locked}
+          onClick={() => void runAction("pet", { purr: true, bounce: true })}
+        >
+          <CareIcon kind="pet" />
+          Acariciar
+        </button>
         <button
           type="button"
           className={`${styles.careButton} ${styles.careFeed}`}
@@ -310,7 +329,18 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   );
 }
 
-function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" }) {
+function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" | "pet" }) {
+  if (kind === "pet") {
+    return (
+      <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+        {/* Heart for the petting action */}
+        <path
+          fill="currentColor"
+          d="M12 20.4l-1.7-1.55C5.4 14.5 2.6 12 2.6 8.8A4.3 4.3 0 0 1 7 4.3c1.6 0 3.1.75 4.1 1.95l.9 1.05.9-1.05a5.35 5.35 0 0 1 4.1-1.95 4.3 4.3 0 0 1 4.4 4.5c0 3.2-2.8 5.7-7.7 10.05L12 20.4z"
+        />
+      </svg>
+    );
+  }
   if (kind === "feed") {
     return (
       <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
