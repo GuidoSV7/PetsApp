@@ -155,22 +155,34 @@ describe('UsersService (in-memory repository)', () => {
         profileImage: null,
         country: null,
         isVerified: false,
+        tokenVersion: 0,
         lastLogin: null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
     });
 
-    it('maps a missing id to NotFoundException and lets repository errors through', async () => {
+    it('maps a missing id to NotFoundException and a taken email to a conflict (S4)', async () => {
       await repo.create(userData({ email: 'taken@x.com' }));
-      const other = await repo.create(userData({ email: 'other@x.com' }));
+      const other = await repo.create(
+        userData({
+          email: 'other@x.com',
+          password: bcrypt.hashSync('secret1', 4),
+        }),
+      );
 
       await expect(service.update(MISSING_ID, { name: 'x' })).rejects.toEqual(
         notFound(MISSING_ID),
       );
       await expect(
         service.update(other.id, { email: 'taken@x.com' }),
-      ).rejects.toThrow(/duplicate key/);
+      ).rejects.toThrow('the current password is required');
+      await expect(
+        service.update(other.id, {
+          email: 'taken@x.com',
+          currentPassword: 'secret1',
+        }),
+      ).rejects.toThrow('Email already registered');
     });
   });
 
