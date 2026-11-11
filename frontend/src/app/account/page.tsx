@@ -11,6 +11,7 @@ import {
   isAdminRole,
   type SessionUser,
 } from "@/stores/auth-session";
+import estilos from "./account.module.css";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -36,26 +37,24 @@ export default function AccountPage() {
   };
 
   if (!user) {
-    return (
-      <main style={{ padding: 28, fontWeight: 700 }}>
-        Comprobando sesión…
-      </main>
-    );
+    return <main className={estilos.checking}>Comprobando sesión…</main>;
   }
 
   return (
-    <main style={{ maxWidth: 480, margin: "48px auto", padding: "0 20px" }}>
-      <p style={{ marginBottom: 12 }}>
-        <Link href="/">← Inicio</Link>
+    <main className={estilos.panel}>
+      <p>
+        <Link href="/" className={estilos.backLink}>
+          ← Inicio
+        </Link>
       </p>
-      <h1 style={{ fontSize: 28, marginBottom: 8 }}>Mi cuenta</h1>
-      <p style={{ marginBottom: 4 }}>
+      <h1 className={estilos.title}>Mi cuenta</h1>
+      <p className={`${estilos.dato} ${estilos.nombre}`}>
         <strong>Nombre:</strong> {user.name}
       </p>
-      <p style={{ marginBottom: 20 }}>
+      <p className={`${estilos.dato} ${estilos.correo}`}>
         <strong>Correo:</strong> {user.email}
       </p>
-      <button type="button" onClick={signOut} style={{ fontWeight: 700, padding: "10px 16px" }}>
+      <button type="button" className={estilos.logout} onClick={signOut}>
         Cerrar sesión
       </button>
     </main>
