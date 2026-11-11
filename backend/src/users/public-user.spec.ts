@@ -15,6 +15,7 @@ const row = (overrides: Partial<UserRow> = {}): UserRow => ({
   profileImage: null,
   country: 'AR',
   isVerified: true,
+  tokenVersion: 0,
   lastLogin: new Date('2026-01-02T03:04:05.000Z'),
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
   updatedAt: new Date('2026-01-01T00:00:00.000Z'),

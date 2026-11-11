@@ -7,6 +7,11 @@ const RANK: Record<UserRole, number> = {
   [UserRole.SUPER_ADMIN]: 2,
 };
 
+/** Rank of a single role; a custom role reads as the lowest rank. */
+export function rankOf(role: UserRole): number {
+  return RANK[role] ?? 0;
+}
+
 const asList = (role: UserRole | readonly UserRole[]): UserRole[] =>
   typeof role === 'string' ? [role] : [...role];
 

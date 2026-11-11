@@ -66,6 +66,7 @@ describe('AuthService register (in-memory repositories)', () => {
     expect(jwt.sign).toHaveBeenCalledWith({
       sub: stored!.id,
       email: 'ana@example.com',
+      tv: 0,
     });
   });
 

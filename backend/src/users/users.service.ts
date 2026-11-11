@@ -1,12 +1,18 @@
 import {
   Inject,
   Injectable,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { traceWrite } from '../logging/service-log.js';
+import { primaryRole, rankOf } from '../auth/role-rank.js';
+import { EMAIL_TAKEN, normalizeEmail } from '../auth/auth.service.js';
+import { pgErrorCode } from '../database/pg-error.util.js';
 import { CompleteUserDto } from './dto/complete-user.dto.js';
 import { UserProfileDto } from './dto/user-profile.dto.js';
 import {
@@ -20,13 +26,29 @@ import {
 /** The only columns a profile update may write (everything else is ignored). */
 export type UpdateUserInput = Partial<
   Pick<UserData, 'name' | 'email' | 'profileImage' | 'country'>
->;
+> & {
+  /** S5: required whenever the email actually changes. */
+  currentPassword?: string;
+};
 
 export const userNotFound = (id: string) =>
   new NotFoundException(`User with id ${id} not found`);
 
+/** S2: an admin may never manage an account of equal or higher rank. */
+export const MANAGE_RANK_MESSAGE =
+  'Only a super admin can manage an account of equal or higher rank';
+const SELF_BLOCK_MESSAGE = 'You cannot block your own account';
+const EMAIL_CHANGE_PASSWORD_MESSAGE =
+  'the current password is required to change the email';
+
+const rankOfUser = (user: { role: string; roles?: string[] }): number =>
+  rankOf(primaryRole((user.roles?.length ? user.roles : [user.role]) as never));
+
 /** Never answer the password hash. */
 const withoutPassword = ({ password: _hash, ...rest }: UserRow) => rest;
+
+/** S11: page size of the admin user list when the caller sends no limit. */
+export const DEFAULT_ADMIN_LIST_LIMIT = 100;
 
 @Injectable()
 export class UsersService {
@@ -79,10 +101,14 @@ export class UsersService {
   async findAllComplete(
     search?: string,
     includeInactive: boolean = true,
+    limit: number = DEFAULT_ADMIN_LIST_LIMIT,
+    offset?: number,
   ): Promise<CompleteUserDto[]> {
     const users = await this.users.findMany({
       search: search || undefined,
       includeInactive,
+      limit,
+      offset,
     });
     return users.map((user) => this.toCompleteDto(user));
   }
@@ -92,26 +118,78 @@ export class UsersService {
     return this.toCompleteDto(await this.requirePublic(id));
   }
 
-  update(id: string, updateData: UpdateUserInput) {
+  /**
+   * Profile update. When `actorId` is given and differs from the target,
+   * an admin may only touch lower-rank accounts (S2). On self-service updates
+   * `currentPassword` is required whenever the email actually changes (S5);
+   * an admin acting on a lower-rank account never knows that password. A confirmed email
+   * change resets `isVerified`. A taken email answers 409 (S4).
+   */
+  update(id: string, updateData: UpdateUserInput, actorId?: string) {
     return traceWrite(this.logger, 'user_updated', { id }, async () => {
-      // Explicit mapping: nothing else reaches the repository.
-      const updatedUser = await this.users.update(id, {
+      const current = await this.requirePublic(id);
+      if (actorId && actorId !== id) {
+        const actor = await this.requirePublic(actorId);
+        if (rankOfUser(actor) <= rankOfUser(current)) {
+          throw new ForbiddenException(MANAGE_RANK_MESSAGE);
+        }
+      }
+
+      const emailConfirmed =
+        updateData.email === undefined
+          ? undefined
+          : normalizeEmail(updateData.email);
+      const emailChanged =
+        emailConfirmed !== undefined && emailConfirmed !== current.email;
+      const selfService = !actorId || actorId === id;
+      if (emailChanged && selfService) {
+        if (updateData.currentPassword === undefined) {
+          throw new BadRequestException(EMAIL_CHANGE_PASSWORD_MESSAGE);
+        }
+        const stored = await this.users.findById(id);
+        const verified =
+          stored &&
+          (await bcrypt.compare(updateData.currentPassword, stored.password));
+        if (!verified) {
+          throw new UnauthorizedException('Incorrect password');
+        }
+      }
+
+      const patch = {
         name: updateData.name,
-        email: updateData.email,
+        email: emailConfirmed,
         profileImage: updateData.profileImage,
         country: updateData.country,
-      });
+        ...(emailChanged ? { isVerified: false as const } : {}),
+      };
+      let updatedUser: Awaited<ReturnType<UserRepository['update']>>;
+      try {
+        updatedUser = await this.users.update(id, patch);
+      } catch (error) {
+        // S4: a taken email is a conflict, never a raw 500.
+        throw pgErrorCode(error) === '23505'
+          ? new ConflictException(EMAIL_TAKEN)
+          : error;
+      }
       if (!updatedUser) throw userNotFound(id);
       return withoutPassword(updatedUser);
     });
   }
 
-  toggleBlock(id: string) {
+  /** S2/S12: one-step flip; self-blocks answer 400; rank limits apply. */
+  toggleBlock(id: string, actorId?: string) {
     return traceWrite(this.logger, 'user_block_toggled', { id }, async () => {
-      const user = await this.requirePublic(id);
-      const updatedUser = await this.users.update(id, {
-        isBlocked: !user.isBlocked,
-      });
+      if (actorId === id) {
+        throw new BadRequestException(SELF_BLOCK_MESSAGE);
+      }
+      if (actorId !== undefined) {
+        const actor = await this.requirePublic(actorId);
+        const target = await this.requirePublic(id);
+        if (rankOfUser(actor) <= rankOfUser(target)) {
+          throw new ForbiddenException(MANAGE_RANK_MESSAGE);
+        }
+      }
+      const updatedUser = await this.users.toggleBlock(id);
       if (!updatedUser) throw userNotFound(id);
       return withoutPassword(updatedUser);
     });

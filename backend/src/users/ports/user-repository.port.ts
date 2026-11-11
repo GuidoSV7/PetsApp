@@ -18,10 +18,15 @@ export type UserPublicRow = Omit<UserRow, 'password'>;
 export type UserData = Omit<NewUserRow, 'id' | 'createdAt' | 'updatedAt'>;
 
 export interface UserListFilter {
-  /** `LIKE %search%` on name or email (case-sensitive); empty means no filter. */
+  /** Case-insensitive `ILIKE %search%` on name or email with `%`, `_` and
+   * `\` escaped on both engines; empty means no filter. */
   search?: string;
   /** `false` hides inactive users; `undefined` and `true` list everyone. */
   includeInactive?: boolean;
+  /** Page size on the id-DESC order; `0` answers `[]`. */
+  limit?: number;
+  /** Rows to skip after the id-DESC order. */
+  offset?: number;
 }
 
 export interface UserRepository {
@@ -45,4 +50,10 @@ export interface UserRepository {
    * when the id is missing. Does not touch `updatedAt`.
    */
   update(id: string, patch: Partial<UserData>): Promise<UserRow | null>;
+  /**
+   * Flips `is_blocked` in one step (S12: `SET is_blocked = NOT is_blocked`)
+   * and returns the updated full row, or `null` for a missing id. Rejects on
+   * a malformed uuid (Postgres 22P02).
+   */
+  toggleBlock(id: string): Promise<UserRow | null>;
 }

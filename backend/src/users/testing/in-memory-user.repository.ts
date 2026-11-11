@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { definedFields } from '../../database/update-patch.util.js';
 import {
-  likeMatch,
+  ilikeMatch,
   requireBoolean,
   requireEnum,
+  requireInt,
   requireTimestamp,
   requireUuid,
   requireVarchar,
@@ -16,6 +17,10 @@ import type {
   UserRepository,
   UserRow,
 } from '../ports/user-repository.port.js';
+
+/** Escapes `%`, `_` and `\` so a search term matches literally (S11). */
+const escapeLike = (input: string): string =>
+  input.replace(/[\\%_]/g, '\\$&');
 
 /** Postgres SQLSTATE for a unique index violation. */
 const UNIQUE_VIOLATION = '23505';
@@ -30,6 +35,7 @@ const COLUMNS = [
   'profileImage',
   'country',
   'isVerified',
+  'tokenVersion',
   'lastLogin',
 ] as const;
 
@@ -41,6 +47,7 @@ const DEFAULTS = {
   profileImage: null,
   country: null,
   isVerified: false,
+  tokenVersion: 0,
   lastLogin: null,
 };
 
@@ -97,22 +104,25 @@ export class InMemoryUserRepository implements UserRepository {
   }
 
   findByEmail(email: string): Promise<UserRow | null> {
+    // The callers always pass a normalized (lower-cased) email; the match
+    // itself mirrors the exact-match unique-column lookup of Postgres.
     const row = this.rows.find((r) => r.email === email);
     return Promise.resolve(row ? copy(row) : null);
   }
 
   findMany(filter: UserListFilter = {}): Promise<UserPublicRow[]> {
-    const { search, includeInactive } = filter;
+    const { search, includeInactive, limit, offset } = filter;
     return Promise.resolve(
       this.rows
         .filter(
           (row) =>
             (!search ||
-              likeMatch(row.name, `%${search}%`) ||
-              likeMatch(row.email, `%${search}%`)) &&
+              ilikeMatch(row.name, `%${escapeLike(search)}%`) ||
+              ilikeMatch(row.email, `%${escapeLike(search)}%`)) &&
             (includeInactive !== false || row.isActive),
         )
         .sort((a, b) => (a.id < b.id ? 1 : -1))
+        .slice(offset ?? 0, limit === undefined ? undefined : (offset ?? 0) + limit)
         .map((row) => withoutPassword(copy(row))),
     );
   }
@@ -148,7 +158,9 @@ export class InMemoryUserRepository implements UserRepository {
 
   /** Same SQLSTATE as Postgres (23505), so `pgErrorCode` reads the fake alike. */
   private assertEmailFree(email: string, ownId?: string): void {
-    if (this.rows.some((r) => r.email === email && r.id !== ownId)) {
+    // `lower(email)` is the case-insensitively unique column (S3).
+    const key = email.toLowerCase();
+    if (this.rows.some((r) => r.email.toLowerCase() === key && r.id !== ownId)) {
       throw Object.assign(
         new Error('duplicate key value violates unique constraint on "email"'),
         { code: UNIQUE_VIOLATION },
@@ -172,9 +184,20 @@ export class InMemoryUserRepository implements UserRepository {
       ),
       country: nullable(values.country, (v) => requireVarchar(v, 'country', 2)),
       isVerified: requireBoolean(values.isVerified, 'isVerified'),
+      tokenVersion: requireInt(values.tokenVersion, 'tokenVersion'),
       lastLogin: nullable(values.lastLogin, (v) =>
         requireTimestamp(v, 'lastLogin'),
       ),
     };
+  }
+
+  /** S12: one flip, every other column preserved, mirroring
+   * `UPDATE ... SET is_blocked = NOT is_blocked RETURNING *`. */
+  async toggleBlock(id: string): Promise<UserRow | null> {
+    requireUuid(id, 'id');
+    const row = this.rows.find((r) => r.id === id);
+    if (!row) return null;
+    row.isBlocked = !row.isBlocked;
+    return copy(row);
   }
 }

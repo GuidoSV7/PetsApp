@@ -12,7 +12,7 @@ import {
 
 const { ExtractJwt, Strategy } = passportJwt;
 
-export type JwtPayload = { sub: string; email: string };
+export type JwtPayload = { sub: string; email: string; tv?: number };
 
 /**
  * Bearer when the request carries an Authorization header, otherwise the
@@ -61,6 +61,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+    // S6: a token minted before a credential rotation carries an older `tv`.
+    // Tokens without the claim (pre-deploy) read as version 0.
+    if ((payload.tv ?? 0) !== (user.tokenVersion ?? 0)) {
+      throw new UnauthorizedException('Session expired. Sign in again.');
     }
     if (!user.isActive) {
       throw new UnauthorizedException(

@@ -118,8 +118,9 @@ country }, token }` plus the HttpOnly session cookie).
 ```
 
 - `email` is stored lower-cased and trimmed; a taken email answers `409`.
-- `password` must have at least 8 characters (same rule as
-  `/auth/change-password`); it is stored as a bcrypt hash.
+- `password` must have at least 8 characters and at most 72 bytes (the bcrypt
+  limit; UTF-8 bytes, not characters — same rule as `/auth/change-password`);
+  it is stored as a bcrypt hash.
 - `country` is optional, ISO 3166-1 alpha-2, stored upper-cased.
 - The role cannot be chosen: every sign-up is a `member`. Admins are promoted
   by a super admin through `PUT /admin/users/:id/roles`.
@@ -129,6 +130,34 @@ Authentication accepted by the global guard, in order: `Authorization: Bearer
 production), or `X-Client-Secret: <CLIENT_SECRET>` for server-to-server calls.
 Unsafe requests carrying the cookie must send an allowed `Origin` (or
 `Sec-Fetch-Site: same-origin`).
+
+### Account security hardening
+
+- **Session revocation.** The JWT carries a `tv` claim matching the stored
+  `token_version` (int, default `0`). `POST /auth/change-password` bumps the
+  version, revoking every outstanding session, and answers a brand-new
+  `{ user, token }` session with a rotated cookie. Pre-deploy tokens without
+  `tv` keep working until the password changes.
+- **Email changes.** `PATCH /users/me` and `PATCH /admin/users/:id` require
+  the account's `currentPassword` whenever the email actually changes (401
+  `Incorrect password` when wrong, 400 when missing) and reset `is_verified`;
+  emails are stored lower-cased and trimmed, and a case-insensitive unique
+  index on `lower(email)` backs it up. A taken email answers
+  `409 Email already registered` on every update path.
+- **Admin rank.** `PATCH /admin/users/:id` and `POST /admin/users/:id/toggle-block`
+  answer 403 when the caller's rank is not strictly above the target's, and
+  400 when an admin tries to block themselves; only a `super_admin` may
+  manage other admins. `super_admin` keeps full access.
+- **Throttles.** `POST /auth/change-password`, `POST /auth/verify-password`
+  and `DELETE /users/me` are limited to 5 attempts per minute per client IP.
+- **Admin list paging.** `GET /admin/users?search=&limit=&offset=` searches
+  name and email case-insensitively (`%`, `_` and `\` are literal), pages on
+  the id-DESC order with `limit` (default 100, max 200, `0` → `[]`) and
+  `offset` (default 0).
+- **Profile images.** `profileImage` accepts only `https:` URLs (or `null`).
+- **Google takeover.** `POST /auth/google` on a pre-registered, unverified
+  local account replaces the stored password with an unusable random hash
+  and revokes its sessions before verifying the account.
 
 ## Environment variables
 

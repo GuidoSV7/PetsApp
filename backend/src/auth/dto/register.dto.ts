@@ -7,6 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { MIN_PASSWORD_LENGTH } from './change-password.dto.js';
+import { MaxPasswordBytes } from './password-max-bytes.js';
 
 /** Public sign-up payload. The created account is always a `member`. */
 export class RegisterDto {
@@ -16,6 +17,7 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(MIN_PASSWORD_LENGTH)
+  @MaxPasswordBytes()
   password: string;
 
   @IsString()
