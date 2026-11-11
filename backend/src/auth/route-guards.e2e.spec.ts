@@ -170,6 +170,16 @@ describe('route guards (real modules, stubbed persistence)', () => {
       .expect(403);
   });
 
+  it('refuses the session routes from the localhost fallback when CORS_ORIGIN is empty outside development (S6)', async () => {
+    Object.assign(env, { CORS_ORIGIN: '', NODE_ENV: 'test' });
+    await call('post', '/auth/login', { email: 'a@b.c', password: 'x' })
+      .set('Origin', 'http://localhost:3000')
+      .expect(403);
+    await call('post', '/auth/register', REGISTER)
+      .set('Origin', 'http://localhost:3000')
+      .expect(403);
+  });
+
   describe('X-Client-Secret', () => {
     it('is accepted only when it matches the configured secret, on routes without a role', async () => {
       await call('get', '/users/me')
