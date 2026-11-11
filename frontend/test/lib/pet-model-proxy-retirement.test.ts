@@ -7,7 +7,7 @@ const { upstream } = vi.hoisted(() => ({ upstream: vi.fn() }));
 vi.mock("undici", () => ({ Agent: class {}, fetch: upstream }));
 vi.mock("@/lib/petsapp-api-origin", () => ({
   internalApiOrigin: () => "http://isolated.invalid",
-  shouldSkipTlsVerification: () => false,
+  shouldUseInsecureTls: () => false,
   buildApiProxyDestination: (origin: string, segments: string[], query: string) =>
     `${origin}/${segments.join("/")}${query}`,
 }));
