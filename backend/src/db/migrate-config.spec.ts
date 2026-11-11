@@ -25,10 +25,20 @@ describe('resolveMigrationConfig', () => {
     ).toEqual({ url: URL, ssl: false, migrationsFolder: '/app/drizzle' });
   });
 
-  it('turns SSL on in production unless DATABASE_SSL=false', () => {
+  it('turns SSL on in production unless DATABASE_SSL=false, verifying certificates by default', () => {
     expect(
       resolveMigrationConfig(
         { DATABASE_URL: URL, PROD: 'production' },
+        '/app/dist/db',
+      ).ssl,
+    ).toEqual({ rejectUnauthorized: true });
+    expect(
+      resolveMigrationConfig(
+        {
+          DATABASE_URL: URL,
+          PROD: 'production',
+          DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+        },
         '/app/dist/db',
       ).ssl,
     ).toEqual({ rejectUnauthorized: false });
