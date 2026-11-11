@@ -17,6 +17,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -81,14 +82,25 @@ export default function LoginPage() {
           </div>
           <div className={estilos.field}>
             <label htmlFor="admin-login-password">Contraseña</label>
-            <input
-              id="admin-login-password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
+            <span className={estilos.controlContrasena}>
+              <input
+                id="admin-login-password"
+                type={mostrarContrasena ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className={estilos.toggleContrasena}
+                aria-pressed={mostrarContrasena}
+                aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+                onClick={() => setMostrarContrasena((valor) => !valor)}
+              >
+                {mostrarContrasena ? "Ocultar" : "Mostrar"}
+              </button>
+            </span>
           </div>
           {error ? (
             <p className={estilos.error} role="alert">

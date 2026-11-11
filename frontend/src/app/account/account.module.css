@@ -1,0 +1,65 @@
+/* /account: resumen de sesión con los tokens globales. */
+
+.panel {
+  max-width: 480px;
+  margin: 48px auto;
+  padding: 0 20px;
+  color: var(--texto-fuerte, #143022);
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--primario-texto, #177241);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.title {
+  margin-bottom: 8px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--texto-fuerte, #143022);
+}
+
+.dato {
+  color: var(--texto-cuerpo, #1c2b22);
+  font-size: 0.95rem;
+}
+
+.nombre {
+  margin-bottom: 4px;
+}
+
+.correo {
+  margin-bottom: 20px;
+}
+
+.dato strong {
+  color: var(--texto-medio, #3a5246);
+}
+
+.logout {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--texto-fuerte, #143022);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.logout:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.checking {
+  padding: 28px;
+  font-weight: 700;
+  color: var(--texto-medio, #3a5246);
+}

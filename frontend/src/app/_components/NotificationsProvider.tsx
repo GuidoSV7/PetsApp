@@ -41,7 +41,7 @@ export default function NotificationsProvider({
     durationMs: number;
   } | null>(null);
 
-  const showNotification = useCallback((mensaje: string, durationMs = 12_000) => {
+  const showNotification = useCallback((mensaje: string, durationMs = 6_000) => {
     setActiva({ id: Date.now(), mensaje, durationMs });
   }, []);
 
