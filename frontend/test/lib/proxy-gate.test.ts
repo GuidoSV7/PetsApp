@@ -39,6 +39,16 @@ afterEach(() => {
 });
 
 describe("server-side /admin gate in src/proxy.ts (S2)", () => {
+  it("bounds the profile lookup with an abort signal so a hung API cannot stall admin navigation", async () => {
+    const proxy = await freshProxy();
+    upstream.mockResolvedValue(
+      new Response(JSON.stringify(profileBody("admin")), { status: 200 }),
+    );
+    await proxy(adminRequest("petsapp_session=cookie-jwt"));
+    const [, init] = upstream.mock.lastCall!;
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
   it("redirects to /login when there is no session cookie", async () => {
     const proxy = await freshProxy();
     const res = await proxy(adminRequest());

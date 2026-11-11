@@ -11,6 +11,9 @@ const SESSION_COOKIES = ["__Host-petsapp_session", "petsapp_session"] as const;
 
 const ADMIN_ROLES = new Set(["admin", "super_admin"]);
 
+/** A hung internal API must not stall admin navigation. */
+const PROFILE_TIMEOUT_MS = 3000;
+
 function leerCookieSesion(req: NextRequest): { nombre: string; valor: string } | null {
   for (const nombre of SESSION_COOKIES) {
     const valor = req.cookies.get(nombre)?.value;
@@ -30,6 +33,7 @@ export default async function proxy(req: NextRequest): Promise<NextResponse> {
     const res = await fetch(destino, {
       headers: { cookie: `${cookie.nombre}=${cookie.valor}` },
       cache: "no-store",
+      signal: AbortSignal.timeout(PROFILE_TIMEOUT_MS),
     });
     if (res.ok) {
       const perfil = (await res.json()) as { role?: string; roles?: string[] };
