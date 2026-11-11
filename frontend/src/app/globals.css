@@ -32,10 +32,25 @@
   --primario: #3dff8a;
   --secundario: #2fd976;
 
+  /* Verde seguro para texto sobre superficies claras (WCAG AA 4.5:1) */
+  --primario-texto: #177241;
+
+  /* Texto sobre superficies claras */
+  --texto-fuerte: #143022;
+  --texto-cuerpo: #1c2b22;
+  --texto-medio: #3a5246;
+  --texto-suave: #5a7a66;
+
+  /* Acentos de las acciones de cuidado (texto AA sobre su fondo claro) */
+  --acento-comida: #c92a3d;
+  --acento-descanso: #9a5b12;
+  --acento-banio: #1d6fa8;
+  --acento-caricia: #6d28d9;
+
   /* Colores para estados */
   --estado-exito: #3dff8a;
   --estado-informacion: #6ee7b0;
-  --estado-error: #f500dc;
+  --estado-error: #b3261e;
   --estado-advertencia: #ffcc33;
 }
 

@@ -13,7 +13,7 @@
   margin: 0 auto;
   padding: 0 0 2px;
   text-align: left;
-  color: #1c2b22;
+  color: var(--texto-cuerpo);
   min-height: 0;
 }
 
@@ -40,7 +40,7 @@
 .coinAmount {
   font-weight: 800;
   font-size: 0.88rem;
-  color: #1c2b22;
+  color: var(--texto-cuerpo);
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
@@ -48,11 +48,11 @@
 .coinAdd {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #2fbf6b;
-  color: #fff;
+  color: #0b1f14;
   font-size: 0.95rem;
   font-weight: 800;
   line-height: 1;
@@ -112,7 +112,8 @@
   align-items: center;
   gap: 6px;
   margin: 0;
-  padding: 2px 4px 2px 0;
+  padding: 2px 6px;
+  min-height: 28px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -121,7 +122,7 @@
 }
 
 .petNameButton:hover:not(:disabled) {
-  background: color-mix(in srgb, #143022 4%, transparent);
+  background: color-mix(in srgb, var(--texto-fuerte) 4%, transparent);
 }
 
 .petNameButton:disabled {
@@ -134,12 +135,12 @@
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: #143022;
+  color: var(--texto-fuerte);
 }
 
 .nameEditGlyph {
   font-size: 0.85rem;
-  color: #5a7a66;
+  color: var(--texto-suave);
   line-height: 1;
 }
 
@@ -175,7 +176,7 @@
   background: #fff;
   font-weight: 800;
   font-size: 1rem;
-  color: #143022;
+  color: var(--texto-fuerte);
 }
 
 .nameInput:focus {
@@ -197,7 +198,7 @@
 .nameSave {
   border: none;
   background: #2fbf6b;
-  color: #fff;
+  color: #0b1f14;
 }
 
 .nameSave:disabled {
@@ -206,16 +207,16 @@
 }
 
 .nameCancel {
-  border: 1px solid color-mix(in srgb, #143022 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--texto-fuerte) 12%, transparent);
   background: #fff;
-  color: #3a5246;
+  color: var(--texto-medio);
 }
 
 .renameHint {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #5a7a66;
+  color: var(--texto-suave);
 }
 
 .moodLine {
@@ -225,11 +226,11 @@
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #2a5c3d;
+  color: var(--texto-medio);
 }
 
 .moodValue {
-  color: #1f8f4e;
+  color: var(--primario-texto);
   font-weight: 800;
 }
 
@@ -242,10 +243,37 @@
 }
 
 .loadError {
-  margin: 4px 0 0;
-  font-size: 0.72rem;
+  margin: 0;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #c0392b;
+  color: var(--estado-error);
+}
+
+.loadErrorRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+}
+
+.loadRetry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--texto-fuerte);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.loadRetry:hover {
+  filter: brightness(1.1);
 }
 
 .petViewport {
@@ -269,7 +297,7 @@
   border: 1px solid rgba(255, 255, 255, 0.7);
   background: color-mix(in srgb, #ffffff 82%, transparent);
   backdrop-filter: blur(12px);
-  color: #1c2b22;
+  color: var(--texto-cuerpo);
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.25;
@@ -336,8 +364,8 @@
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: color-mix(in srgb, #143022 8%, transparent);
-  color: #143022;
+  background: color-mix(in srgb, var(--texto-fuerte) 8%, transparent);
+  color: var(--texto-fuerte);
   font-size: 1rem;
   font-weight: 800;
   line-height: 1;
@@ -345,7 +373,7 @@
 }
 
 .viewerControl:hover {
-  background: color-mix(in srgb, #143022 14%, transparent);
+  background: color-mix(in srgb, var(--texto-fuerte) 14%, transparent);
 }
 
 .viewerControl:active {
@@ -371,8 +399,8 @@
   padding: 6px 12px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.9);
-  color: #3a5246;
-  font-size: 0.68rem;
+  color: var(--texto-medio);
+  font-size: 0.75rem;
   font-weight: 650;
   text-align: center;
   max-width: 95%;
@@ -448,15 +476,15 @@
 
 .needLabel {
   flex: 1;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #3a5246;
+  color: var(--texto-medio);
 }
 
 .needValue {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  color: #1c2b22;
+  color: var(--texto-cuerpo);
   font-variant-numeric: tabular-nums;
 }
 
@@ -475,7 +503,7 @@
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 7px;
   flex-shrink: 0;
 }
@@ -491,7 +519,7 @@
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 20px;
   font-weight: 800;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   letter-spacing: 0.01em;
   cursor: pointer;
   transition: transform 0.12s ease, filter 0.15s ease;
@@ -520,19 +548,23 @@
 
 .careFeed {
   background: color-mix(in srgb, #ffe4e8 88%, #fff);
-  color: #e23d55;
+  color: var(--acento-comida);
 }
 .carePlay {
   background: color-mix(in srgb, #e4f8ec 88%, #fff);
-  color: #1f8f4e;
+  color: var(--primario-texto);
 }
 .careSleep {
   background: color-mix(in srgb, #fff1dc 88%, #fff);
-  color: #e08a2c;
+  color: var(--acento-descanso);
 }
 .careBathe {
   background: color-mix(in srgb, #e4f2ff 88%, #fff);
-  color: #2f8fd8;
+  color: var(--acento-banio);
+}
+.carePet {
+  background: color-mix(in srgb, #efe3f6 88%, #fff);
+  color: var(--acento-caricia);
 }
 
 .personalizeWrap {
@@ -550,7 +582,7 @@
   border-radius: 999px;
   border: none;
   background: #2fbf6b;
-  color: #fff;
+  color: #0b1f14;
   font-weight: 800;
   font-size: 0.78rem;
   cursor: pointer;
@@ -569,12 +601,12 @@
   height: 20px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.22);
-  color: #fff;
+  color: #0b1f14;
 }
 
 .personalizeToggleChevron {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  color: #0b1f14;
   line-height: 1;
 }
 
@@ -586,7 +618,7 @@
   width: min(280px, calc(100vw - 48px));
   padding: 8px;
   border-radius: 14px;
-  border: 1px solid color-mix(in srgb, #143022 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--texto-fuerte) 10%, transparent);
   background: #ffffff;
   box-shadow: 0 10px 28px rgba(20, 48, 34, 0.14);
 }
@@ -613,8 +645,7 @@
   box-shadow: inset 0 0 0 1px rgba(20, 48, 34, 0.06);
 }
 
-.presetTileActive {
-  border-color: #2fbf6b;
+.presetTileActive {  border-color: #2fbf6b;
   box-shadow: 0 0 0 2px rgba(47, 191, 107, 0.22);
 }
 
@@ -622,8 +653,8 @@
   display: grid;
   place-items: center;
   background: #eef6f1;
-  color: #1f8f4e;
-  font-size: 0.6rem;
+  color: var(--primario-texto);
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
@@ -632,7 +663,7 @@
   padding: 10px 14px;
   border-radius: 12px;
   border: 1.5px solid color-mix(in srgb, var(--primario) 55%, #1f8f4e);
-  background: #1f8f4e;
+  background: var(--primario-texto);
   color: #ffffff;
   font-weight: 800;
   font-size: 0.9rem;
@@ -645,7 +676,7 @@
   border-radius: 12px;
   border: 1px solid #c5d4cb;
   background: #f5f8f6;
-  color: #3a5246;
+  color: var(--texto-medio);
   font-weight: 750;
   font-size: 0.9rem;
   cursor: pointer;
@@ -675,7 +706,7 @@
 
 .cameraHint {
   margin: 0;
-  color: #1c2b22;
+  color: var(--texto-cuerpo);
   font-weight: 650;
   line-height: 1.35;
   font-size: 0.92rem;
@@ -683,7 +714,7 @@
 
 .cameraError {
   margin: 0;
-  color: #d63b6a;
+  color: var(--estado-error);
   font-weight: 700;
 }
 
