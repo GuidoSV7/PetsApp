@@ -3,6 +3,7 @@ import {
   applyRequestAuthPolicy,
   mapApiResponseError,
 } from "@/lib/api-auth-policy";
+import { handleSessionExpired } from "@/lib/session-expiry";
 import { petsappPublicClientUrl } from "@/lib/petsapp-api-origin";
 
 const api = axios.create({
@@ -18,7 +19,13 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(mapApiResponseError(error)),
+  (error) => {
+    const status = (error as { response?: { status?: number } })?.response?.status;
+    if (status === 401) {
+      handleSessionExpired();
+    }
+    return Promise.reject(mapApiResponseError(error));
+  },
 );
 
 export default api;

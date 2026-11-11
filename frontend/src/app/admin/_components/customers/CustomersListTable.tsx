@@ -29,15 +29,20 @@ export default function CustomersListTable({ usuarios, onVerDetalle }: Props) {
       ) : (
         <div className={estilos.envoltorioTabla}>
           <table className={estilos.tabla}>
+            <caption className={estilos.tituloAccesible}>
+              Listado de usuarios clientes de PetsApp
+            </caption>
             <thead>
               <tr>
-                <th>Usuario</th>
-                <th>Correo</th>
-                <th>Rol</th>
-                <th>País</th>
-                <th>Estado</th>
-                <th>Verificado</th>
-                <th />
+                <th scope="col">Usuario</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Rol</th>
+                <th scope="col">País</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Verificado</th>
+                <th scope="col">
+                  <span className={estilos.tituloAccesible}>Acciones</span>
+                </th>
               </tr>
             </thead>
             <tbody>
