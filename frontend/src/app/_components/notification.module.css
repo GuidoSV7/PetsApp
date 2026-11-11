@@ -22,6 +22,33 @@
   min-width: 0;
 }
 
+.notificationClose {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin: -2px -4px 0 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.notificationClose:hover {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+.notificationClose:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 1px;
+}
+
 .notificationIcon {
   flex-shrink: 0;
   color: #0284c7;
@@ -37,6 +64,7 @@
   min-width: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  flex: 1;
 }
 
 .notificationBarTrack {
@@ -54,6 +82,19 @@
   min-width: 0;
   max-width: 100%;
   background: linear-gradient(90deg, #0284c7, #22d3ee);
+  transform-origin: left center;
+  animation-name: notificationProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes notificationProgress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .notificationTopRightAnchor {
@@ -67,5 +108,13 @@
 @media (max-width: 900px) {
   .notificationTopRightAnchor {
     top: 62px;
+  }
+}
+
+/* S12: ninguna barra animada cuando el usuario pide menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .notificationBarFill {
+    animation: none;
+    transform: scaleX(1);
   }
 }
