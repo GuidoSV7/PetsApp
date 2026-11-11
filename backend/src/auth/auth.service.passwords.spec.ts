@@ -36,7 +36,7 @@ describe('AuthService profile and passwords (in-memory repositories)', () => {
       providers: [
         AuthService,
         { provide: USER_REPOSITORY, useValue: users },
-        { provide: JwtService, useValue: {} },
+        { provide: JwtService, useValue: { sign: () => 'jwt-t' } },
         {
           provide: GOOGLE_TOKEN_VERIFIER,
           useValue: { verify: () => Promise.reject(new Error('unused')) },
@@ -69,9 +69,17 @@ describe('AuthService profile and passwords (in-memory repositories)', () => {
     );
 
     const stored = await users.findById(user.id);
-    expect(result).toEqual({ message: 'Password updated successfully' });
+    expect(result).toMatchObject({
+      message: 'Password updated successfully',
+      token: 'jwt-t',
+    });
+    // S6: the tokenVersion is bumped so outstanding sessions are revoked.
+    expect(stored).toMatchObject({
+      tokenVersion: user.tokenVersion + 1,
+      profileImage: 'ana.png',
+      name: 'Ana',
+    });
     expect(await bcrypt.compare('brand-new-pass', stored!.password)).toBe(true);
-    expect(stored).toMatchObject({ profileImage: 'ana.png', name: 'Ana' });
   });
 
   it('rejects a wrong current password and a short new one', async () => {

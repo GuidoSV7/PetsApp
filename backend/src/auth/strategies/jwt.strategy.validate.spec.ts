@@ -25,6 +25,38 @@ describe('JwtStrategy.validate', () => {
     expect(result).toEqual(user);
   });
 
+  it('accepts a token whose tv matches the stored token version (S6)', async () => {
+    const { users, strategy } = setup();
+    const user = await users.create(userData());
+    await users.update(user.id, { tokenVersion: 2 });
+
+    await expect(
+      strategy.validate({ sub: user.id, email: user.email, tv: 2 }),
+    ).resolves.toEqual(await users.findById(user.id));
+  });
+
+  it('rejects a token whose tv is older, newer or missing against a bumped account (S6)', async () => {
+    const { users, strategy } = setup();
+    const user = await users.create(userData());
+    await users.update(user.id, { tokenVersion: 2 });
+    const attempt = (tv?: number) =>
+      strategy.validate({
+        sub: user.id,
+        email: user.email,
+        ...(tv === undefined ? {} : { tv }),
+      });
+
+    try {
+      await attempt(1);
+      expect.unreachable('an older tv must not authenticate');
+    } catch (error) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+    }
+    await expect(attempt(3)).rejects.toBeInstanceOf(UnauthorizedException);
+    // Legacy tokens without a tv claim never match a bumped account.
+    await expect(attempt()).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
   it('rejects an unknown, inactive or blocked user with 401', async () => {
     const { users, strategy } = setup();
     const inactive = await users.create(
