@@ -1,13 +1,16 @@
+import { sql } from 'drizzle-orm';
 import {
   type AnyPgColumn,
   boolean,
   foreignKey,
+  index,
   integer,
   jsonb,
   pgTable,
   primaryKey,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -46,11 +49,19 @@ export const users = pgTable(
     profileImage: varchar('profile_image', { length: 500 }),
     country: varchar('country', { length: 2 }),
     isVerified: boolean('is_verified').notNull().default(false),
+    /** Bumped on every credential rotation; the JWT carries it as `tv`. */
+    tokenVersion: integer('token_version').notNull().default(0),
     lastLogin: ts('last_login'),
     createdAt: ts('created_at').notNull().defaultNow(),
     updatedAt: ts('updated_at').notNull().defaultNow(),
   },
-  (t) => [pk('pk_users', t.id), unique('uq_users_email').on(t.email)],
+  (t) => [
+    pk('pk_users', t.id),
+    unique('uq_users_email').on(t.email),
+    // Case-insensitive uniqueness (S3). The migration that creates this index
+    // fails loudly when case-insensitive duplicates already exist.
+    uniqueIndex('uq_users_email_lower').on(sql`lower(${t.email})`),
+  ],
 );
 
 /**
@@ -79,6 +90,8 @@ export const userRoles = pgTable(
   },
   (t) => [
     pk('pk_user_roles', t.userId, t.roleId),
+    // S13: role lookups join by role_id.
+    index('ix_user_roles_role_id').on(t.roleId),
     fk('fk_user_roles_user', t.userId, users.id, 'cascade'),
     fk('fk_user_roles_role', t.roleId, roles.id, 'cascade'),
   ],

@@ -4,8 +4,9 @@ import {
   desc,
   eq,
   getTableColumns,
-  like,
+  ilike,
   or,
+  sql,
   type SQL,
 } from 'drizzle-orm';
 import type { DrizzleDb } from '../../database/database.module.js';
@@ -36,8 +37,13 @@ const COLUMNS = [
   'profileImage',
   'country',
   'isVerified',
+  'tokenVersion',
   'lastLogin',
 ] as const;
+
+/** Escapes `%`, `_` and `\` so they match themselves (S11). */
+const escapeLike = (input: string): string =>
+  input.replace(/[\\%_]/g, '\\$&');
 
 /** Every column except the password hash. */
 const { password: _passwordHash, ...PUBLIC_COLUMNS } = getTableColumns(users);
@@ -85,11 +91,11 @@ export class DrizzleUserRepository implements UserRepository {
   }
 
   async findMany(filter: UserListFilter = {}): Promise<UserPublicRow[]> {
-    const { search, includeInactive } = filter;
+    const { search, includeInactive, limit, offset } = filter;
     const filters: SQL[] = [];
     if (search) {
-      const pattern = `%${search}%`;
-      filters.push(or(like(users.name, pattern), like(users.email, pattern))!);
+      const pattern = `%${escapeLike(search)}%`;
+      filters.push(or(ilike(users.name, pattern), ilike(users.email, pattern))!);
     }
     if (includeInactive === false) filters.push(eq(users.isActive, true));
 
@@ -97,7 +103,9 @@ export class DrizzleUserRepository implements UserRepository {
       .select(PUBLIC_COLUMNS)
       .from(users)
       .where(filters.length > 0 ? and(...filters) : undefined)
-      .orderBy(desc(users.id));
+      .orderBy(desc(users.id))
+      .limit(limit ?? -1)
+      .offset(offset ?? 0);
     const grouped = await loadRoleCodes(
       this.db,
       rows.map((row) => row.id),
@@ -129,6 +137,18 @@ export class DrizzleUserRepository implements UserRepository {
       const grouped = await loadRoleCodes(tx, [row.id]);
       return withRoles(row, grouped.get(row.id) ?? []);
     });
+  }
+
+  /** S12: `UPDATE ... SET is_blocked = NOT is_blocked RETURNING *`. */
+  async toggleBlock(id: string): Promise<UserRow | null> {
+    const [row] = await this.db
+      .update(users)
+      .set({ isBlocked: sql`NOT ${users.isBlocked}` })
+      .where(eq(users.id, id))
+      .returning();
+    if (!row) return null;
+    const grouped = await loadRoleCodes(this.db, [row.id]);
+    return withRoles(row, grouped.get(row.id) ?? []);
   }
 
   private async attach(
