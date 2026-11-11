@@ -1,9 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { UserRole } from '../users/enums/user-role.enum.js';
 import { InMemoryUserRepository } from '../users/testing/in-memory-user.repository.js';
-import { seedSuperAdmin } from './seed-admin-logic.js';
+import { seedAdminLogLine, seedSuperAdmin } from './seed-admin-logic.js';
 
 const hashPassword = async (plain: string) => `hashed:${plain}`;
+
+describe('seedAdminLogLine (S9: no email in logs)', () => {
+  it('logs the user id without the email for a created admin', () => {
+    const line = seedAdminLogLine({
+      status: 'created',
+      userId: 'user-123',
+      email: 'admin@example.com',
+    });
+    expect(line).toContain('user-123');
+    expect(line).not.toContain('admin@example.com');
+  });
+
+  it('logs the user id without the email when the admin already exists', () => {
+    const line = seedAdminLogLine({
+      status: 'already_exists',
+      userId: 'user-9',
+      email: 'other@example.com',
+    });
+    expect(line).toContain('user-9');
+    expect(line).not.toContain('other@example.com');
+  });
+});
 
 describe('seedSuperAdmin', () => {
   it('creates a super_admin when the email is free', async () => {

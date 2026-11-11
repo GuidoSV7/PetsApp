@@ -29,7 +29,8 @@ Set these in the backend application's Environment tab (runtime).
 | Variable           | Required | Example / default | Notes |
 | ------------------ | -------- | ----------------- | ----- |
 | `DATABASE_URL`     | yes      | `postgresql://…@petsapp-db-3vi3tp:5432/petsapp` | Internal Dokploy Postgres host. |
-| `DATABASE_SSL`     | yes\*    | `false` | Use `false` on the internal Dokploy network. |
+| `DATABASE_SSL`     | yes\*    | `false` | Use `false` on the internal Dokploy network. SSL also turns on by default in production (`NODE_ENV=production` or `PROD=production`) unless this is `false`. |
+| `DATABASE_SSL_REJECT_UNAUTHORIZED` | no | `true` (when SSL is on) | Verifies the server certificate against system CAs (or `DATABASE_SSL_CA`). Set to `false` only for networks where the certificate cannot be verified — prefer `DATABASE_SSL_CA` first. |
 | `JWT_SECRET`       | yes      | `openssl rand -base64 48` | At least 32 characters outside development. |
 | `CLIENT_SECRET`    | yes\*    | long random string | `X-Client-Secret` for server-to-server calls. |
 | `CORS_ORIGIN`      | yes      | public frontend origin | e.g. `https://petsapp-frontend-….sslip.io` — also the CSRF Origin allowlist. |
@@ -42,6 +43,22 @@ Set these in the backend application's Environment tab (runtime).
 
 Optional seed-only vars (not needed at boot): `ADMIN_EMAIL`, `ADMIN_PASSWORD`,
 `ADMIN_NAME` — see `backend/README.md` (`npm run seed:admin`).
+
+### Postgres TLS
+
+When SSL is on (explicit `DATABASE_SSL=true`, or production with no
+`DATABASE_SSL=false`), the connection verifies the server certificate
+(`rejectUnauthorized: true` by default). Set
+`DATABASE_SSL_REJECT_UNAUTHORIZED=false` to opt out (for example, a provider
+with an unverifiable internal certificate), or point `DATABASE_SSL_CA` at a CA
+bundle to verify a private CA. `DATABASE_SSL=false` (the current Dokploy
+internal-network setup) keeps working unchanged.
+
+### Health checks
+
+- `GET /` — liveness: the process is up (no database contact).
+- `GET /health/ready` — readiness: runs `SELECT 1`; answers 503 while the
+  database is unreachable. Public (no auth), safe for the platform probe.
 
 ## Frontend environment
 
@@ -80,12 +97,13 @@ public frontend origin only.
 ## Post-deploy smoke checklist
 
 1. `GET` backend `/` → `{ "status": "ok" }` (or equivalent liveness body).
-2. Open the public frontend URL — home loads over HTTPS.
-3. Register a member (`POST /auth/register` via the UI) — receives session
+2. `GET` backend `/health/ready` → `{ "status": "ok" }` (database reachable).
+3. Open the public frontend URL — home loads over HTTPS.
+4. Register a member (`POST /auth/register` via the UI) — receives session
    cookie + lands on `/account` (or `/`).
-4. Log out and log in again — cookie refreshed; member still blocked from
+5. Log out and log in again — cookie refreshed; member still blocked from
    `/admin/users` (403).
-5. Seed a `super_admin` once (`node dist/db/seed-admin.js` with `ADMIN_*`),
+6. Seed a `super_admin` once (`node dist/db/seed-admin.js` with `ADMIN_*`),
    then log in — lands on `/admin` and can open `/admin/users`.
-6. From the browser network panel, API calls go to `/petsapp-api/...` on the
+7. From the browser network panel, API calls go to `/petsapp-api/...` on the
    frontend host (not a cross-origin Traefik URL with a bad cert).

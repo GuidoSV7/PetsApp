@@ -35,6 +35,13 @@ describe('AppModule (e2e)', () => {
     return request(app.getHttpServer()).get('/users/me').expect(401);
   });
 
+  it('GET /health/ready is public and answers 503 while the database is unreachable', () => {
+    return request(app.getHttpServer())
+      .get('/health/ready')
+      .expect(503)
+      .expect({ statusCode: 503, message: 'Database unavailable' });
+  });
+
   afterEach(async () => {
     await app.close();
   });

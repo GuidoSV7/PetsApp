@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { traceWrite } from '../logging/service-log.js';
+import { asConflict } from '../database/conflict-error.js';
 import { orderedRoles } from '../auth/role-rank.js';
 import { UserRole } from '../users/enums/user-role.enum.js';
 import {
@@ -60,7 +61,18 @@ export class RolesService {
         if (taken) {
           throw new BadRequestException('A role with that name already exists');
         }
-        return this.roles.create({ code, name, active: true, permissions });
+        // A concurrent create with the same code wins the unique index; the
+        // loser surfaces as 409 (unique violation), never a raw 500.
+        try {
+          return await this.roles.create({
+            code,
+            name,
+            active: true,
+            permissions,
+          });
+        } catch (error) {
+          throw asConflict(error);
+        }
       },
       (saved) => ({ code: saved.code }),
     );
