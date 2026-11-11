@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { getPetsAppSession, getSessionToken, type PetsAppSessionData } from "@/stores/auth-session";
+import { clearSession, getPetsAppSession, getSessionToken, type PetsAppSessionData } from "@/stores/auth-session";
 import { legacyCredentials, legacySession, sessionKeys } from "../../fixtures/legacy-admin-session";
 
 const { replace, signInPetsAppUser, router } = vi.hoisted(() => {
@@ -37,6 +37,8 @@ describe("LoginPage Nest-only authentication", () => {
     vi.clearAllMocks();
     signInPetsAppUser.mockReset();
     localStorage.clear();
+    // The in-memory bearer token lives for the tab; reset it per test (S1).
+    clearSession();
   });
   afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); });
 
@@ -95,7 +97,7 @@ describe("LoginPage Nest-only authentication", () => {
     await act(async () => { submit(credentials); });
     expect.soft(signInPetsAppUser).toHaveBeenCalledExactlyOnceWith(credentials.email, credentials.password);
     expect.soft(getPetsAppSession()).toEqual(response);
-    expect.soft(localStorage.getItem(sessionKeys[0])).toBe(JSON.stringify(response));
+    expect.soft(localStorage.getItem(sessionKeys[0])).toBe(JSON.stringify({ user: response.user }));
     expect.soft(localStorage.getItem(sessionKeys[1])).toBeNull();
     expect.soft(replace).toHaveBeenCalledExactlyOnceWith("/admin");
     expect.soft(screen.queryByRole("alert")).toBeNull();
