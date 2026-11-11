@@ -23,6 +23,16 @@ describe('UsersService (in-memory repository)', () => {
   const notFound = (id: string) =>
     new NotFoundException(`User with id ${id} not found`);
 
+  describe('admin list paging (S11)', () => {
+    it('returns at most 100 users when no limit is given', async () => {
+      for (let i = 0; i < 101; i += 1) {
+        await repo.create(userData({ email: `paged${i}@example.com` }));
+      }
+      expect(await service.findAllComplete()).toHaveLength(100);
+      expect(await service.findAllComplete(undefined, true, 200)).toHaveLength(101);
+    });
+  });
+
   describe('profile', () => {
     it('maps the profile with userName, without credentials', async () => {
       const user = await repo.create(userData());
@@ -85,9 +95,9 @@ describe('UsersService (in-memory repository)', () => {
       await service.findAllComplete();
 
       expect(findMany.mock.calls).toEqual([
-        [{ search: 'Ad', includeInactive: false }],
-        [{ search: undefined, includeInactive: true }],
-        [{ search: undefined, includeInactive: true }],
+        [{ search: 'Ad', includeInactive: false, limit: 100 }],
+        [{ search: undefined, includeInactive: true, limit: 100 }],
+        [{ search: undefined, includeInactive: true, limit: 100 }],
       ]);
     });
 

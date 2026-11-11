@@ -47,6 +47,9 @@ const rankOfUser = (user: { role: string; roles?: string[] }): number =>
 /** Never answer the password hash. */
 const withoutPassword = ({ password: _hash, ...rest }: UserRow) => rest;
 
+/** S11: page size of the admin user list when the caller sends no limit. */
+export const DEFAULT_ADMIN_LIST_LIMIT = 100;
+
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -98,7 +101,7 @@ export class UsersService {
   async findAllComplete(
     search?: string,
     includeInactive: boolean = true,
-    limit?: number,
+    limit: number = DEFAULT_ADMIN_LIST_LIMIT,
     offset?: number,
   ): Promise<CompleteUserDto[]> {
     const users = await this.users.findMany({
@@ -117,8 +120,9 @@ export class UsersService {
 
   /**
    * Profile update. When `actorId` is given and differs from the target,
-   * an admin may only touch lower-rank accounts (S2). `currentPassword` is
-   * required whenever the email actually changes (S5), and a confirmed email
+   * an admin may only touch lower-rank accounts (S2). On self-service updates
+   * `currentPassword` is required whenever the email actually changes (S5);
+   * an admin acting on a lower-rank account never knows that password. A confirmed email
    * change resets `isVerified`. A taken email answers 409 (S4).
    */
   update(id: string, updateData: UpdateUserInput, actorId?: string) {
@@ -137,7 +141,8 @@ export class UsersService {
           : normalizeEmail(updateData.email);
       const emailChanged =
         emailConfirmed !== undefined && emailConfirmed !== current.email;
-      if (emailChanged) {
+      const selfService = !actorId || actorId === id;
+      if (emailChanged && selfService) {
         if (updateData.currentPassword === undefined) {
           throw new BadRequestException(EMAIL_CHANGE_PASSWORD_MESSAGE);
         }

@@ -57,3 +57,4 @@ This worktree is the ONLY owner of database migrations in this audit round.
 - L1 (user, verbatim): "Haceme una investigación exhaustiva de nuestro software, quiero que busques errores, problemas, vulnerabilidades, y mejores el diseño la UI/UX bsucanlas mejores prácticas en internet y hagamoslo que esté software sea el mejor posible"
 - L2 (user, verbatim): "Todas haceme en worktrres paralelos las que puedas hacer"
 - L3 (parent): test Postgres at `TEST_DATABASE_URL=postgres://petsapp_test:petsapp_test@127.0.0.1:55491/petsapp_test` (throwaway docker container `petsapp-test-pg`, tmpfs).
+- L4 (parent): independent verifier found S11 default limit missing (blocker) and an admin email change demanding the target password; fixed with tests (users 88/88, full suite 546/546, build OK).

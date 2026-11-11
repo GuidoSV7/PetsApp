@@ -159,18 +159,18 @@ describe('admin cannot touch equal or higher rank accounts (S2)', () => {
     const res = await http()
       .patch(`/admin/users/${member.id}`)
       .set(asAdmin())
-      .send({ email: 'OTHER-ADMIN@example.com', currentPassword: 'secret1' })
+      .send({ email: 'OTHER-ADMIN@example.com' })
       .expect(409);
 
     expect(res.body.message).toBe('Email already registered');
     expect((await stored(member.id)).email).toBe('member@example.com');
   });
 
-  it('normalizes the email of an admin update (S3)', async () => {
+  it('normalizes the email of an admin update without asking for the target password (S3, S5 is self-service only)', async () => {
     const res = await http()
       .patch(`/admin/users/${member.id}`)
       .set(asAdmin())
-      .send({ email: 'Member.Normal@Example.COM', currentPassword: 'secret1' })
+      .send({ email: 'Member.Normal@Example.COM' })
       .expect(200);
 
     expect(res.body.email).toBe('member.normal@example.com');
