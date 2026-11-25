@@ -9,8 +9,16 @@ import Link from "next/link";
 
 import BrandMark from "@/components/ui/BrandMark";
 
-import { signOutPetsAppUser } from "@/features/auth/api/auth.service";
-import { clearSession, getPetsAppSession, isAdminRole } from "@/stores/auth-session";
+import {
+  fetchAuthProfile,
+  signOutPetsAppUser,
+} from "@/features/auth/api/auth.service";
+import {
+  clearSession,
+  getPetsAppSession,
+  isAdminRole,
+  updateUserInSession,
+} from "@/stores/auth-session";
 import { iconMaskStyle } from "./_utils/iconMaskStyle";
 import estilos from "./admin-styles.module.css";
 
@@ -32,18 +40,75 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
   const currentPath = usePathname();
   const router = useRouter();
   const [sessionReady, setSesionLista] = useState(false);
+  /** Bumps when another tab clears/changes the session so the gate remounts (#23). */
+  const [gateEpoch, setGateEpoch] = useState(0);
 
   useEffect(() => {
-    const datos = getPetsAppSession();
-    if (!datos) {
-      router.replace("/");
-      return;
-    }
-    if (!isAdminRole(datos.user.role)) {
+    let cancelled = false;
+
+    const kickNonAdmin = () => {
+      void signOutPetsAppUser().catch(() => undefined);
+      clearSession();
+      setSesionLista(false);
       router.replace("/account");
-      return;
-    }
-    setSesionLista(true);
+    };
+
+    const revalidateRole = async () => {
+      const datos = getPetsAppSession();
+      if (!datos) {
+        setSesionLista(false);
+        router.replace("/");
+        return;
+      }
+      if (!isAdminRole(datos.user.role)) {
+        setSesionLista(false);
+        router.replace("/account");
+        return;
+      }
+      setSesionLista(true);
+      try {
+        const profile = await fetchAuthProfile();
+        if (cancelled) return;
+        if (!profile || !isAdminRole(profile.role)) {
+          kickNonAdmin();
+          return;
+        }
+        updateUserInSession({
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+          roles: profile.roles,
+          country: profile.country,
+        });
+      } catch {
+        if (cancelled) return;
+        // 401 interceptor may already clear; re-check local gate.
+        if (!getPetsAppSession()) {
+          setSesionLista(false);
+          router.replace("/");
+        }
+      }
+    };
+
+    void revalidateRole();
+
+    const onStorage = () => {
+      setGateEpoch((n) => n + 1);
+      void revalidateRole();
+    };
+
+    const onFocus = () => {
+      void revalidateRole();
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [router]);
 
   useLayoutEffect(() => {
@@ -80,7 +145,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
   }
 
   return (
-    <div className={estilos.contenedor}>
+    <div className={estilos.contenedor} key={gateEpoch}>
       <aside className={estilos.barra} data-purpose="admin-sidebar">
         <div className={estilos.sidebarHeader}>
           <div className={estilos.brandHeader}>

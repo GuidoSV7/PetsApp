@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   PetsAppApiError,
   listAdminUsers,
   type AdminUserResponse,
 } from "../../_lib/petsapp-api";
-import { clearSession, getSessionToken } from "../../demoAuth";
+import { getSessionToken } from "../../demoAuth";
 import AdminPageHeader from "../_components/shared/AdminPageHeader";
 import CustomersListTable from "../_components/customers/CustomersListTable";
 import CustomersKpiCards from "../_components/customers/CustomersKpiCards";
@@ -19,31 +18,26 @@ const LIMITE_POR_PAGINA = 10;
 
 // Member accounts: GET /admin/users (search optional); admins filtered client-side.
 export default function CustomersPage() {
-  const router = useRouter();
   const [consulta, setConsulta] = useState("");
   const [pagina, setPagina] = useState(1);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [usuarios, setUsuarios] = useState<AdminUserResponse[]>([]);
   const [idUsuarioModal, setIdUsuarioModal] = useState<string | null>(null);
+  /** Latest request wins: stale responses from older loads are ignored (S9). */
+  const cargaRef = useRef(0);
 
   const cargar = useCallback(async () => {
-    const token = getSessionToken();
-    if (!token) {
-      setCargando(false);
-      return;
-    }
+    const idCarga = ++cargaRef.current;
+    const token = getSessionToken() ?? "";
     setCargando(true);
     setError(null);
     try {
       const lista = await listAdminUsers(token);
+      if (idCarga !== cargaRef.current) return; // a newer request superseded this one
       setUsuarios(lista.filter((u) => u.role === "member"));
     } catch (e) {
-      if (e instanceof PetsAppApiError && e.codigoEstado === 401) {
-        clearSession();
-        router.replace("/");
-        return;
-      }
+      if (idCarga !== cargaRef.current) return;
       if (e instanceof PetsAppApiError && e.codigoEstado === 403) {
         setError("No tenés permiso para ver usuarios.");
       } else {
@@ -51,9 +45,11 @@ export default function CustomersPage() {
       }
       setUsuarios([]);
     } finally {
-      setCargando(false);
+      if (idCarga === cargaRef.current) {
+        setCargando(false);
+      }
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     void cargar();

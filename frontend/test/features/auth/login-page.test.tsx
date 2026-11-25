@@ -2,19 +2,24 @@
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { getPetsAppSession, getSessionToken, type PetsAppSessionData } from "@/stores/auth-session";
+import { clearSession, getPetsAppSession, getSessionToken, type PetsAppSessionData } from "@/stores/auth-session";
 import { legacyCredentials, legacySession, sessionKeys } from "../../fixtures/legacy-admin-session";
 
-const { replace, signInPetsAppUser, router } = vi.hoisted(() => {
+const { replace, signInPetsAppUser, signOutPetsAppUser, router } = vi.hoisted(() => {
   const replace = vi.fn();
-  return { replace, signInPetsAppUser: vi.fn(), router: { replace, push: vi.fn() } };
+  return {
+    replace,
+    signInPetsAppUser: vi.fn(),
+    signOutPetsAppUser: vi.fn().mockResolvedValue(undefined),
+    router: { replace, push: vi.fn() },
+  };
 });
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => <a href={href}>{children}</a>,
 }));
 vi.mock("@/components/ui/BrandMark", () => ({ default: () => <span>mark</span> }));
-vi.mock("@/features/auth/api/auth.service", () => ({ signInPetsAppUser }));
+vi.mock("@/features/auth/api/auth.service", () => ({ signInPetsAppUser, signOutPetsAppUser }));
 import LoginPage from "@/app/login/LoginPage";
 
 function snapshot() {
@@ -36,7 +41,11 @@ describe("LoginPage Nest-only authentication", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     signInPetsAppUser.mockReset();
+    signOutPetsAppUser.mockReset();
+    signOutPetsAppUser.mockResolvedValue(undefined);
     localStorage.clear();
+    // The in-memory bearer token lives for the tab; reset it per test (S1).
+    clearSession();
   });
   afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); });
 
@@ -95,7 +104,7 @@ describe("LoginPage Nest-only authentication", () => {
     await act(async () => { submit(credentials); });
     expect.soft(signInPetsAppUser).toHaveBeenCalledExactlyOnceWith(credentials.email, credentials.password);
     expect.soft(getPetsAppSession()).toEqual(response);
-    expect.soft(localStorage.getItem(sessionKeys[0])).toBe(JSON.stringify(response));
+    expect.soft(localStorage.getItem(sessionKeys[0])).toBe(JSON.stringify({ user: response.user }));
     expect.soft(localStorage.getItem(sessionKeys[1])).toBeNull();
     expect.soft(replace).toHaveBeenCalledExactlyOnceWith("/admin");
     expect.soft(screen.queryByRole("alert")).toBeNull();
@@ -119,11 +128,22 @@ describe("LoginPage Nest-only authentication", () => {
     const before = snapshot();
     await act(async () => { submit(); });
     expect(signInPetsAppUser.mock.calls.length).toBe(1);
+    expect(signOutPetsAppUser).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("alert")?.textContent).toBe("Esta cuenta no tiene acceso de administración.");
     expect(getPetsAppSession()).toBeNull();
     expect(snapshot()).toEqual(before);
     expect(replace).not.toHaveBeenCalled();
     expect((screen.getByRole("button", { name: "Entrar al panel" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("#21 clears Nest cookie via logout when rejecting a member login", async () => {
+    signInPetsAppUser.mockResolvedValue(realSession("member"));
+    render(<LoginPage />);
+    await act(async () => { submit(); });
+    expect(signOutPetsAppUser).toHaveBeenCalledExactlyOnceWith();
+    expect(signInPetsAppUser.mock.invocationCallOrder[0]).toBeLessThan(
+      signOutPetsAppUser.mock.invocationCallOrder[0]!,
+    );
   });
 
   it.each(sessionKeys)("S4/S5 old session in %s never mount-redirects to admin", (key) => {

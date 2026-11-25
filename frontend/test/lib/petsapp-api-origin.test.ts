@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildApiProxyDestination,
-  shouldSkipTlsVerification,
+  shouldUseInsecureTls,
   internalApiOrigin,
   petsappPublicClientUrl,
 } from "@/lib/petsapp-api-origin";
@@ -60,15 +60,27 @@ describe("buildApiProxyDestination", () => {
   });
 });
 
-describe("shouldSkipTlsVerification", () => {
-  it("omite TLS solo en https de traefik.me", () => {
-    expect(
-      shouldSkipTlsVerification(
-        "https://app-hack-bluetooth-monitor-38vpk4-c29fd3-187-127-17-128.traefik.me/auth/login",
-      ),
-    ).toBe(true);
-    expect(shouldSkipTlsVerification("http://127.0.0.1:3001/auth/login")).toBe(
-      false,
-    );
+describe("shouldUseInsecureTls (S4)", () => {
+  afterEach(() => {
+    delete process.env.PETSAPP_API_ALLOW_INSECURE_TLS;
+    vi.restoreAllMocks();
+  });
+
+  it("nunca desactiva la verificación TLS por defecto (ni siquiera en traefik.me)", () => {
+    delete process.env.PETSAPP_API_ALLOW_INSECURE_TLS;
+    expect(shouldUseInsecureTls()).toBe(false);
+  });
+
+  it("solo acepta el flag explícito PETSAPP_API_ALLOW_INSECURE_TLS=true y lo registra", () => {
+    process.env.PETSAPP_API_ALLOW_INSECURE_TLS = "true";
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(shouldUseInsecureTls()).toBe(true);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("PETSAPP_API_ALLOW_INSECURE_TLS"));
+  });
+
+  it.each(["1", "yes", "TRUE", ""])("rechaza el valor %s", (valor) => {
+    process.env.PETSAPP_API_ALLOW_INSECURE_TLS = valor;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    expect(shouldUseInsecureTls()).toBe(false);
   });
 });

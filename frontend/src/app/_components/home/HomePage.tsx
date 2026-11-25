@@ -45,6 +45,13 @@ function NestHomePage() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     setSession(getPetsAppSession());
     setReady(true);
+
+    // Cross-tab: another tab's clearSession/save updates localStorage (#23).
+    const onStorage = () => {
+      setSession(getPetsAppSession());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   const onGoogleCredential = useCallback(async (idToken: string) => {
