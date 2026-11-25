@@ -16,6 +16,18 @@
 const DEFAULT_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000'];
 const DISABLED_VALUES = new Set(['false', '0', 'no', 'off']);
 
+/**
+ * Explicit local development only: NODE_ENV=development and not a production
+ * deployment (PROD=production). The single definition used by the CORS origin
+ * option and the CSRF Origin allowlist fallback.
+ */
+export function isLocalDevelopment(
+  nodeEnv: string | undefined = process.env.NODE_ENV,
+  prod: string | undefined = process.env.PROD,
+): boolean {
+  return nodeEnv === 'development' && prod !== 'production';
+}
+
 export function isCorsEnabled(
   raw: string | undefined = process.env.CORS_ENABLED,
 ): boolean {
@@ -23,24 +35,32 @@ export function isCorsEnabled(
   return !DISABLED_VALUES.has(normalized);
 }
 
-/** Comma-separated CORS_ORIGIN list. Empty falls back to the local frontend. */
-export function parseCorsOrigins(raw?: string | null): string[] {
+/** Comma-separated CORS_ORIGIN list. Empty fails closed outside local development. */
+export function parseCorsOrigins(
+  raw?: string | null,
+  nodeEnv?: string,
+  prod?: string,
+): string[] {
   const list = (raw ?? '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
-  return list.length > 0 ? list : [...DEFAULT_ORIGINS];
+  if (list.length > 0) return list;
+  return isLocalDevelopment(nodeEnv, prod) ? [...DEFAULT_ORIGINS] : [];
 }
 
 /**
  * Origins allowed to write with the session cookie (CSRF origin check).
- * Same list as the CORS allowlist; empty falls back to the local frontend.
+ * Same list as the CORS allowlist; an empty list fails closed outside local
+ * development, so an empty CORS_ORIGIN leaves no ambient fallback origin.
  * Reads env lazily, like the rest of this module.
  */
 export function allowedOrigins(
   raw: string | undefined = process.env.CORS_ORIGIN,
+  nodeEnv?: string,
+  prod?: string,
 ): string[] {
-  return parseCorsOrigins(raw);
+  return parseCorsOrigins(raw, nodeEnv, prod);
 }
 
 /**
@@ -55,7 +75,7 @@ export function corsOriginOption(
 ): boolean | string[] {
   if (!isCorsEnabled(rawEnabled)) return false;
   const configured = (rawOrigins ?? '').trim();
-  if (!configured) return process.env.NODE_ENV === 'development' ? true : [];
+  if (!configured) return isLocalDevelopment() ? true : [];
   return parseCorsOrigins(configured);
 }
 
@@ -67,9 +87,11 @@ export function corsBootWarning(
   rawEnabled: string | undefined = process.env.CORS_ENABLED,
   rawOrigins: string | undefined = process.env.CORS_ORIGIN,
   nodeEnv: string | undefined = process.env.NODE_ENV,
+  prod: string | undefined = process.env.PROD,
 ): string | null {
   if (!isCorsEnabled(rawEnabled)) return null;
-  if ((rawOrigins ?? '').trim() || nodeEnv === 'development') return null;
+  if ((rawOrigins ?? '').trim() || isLocalDevelopment(nodeEnv, prod))
+    return null;
   return 'CORS_ORIGIN is empty and NODE_ENV is not "development": CORS is fail-closed (no cross-origin browser access). Set CORS_ORIGIN to the frontend origin(s) if a browser calls this API directly.';
 }
 

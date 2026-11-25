@@ -56,7 +56,7 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
       ...pointed,
       coat: { ...pointed.coat, pattern: 'calico' as const },
     };
-    expect((await repo.update(GUEST, calico)).coat).toEqual(calico.coat);
+    expect((await repo.mutateLocked(GUEST, () => calico)).coat).toEqual(calico.coat);
     expect((await repo.findByGuestKey(GUEST))?.coat).toEqual(calico.coat);
   });
 
@@ -85,7 +85,7 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
     const created = await repo.create(GUEST, snapshot);
     expect(created.coins).toBe(coins);
     expect((await repo.findByGuestKey(GUEST))?.coins).toBe(coins);
-    const updated = await repo.update(GUEST, { ...snapshot, statusKey: 'petted' });
+    const updated = await repo.mutateLocked(GUEST, () => ({ ...snapshot, statusKey: 'petted' }));
     expect(updated.coins).toBe(coins);
     expect((await repo.findByGuestKey(GUEST))?.coins).toBe(coins);
   });
@@ -93,7 +93,7 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
   it('updates coins and needs for the same guest', async () => {
     const repo = await fresh();
     await repo.create(GUEST, initialSnapshot());
-    const updated = await repo.update(GUEST, {
+    const updated = await repo.mutateLocked(GUEST, () => ({
       coins: 20,
       needs: { hunger: 90, fun: 80, energy: 65, hygiene: 78 },
       coat: {
@@ -105,7 +105,7 @@ describe('DrizzlePetRepository (PostgreSQL)', () => {
       statusKey: 'fed',
       name: 'Luna',
       renameCount: 1,
-    });
+    }));
     expect(updated.coins).toBe(20);
     expect(updated.needs.hunger).toBe(90);
     expect(updated.statusKey).toBe('fed');

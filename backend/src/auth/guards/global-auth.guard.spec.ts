@@ -278,5 +278,27 @@ describe('GlobalAuthGuard (global authentication)', () => {
         .set('X-Client-Secret', TEST_CLIENT_SECRET)
         .expect(200);
     });
+
+    describe('with an empty CORS_ORIGIN outside development (S6)', () => {
+      beforeEach(() => {
+        Object.assign(env, { CORS_ORIGIN: '', NODE_ENV: 'test' });
+      });
+
+      it('answers 403 to a cookie POST from the old localhost fallback origin', async () => {
+        await request(app.getHttpServer())
+          .post('/probe/closed')
+          .set('Cookie', cookie(MEMBER_ID))
+          .set('Origin', 'http://localhost:3000')
+          .expect(403);
+      });
+
+      it('still accepts a cookie POST with Sec-Fetch-Site: same-origin', async () => {
+        await request(app.getHttpServer())
+          .post('/probe/closed')
+          .set('Cookie', cookie(MEMBER_ID))
+          .set('Sec-Fetch-Site', 'same-origin')
+          .expect(201);
+      });
+    });
   });
 });

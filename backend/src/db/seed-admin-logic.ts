@@ -65,3 +65,10 @@ export async function seedSuperAdmin(
 
   return { status: 'created', userId: created.id, email: created.email };
 }
+
+/** Log line for the seed script: the user id only, never the email (PII). */
+export function seedAdminLogLine(result: SeedAdminResult): string {
+  return result.status === 'created'
+    ? `Created super_admin (user ${result.userId})`
+    : `super_admin already exists (user ${result.userId}); skipped`;
+}

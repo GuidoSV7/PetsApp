@@ -10,7 +10,13 @@ import {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  delete process.env.PROD;
 });
+
+/** vi.stubEnv coerces PROD (a Vite boolean var), so set it manually. */
+function stubProd(value: string): void {
+  process.env.PROD = value;
+}
 
 describe('isCorsEnabled', () => {
   it.each([undefined, '', '  ', 'true', '1', 'yes', 'on', 'TRUE'])(
@@ -38,14 +44,25 @@ describe('isCorsEnabled', () => {
 
 describe('parseCorsOrigins', () => {
   it.each([undefined, null, '', '  ', ' , '])(
-    'falls back to the local frontend origins for %j',
+    'fails closed to an empty allowlist for %j outside development',
     (raw) => {
-      expect(parseCorsOrigins(raw)).toEqual([
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-      ]);
+      expect(parseCorsOrigins(raw)).toEqual([]);
     },
   );
+
+  it('falls back to the local frontend origins only in explicit local development', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    expect(parseCorsOrigins('')).toEqual([
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+    ]);
+  });
+
+  it('treats PROD=production as production even with NODE_ENV=development', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    stubProd('production');
+    expect(parseCorsOrigins('')).toEqual([]);
+  });
 
   it('splits a comma list and trims entries', () => {
     expect(
@@ -80,6 +97,12 @@ describe('corsOriginOption', () => {
       expect(corsOriginOption('true', '   ')).toEqual([]);
     },
   );
+
+  it('treats PROD=production as production for the empty list, even in NODE_ENV=development', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    stubProd('production');
+    expect(corsOriginOption('true', '')).toEqual([]);
+  });
 
   it('still honours a configured list outside development', () => {
     vi.stubEnv('NODE_ENV', 'staging');
@@ -134,8 +157,15 @@ describe('corsBootWarning', () => {
 
   it('stays silent in development, with a configured list, or with CORS off', () => {
     expect(corsBootWarning('true', '', 'development')).toBeNull();
+    expect(corsBootWarning('true', '', 'development', '')).toBeNull();
     expect(corsBootWarning('true', 'https://a.test', 'production')).toBeNull();
     expect(corsBootWarning('off', '', 'production')).toBeNull();
+  });
+
+  it('warns when PROD=production overrides NODE_ENV=development with an empty list', () => {
+    expect(corsBootWarning('true', '', 'development', 'production')).toMatch(
+      /CORS_ORIGIN/,
+    );
   });
 });
 
@@ -147,7 +177,10 @@ describe('allowedOrigins', () => {
     ]);
   });
 
-  it('falls back to the local defaults when the list is empty', () => {
+  it('fails closed (empty allowlist) when the list is empty outside development', () => {
+    vi.stubEnv('NODE_ENV', 'test');
+    expect(allowedOrigins('')).toEqual([]);
+    vi.stubEnv('NODE_ENV', 'development');
     expect(allowedOrigins('')).toEqual([
       'http://localhost:3000',
       'http://127.0.0.1:3000',
