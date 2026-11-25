@@ -185,6 +185,11 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, #2fbf6b 22%, transparent);
 }
 
+.nameInput:focus-visible {
+  outline: 2px solid var(--anillo-foco, #2fbf6b);
+  outline-offset: 2px;
+}
+
 .nameSave,
 .nameCancel {
   min-height: 36px;
@@ -760,6 +765,18 @@
 @media (prefers-reduced-motion: reduce) {
   .speechBubble {
     animation: none;
+  }
+
+  .careButton {
+    transition: none;
+  }
+
+  .careButton:active {
+    transform: none;
+  }
+
+  .needFill {
+    transition: none;
   }
 }
 

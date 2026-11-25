@@ -5,6 +5,7 @@ import { WalletType } from "@pollar/core";
 import { usePollar } from "@pollar/react";
 import estilosHome from "@/app/home.module.css";
 import HomeHeader from "@/app/_components/home/HomeHeader";
+import BrandMark from "@/components/ui/BrandMark";
 import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 import { LoginGateModal } from "@/features/pollar/LoginGateModal";
 import { pollarDisplayName } from "@/features/pollar/pollar-display-name";
@@ -35,7 +36,7 @@ export function PollarHomePage() {
     return (
       <div className={estilosHome.contenedor}>
         <HomeHeader />
-        <main className={estilosHome.main}>
+        <main id="inicio" className={estilosHome.main}>
           <p className={estilosHome.gateLoading} role="status">
             Cargando…
           </p>
@@ -48,10 +49,17 @@ export function PollarHomePage() {
     return (
       <div className={estilosHome.contenedor}>
         <HomeHeader />
+        {/* Nest-parity brand backdrop; document h1 lives in LoginGateModal (aria-modal). */}
         <main id="inicio" className={estilosHome.main}>
-          <p className={estilosHome.gateHint} aria-hidden="true">
-            Entrá para cuidar a Michi.
-          </p>
+          <section className={estilosHome.gate} aria-hidden="true">
+            <div className={estilosHome.gateBrand}>
+              <BrandMark size={48} />
+              <p className={estilosHome.gateTitle}>PetsApp</p>
+              <p className={estilosHome.gateHint}>
+                Entrá para cuidar a Michi.
+              </p>
+            </div>
+          </section>
         </main>
         <LoginGateModal
           open

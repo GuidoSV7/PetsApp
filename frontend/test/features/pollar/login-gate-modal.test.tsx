@@ -32,6 +32,16 @@ describe("LoginGateModal", () => {
     expect(screen.getByRole("button", { name: /Freighter/i })).toBeTruthy();
   });
 
+  it("announces PetsApp as a visible document heading without aria-hidden", () => {
+    render(
+      <LoginGateModal open onGoogle={vi.fn()} onFreighter={vi.fn()} />,
+    );
+    const heading = screen.getByRole("heading", { level: 1, name: "PetsApp" });
+    expect(heading).toBeTruthy();
+    expect(heading.getAttribute("aria-hidden")).toBeNull();
+    expect(screen.getByText(/Entrá para cuidar a Michi/i)).toBeTruthy();
+  });
+
   it("calls Google and Freighter handlers", () => {
     const onGoogle = vi.fn();
     const onFreighter = vi.fn();
