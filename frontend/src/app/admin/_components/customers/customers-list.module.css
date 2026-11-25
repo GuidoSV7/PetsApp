@@ -206,7 +206,9 @@
   background: #f9fafb;
 }
 
-.captionTabla {
+/* Visually hidden caption for screen readers. */
+.captionTabla,
+.tituloAccesible {
   position: absolute;
   width: 1px;
   height: 1px;

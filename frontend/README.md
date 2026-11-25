@@ -43,18 +43,51 @@ no production seed, credential change or deployment is performed by this change.
 
 ### Authentication boundary
 
-The admin layout is a **client-only UI gate**: it reads localStorage and checks
-its role. It does not authenticate the token server-side or request
-`/auth/profile`, and localStorage can be forged. Nest authentication and role
-guards protect API data; the layout is not a data-security boundary. Nest login,
-session-cookie handling and roles remain unchanged.
+The JWT never touches `localStorage`/`sessionStorage`. A persisted session
+stores only the user profile; the API's HttpOnly session cookie
+(`petsapp_session` / `__Host-petsapp_session`) is the durable credential and
+requests through the same-origin `/petsapp-api` proxy rely on it. An
+`Authorization: Bearer` header is sent only when the current tab still holds
+an in-memory token (set at sign-in). A stored legacy session that contains a
+token is migrated on read: the token is dropped, the user is kept.
 
-Known retired local sessions are treated as invalid through the shared session
-reader under either existing storage key, without deleting or rewriting their
-stored bytes. Real sessions retain their existing behavior.
+`src/proxy.ts` (Next.js 16 proxy) is the **server-side gate for `/admin/**`**:
+without a session cookie it redirects to `/login`, and with one it verifies
+the role against `GET /auth/profile` through the internal API origin,
+redirecting non-admins to `/account`. If the internal API is unreachable the
+request passes through, where the client `AdminLayout` check, the Nest role
+ guards on `/admin/*` and the HttpOnly cookie remain as defense in depth.
 
-Follow-up, not implemented here: validate the layout session against
-`/auth/profile` instead of relying only on localStorage.
+A 401 from any API call is handled once, in the shared axios interceptor and
+the fetch wrapper (`src/lib/session-expiry.ts`): it clears the local session
+and redirects to `/login` for admin routes or `/` otherwise, without loops.
+Components must not duplicate that handling.
+
+### Proxy TLS (S4)
+
+The `/petsapp-api` proxy no longer disables certificate verification for
+`*.traefik.me` hosts. Insecure TLS is opt-in only, via
+`PETSAPP_API_ALLOW_INSECURE_TLS=true`, and every use logs a server warning.
+Production sets `PETSAPP_API_INTERNAL_URL` to the internal `http://` origin
+and never needs the flag.
+
+The proxy also drops client-supplied `x-forwarded-*`, `x-real-ip`, `forwarded`
+and `cf-*` headers and sets `x-forwarded-for`/`-proto`/`-host` itself; the
+client IP is taken from the last entry of the edge-supplied
+`x-forwarded-for` (the trusted edge appends the real client last). Path
+segments that decode to `.` or `..` or contain `/` or `\` are rejected with
+400, and upstream outages answer a generic `{ message: "Upstream unavailable"
+}` 502 with the detail logged server-side only.
+
+### Security headers (S3)
+
+`next.config.ts` sends a Content-Security-Policy sized to what the app really
+loads (self, Google Identity Services, Pollar/Stellar endpoints, `blob:`/
+`data:` for 3D textures and camera), `Strict-Transport-Security` in
+production only, `X-Content-Type-Options: nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin`, `frame-ancestors 'none'`
+and a `Permissions-Policy` that allows `camera=(self)` only. If a new external
+origin needs to be callable or loadable, extend the CSP explicitly.
 
 ## Free pet care
 

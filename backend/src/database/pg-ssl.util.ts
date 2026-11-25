@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { isProductionEnv } from '../auth/session-cookie.js';
 
 export type PgSslEnv = Record<string, string | undefined>;
 export type ReadCaFile = (path: string) => string | undefined;
@@ -21,17 +22,16 @@ export function resolvePgSsl(
   env: PgSslEnv,
   readFile: ReadCaFile = readCaFromDisk,
 ): PgSsl {
-  const isProduction = env.PROD === 'production';
   const sslExplicitlyDisabled = env.DATABASE_SSL === 'false';
   const sslEnabled =
-    !sslExplicitlyDisabled && (env.DATABASE_SSL === 'true' || isProduction);
+    !sslExplicitlyDisabled &&
+    (env.DATABASE_SSL === 'true' ||
+      isProductionEnv({ NODE_ENV: env.NODE_ENV, PROD: env.PROD }));
 
   if (!sslEnabled) return false;
 
-  // In production, do not verify certificates by default (cloud providers).
-  const rejectUnauthorized = isProduction
-    ? env.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true'
-    : env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false';
+  // When SSL is on, verify certificates by default; DATABASE_SSL_REJECT_UNAUTHORIZED=false is the explicit opt-out.
+  const rejectUnauthorized = env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false';
 
   const ssl: PgSslOptions = { rejectUnauthorized };
   const caPath = env.DATABASE_SSL_CA;

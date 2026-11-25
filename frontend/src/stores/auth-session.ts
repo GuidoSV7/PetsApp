@@ -26,6 +26,12 @@ export type PetsAppSessionData = {
 const SESSION_KEY = "petsapp_session_v1";
 const LEGACY_SESSION_KEY = "petsapp_sesion_v1";
 
+/**
+ * The JWT never reaches storage (S1): it lives only in this per-tab memory
+ * slot. The API's HttpOnly session cookie is the durable credential.
+ */
+let memoriaToken: string | null = null;
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
@@ -43,10 +49,55 @@ export function landingPathForRole(role: SessionRole): string {
   return isAdminRole(role) ? "/admin" : "/";
 }
 
+type StoredSession = { token?: unknown; user?: unknown };
+
+function esUsuarioValido(user: unknown): user is SessionUser {
+  return (
+    typeof user === "object" &&
+    user !== null &&
+    typeof (user as SessionUser).email === "string" &&
+    isSessionRole((user as SessionUser).role)
+  );
+}
+
+/** Persists the user only; the token stays in this tab's memory. */
+function persistirSoloUsuario(user: SessionUser, origen: string | null) {
+  window.localStorage.setItem(SESSION_KEY, JSON.stringify({ user }));
+  if (origen && origen !== SESSION_KEY) {
+    window.localStorage.removeItem(origen);
+  }
+}
+
+function leerAlmacenamiento(): { user: SessionUser } | null {
+  const origen =
+    window.localStorage.getItem(SESSION_KEY) !== null
+      ? SESSION_KEY
+      : window.localStorage.getItem(LEGACY_SESSION_KEY) !== null
+        ? LEGACY_SESSION_KEY
+        : null;
+  if (!origen) return null;
+  try {
+    const data = JSON.parse(window.localStorage.getItem(origen) ?? "") as StoredSession;
+    if (!esUsuarioValido(data?.user)) return null;
+    // Tombstone for sessions created by the retired browser-local constructor.
+    if (data.user.id === "hardcoded-admin") return null;
+    // Legacy persisted token: drop it, keep the user (S1 migration on read).
+    if (typeof data.token === "string" && data.token.length > 0) {
+      persistirSoloUsuario(data.user, origen);
+    } else if (origen !== SESSION_KEY) {
+      persistirSoloUsuario(data.user, origen);
+    }
+    return { user: data.user };
+  } catch {
+    return null;
+  }
+}
+
 export function savePetsAppSession(data: PetsAppSessionData) {
   if (typeof window === "undefined") return;
+  memoriaToken = data.token || null;
   try {
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify({ user: data.user }));
     window.localStorage.removeItem(LEGACY_SESSION_KEY);
   } catch {
     /* storage unavailable */
@@ -56,24 +107,16 @@ export function savePetsAppSession(data: PetsAppSessionData) {
 export function getPetsAppSession(): PetsAppSessionData | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw =
-      window.localStorage.getItem(SESSION_KEY) ??
-      window.localStorage.getItem(LEGACY_SESSION_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw) as PetsAppSessionData;
-    if (!data?.token || !data?.user?.email || !isSessionRole(data.user.role)) {
-      return null;
-    }
-    // Tombstone for sessions created by the retired browser-local constructor.
-    if (data.user.id === "hardcoded-admin") return null;
-    return data;
+    const guardado = leerAlmacenamiento();
+    if (!guardado) return null;
+    return { token: memoriaToken ?? "", user: guardado.user };
   } catch {
     return null;
   }
 }
 
 export function getSessionToken(): string | null {
-  return getPetsAppSession()?.token ?? null;
+  return memoriaToken;
 }
 
 export function updateUserInSession(user: SessionUser) {
@@ -84,6 +127,7 @@ export function updateUserInSession(user: SessionUser) {
 
 export function clearSession() {
   if (typeof window === "undefined") return;
+  memoriaToken = null;
   window.localStorage.removeItem(SESSION_KEY);
   window.localStorage.removeItem(LEGACY_SESSION_KEY);
 }

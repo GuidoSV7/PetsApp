@@ -105,4 +105,65 @@ describe('AuthService loginWithGoogle', () => {
       ServiceUnavailableException,
     );
   });
+
+  it('replaces the pre-registered password of an unverified account with an unusable hash and revokes its sessions (S1)', async () => {
+    await users.create(
+      userData({
+        email: 'michi@gmail.com',
+        password: bcrypt.hashSync('secret1', 4),
+        isVerified: false,
+      }),
+    );
+    const before = (await users.findByEmail('michi@gmail.com'))!;
+    verify.mockResolvedValue(profile());
+
+    await service.loginWithGoogle('id-token-abc');
+
+    const storedUser = (await users.findByEmail('michi@gmail.com'))!;
+    expect(storedUser.isVerified).toBe(true);
+    // The pre-registered password no longer matches anything.
+    expect(await bcrypt.compare('secret1', storedUser.password)).toBe(false);
+    expect(storedUser.password).toMatch(/^\$2[aby]\$/);
+    expect(storedUser.password).not.toBe(before.password);
+    expect(storedUser.tokenVersion).toBe(before.tokenVersion + 1);
+  });
+
+  it('keeps the pre-registered password and token version of a verified account (S1)', async () => {
+    await users.create(
+      userData({
+        email: 'michi@gmail.com',
+        password: bcrypt.hashSync('secret1', 4),
+        isVerified: true,
+      }),
+    );
+    const before = (await users.findByEmail('michi@gmail.com'))!;
+    verify.mockResolvedValue(profile());
+
+    await service.loginWithGoogle('id-token-abc');
+
+    const storedUser = (await users.findByEmail('michi@gmail.com'))!;
+    expect(await bcrypt.compare('secret1', storedUser.password)).toBe(true);
+    expect(storedUser.tokenVersion).toBe(before.tokenVersion);
+  });
+
+  it('rejects a blocked account before any takeover and leaves the credentials untouched (S1)', async () => {
+    await users.create(
+      userData({
+        email: 'bloqueada@gmail.com',
+        password: bcrypt.hashSync('secret1', 4),
+        isBlocked: true,
+      }),
+    );
+    const before = (await users.findByEmail('bloqueada@gmail.com'))!;
+    verify.mockResolvedValue(profile({ email: 'bloqueada@gmail.com' }));
+
+    await expect(service.loginWithGoogle('tok')).rejects.toMatchObject({
+      message: 'Invalid credentials',
+    });
+
+    const storedUser = (await users.findByEmail('bloqueada@gmail.com'))!;
+    expect(storedUser.password).toBe(before.password);
+    expect(storedUser.isVerified).toBe(before.isVerified);
+    expect(storedUser.tokenVersion).toBe(before.tokenVersion);
+  });
 });

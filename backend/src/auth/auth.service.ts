@@ -36,6 +36,9 @@ const BCRYPT_ROUNDS = 10;
 /** Postgres unique_violation: another request registered the email first. */
 const UNIQUE_VIOLATION = '23505';
 
+/** S8: unknown emails still run one real bcrypt comparison against this. */
+const DUMMY_HASH = bcrypt.hashSync('not-a-used-password', BCRYPT_ROUNDS);
+
 /** Lower-case, trimmed: the stored form of every email. */
 export const normalizeEmail = (email: string): string =>
   email.toLowerCase().trim();
@@ -79,7 +82,12 @@ export class AuthService {
     };
 
     const user = await this.userRepository.findByEmail(normalizeEmail(email));
-    if (!user) return rejected('invalid_credentials');
+    if (!user) {
+      // S8: burn the same bcrypt time as the found-user branch, so the error
+      // timing does not reveal whether the email exists.
+      await bcrypt.compare(password, DUMMY_HASH);
+      return rejected('invalid_credentials');
+    }
     if (!user.isActive) return rejected('inactive', user.id);
     if (user.isBlocked) return rejected('blocked', user.id);
 
@@ -170,6 +178,7 @@ export class AuthService {
 
     const email = normalizeEmail(profile.email);
     let user = await this.userRepository.findByEmail(email);
+    const freshlyCreated = !user;
     if (!user) {
       const password = await bcrypt.hash(
         randomBytes(32).toString('hex'),
@@ -211,8 +220,22 @@ export class AuthService {
     }
 
     if (!user.isVerified) {
-      await this.userRepository.update(user.id, { isVerified: true });
-      user = (await this.userRepository.findById(user.id)) ?? user;
+      if (!freshlyCreated) {
+        // S1: this email pre-registered a local account that never confirmed
+        // its address. Google ownership is proof enough: replace the
+        // pre-registered password with an unusable random hash and revoke
+        // every outstanding session before marking the account verified.
+        const unusable = await bcrypt.hash(
+          randomBytes(32).toString('hex'),
+          BCRYPT_ROUNDS,
+        );
+        await this.userRepository.update(user.id, {
+          password: unusable,
+          tokenVersion: (user.tokenVersion ?? 0) + 1,
+          isVerified: true,
+        });
+        user = (await this.userRepository.findById(user.id)) ?? user;
+      }
     }
 
     logInfo(this.logger, 'auth_google_login', 'auth google login', {
@@ -221,9 +244,14 @@ export class AuthService {
     return this.issueSession(user);
   }
 
-  /** Signs the JWT for a user that passed every sign-in check. */
+  /** Signs the JWT for a user that passed every sign-in check. The `tv`
+   * claim pins the token to the stored `tokenVersion` (S6). */
   private issueSession(user: UserRow): SessionResult {
-    const payload: JwtPayload = { sub: user.id, email: user.email };
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      tv: user.tokenVersion ?? 0,
+    };
     return { user: sessionUser(user), token: this.jwtService.sign(payload) };
   }
 
@@ -235,7 +263,7 @@ export class AuthService {
     user: UserRow,
     currentPassword: string,
     newPassword: string,
-  ): Promise<{ message: string }> {
+  ): Promise<SessionResult & { message: string }> {
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password,
@@ -263,12 +291,20 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-    await this.userRepository.update(user.id, { password: hashedPassword });
+    await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      // S6: every outstanding session of this account is revoked.
+      tokenVersion: (user.tokenVersion ?? 0) + 1,
+    });
     logInfo(this.logger, 'auth_password_changed', 'auth password changed', {
       userId: user.id,
     });
 
-    return { message: 'Password updated successfully' };
+    const updated = (await this.userRepository.findById(user.id)) ?? user;
+    return {
+      message: 'Password updated successfully',
+      ...this.issueSession(updated),
+    };
   }
 
   async verifyPassword(

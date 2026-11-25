@@ -7,7 +7,22 @@ const readFile = (path: string) =>
 describe('resolvePgSsl', () => {
   it.each([
     ['none set', {}, false],
-    ['PROD=production', { PROD: 'production' }, { rejectUnauthorized: false }],
+    ['PROD=production', { PROD: 'production' }, { rejectUnauthorized: true }],
+    [
+      'NODE_ENV=production',
+      { NODE_ENV: 'production' },
+      { rejectUnauthorized: true },
+    ],
+    [
+      'PROD=production, REJECT=false',
+      { PROD: 'production', DATABASE_SSL_REJECT_UNAUTHORIZED: 'false' },
+      { rejectUnauthorized: false },
+    ],
+    [
+      'NODE_ENV=production, REJECT=false',
+      { NODE_ENV: 'production', DATABASE_SSL_REJECT_UNAUTHORIZED: 'false' },
+      { rejectUnauthorized: false },
+    ],
     [
       'PROD=production, REJECT=true',
       { PROD: 'production', DATABASE_SSL_REJECT_UNAUTHORIZED: 'true' },

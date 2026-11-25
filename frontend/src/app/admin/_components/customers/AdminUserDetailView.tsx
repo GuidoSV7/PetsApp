@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import {
   PetsAppApiError,
@@ -13,7 +12,7 @@ import {
   type PetsAppApiRole,
 } from "../../../_lib/petsapp-api";
 import { useNotification } from "../../../_components/NotificationsProvider";
-import { clearSession, getSessionToken } from "../../../demoAuth";
+import { getSessionToken } from "../../../demoAuth";
 import estilos from "./customer-detail.module.css";
 
 type Props = {
@@ -53,7 +52,6 @@ export default function AdminUserDetailView({
   mostrarConfiguracion = false,
 }: Props) {
   const { showNotification } = useNotification();
-  const router = useRouter();
   const [cargando, setCargando] = useState(true);
   const [usuario, setUsuario] = useState<AdminUserResponse | null>(null);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
@@ -72,19 +70,13 @@ export default function AdminUserDetailView({
   }, []);
 
   const recargar = useCallback(async () => {
-    const token = getSessionToken();
-    if (!token || !idUsuario) return;
+    if (!idUsuario) return;
     setCargando(true);
     setErrorCarga(null);
     try {
-      const u = await getAdminUserById(token, idUsuario);
+      const u = await getAdminUserById(getSessionToken() ?? undefined, idUsuario);
       aplicarUsuario(u);
     } catch (e) {
-      if (e instanceof PetsAppApiError && e.codigoEstado === 401) {
-        clearSession();
-        router.replace("/");
-        return;
-      }
       const texto = e instanceof PetsAppApiError ? e.message : "No se pudo cargar el usuario.";
       setErrorCarga(texto);
       showNotification(texto);
@@ -92,18 +84,17 @@ export default function AdminUserDetailView({
     } finally {
       setCargando(false);
     }
-  }, [aplicarUsuario, idUsuario, router, showNotification]);
+  }, [aplicarUsuario, idUsuario, showNotification]);
 
   useEffect(() => {
     void recargar();
   }, [recargar]);
 
   const guardarCambios = useCallback(async () => {
-    const token = getSessionToken();
-    if (!token || !idUsuario) return;
+    if (!idUsuario) return;
     setGuardando(true);
     try {
-      await updateAdminUser(token, idUsuario, {
+      await updateAdminUser(getSessionToken() ?? undefined, idUsuario, {
         name: nombreEdit,
         email: correoEdit,
         country: paisEdit,
@@ -112,11 +103,6 @@ export default function AdminUserDetailView({
       showNotification("Cambios guardados.");
       onListRefresh?.();
     } catch (e) {
-      if (e instanceof PetsAppApiError && e.codigoEstado === 401) {
-        clearSession();
-        router.replace("/");
-        return;
-      }
       showNotification(e instanceof PetsAppApiError ? e.message : "No se pudo guardar.");
     } finally {
       setGuardando(false);
@@ -128,30 +114,23 @@ export default function AdminUserDetailView({
     onListRefresh,
     paisEdit,
     recargar,
-    router,
     showNotification,
   ]);
 
   const ejecutarToggleBloqueo = useCallback(async () => {
-    const token = getSessionToken();
-    if (!token || !idUsuario) return;
+    if (!idUsuario) return;
     setAlternando(true);
     try {
-      await toggleAdminUserBlock(token, idUsuario);
+      await toggleAdminUserBlock(getSessionToken() ?? undefined, idUsuario);
       await recargar();
       showNotification("Estado actualizado correctamente.");
       onListRefresh?.();
     } catch (e) {
-      if (e instanceof PetsAppApiError && e.codigoEstado === 401) {
-        clearSession();
-        router.replace("/");
-        return;
-      }
       showNotification(e instanceof PetsAppApiError ? e.message : "No se pudo alternar el bloqueo.");
     } finally {
       setAlternando(false);
     }
-  }, [idUsuario, onListRefresh, recargar, router, showNotification]);
+  }, [idUsuario, onListRefresh, recargar, showNotification]);
 
   if (cargando && !usuario) {
     return (

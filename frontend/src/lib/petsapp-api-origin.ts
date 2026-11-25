@@ -49,11 +49,18 @@ export function buildApiProxyDestination(
   return `${base}${path}${query}`;
 }
 
-export function shouldSkipTlsVerification(urlDestino: string): boolean {
-  try {
-    const u = new URL(urlDestino);
-    return u.protocol === "https:" && /traefik\.me$/i.test(u.hostname);
-  } catch {
-    return false;
+/**
+ * Insecure TLS is never silent (S4): only the explicit flag
+ * `PETSAPP_API_ALLOW_INSECURE_TLS=true` disables certificate verification,
+ * and every use logs a warning. Production uses the http internal origin,
+ * so it never needs this.
+ */
+export function shouldUseInsecureTls(): boolean {
+  if (process.env.PETSAPP_API_ALLOW_INSECURE_TLS === "true") {
+    console.warn(
+      "[proxy] PETSAPP_API_ALLOW_INSECURE_TLS=true: se desactiva la verificación TLS hacia el API interno",
+    );
+    return true;
   }
+  return false;
 }

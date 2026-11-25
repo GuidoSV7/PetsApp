@@ -64,6 +64,7 @@ describe("auth-session store", () => {
   beforeEach(() => {
     installMemoryLocalStorage();
     localStorage.clear();
+    clearSession();
   });
 
   afterEach(() => vi.restoreAllMocks());
@@ -77,7 +78,7 @@ describe("auth-session store", () => {
     expect.soft(JSON.stringify(sessionKeys.map((entry) => localStorage.getItem(entry))) === JSON.stringify(before), "both stored bytes unchanged").toBe(true);
   });
 
-  it.each(["admin", "super_admin", "member"] as const)("S6 preserves public helpers for real %s in either key", (role) => {
+  it.each(["admin", "super_admin", "member"] as const)("S1 keeps public helpers for real %s while storing the user only", (role) => {
     const session: PetsAppSessionData = {
       token: "real-token",
       user: { id: "real-user", name: "Real", email: "Mixed@Example.Test", role, roles: [role], country: "BO" },
@@ -85,25 +86,27 @@ describe("auth-session store", () => {
     for (const key of sessionKeys) {
       localStorage.clear();
       localStorage.setItem(key, JSON.stringify(session));
-      expect(getPetsAppSession()).toEqual(session);
-      expect(getSessionToken()).toBe(session.token);
+      // Stored token is dropped on read; the user survives the migration.
+      expect(getPetsAppSession()).toEqual({ token: "", user: session.user });
+      expect(getSessionToken()).toBeNull();
       expect(getSession()).toEqual({ email: "mixed@example.test", role });
       const updated = { ...session.user, name: "Updated" };
       updateUserInSession(updated);
-      expect(getPetsAppSession()).toEqual({ token: session.token, user: updated });
-      expect(localStorage.getItem(sessionKeys[0])).toBe(JSON.stringify({ token: session.token, user: updated }));
+      expect(getPetsAppSession()).toEqual({ token: "", user: updated });
+      expect(localStorage.getItem(sessionKeys[0])).toBe(JSON.stringify({ user: updated }));
       expect(localStorage.getItem(sessionKeys[1])).toBeNull();
     }
   });
 
-  it("S6 preserves primary-key precedence and does not fall back on malformed primary data", () => {
+  it("S1 preserves primary-key precedence for the user and does not fall back on malformed primary data", () => {
     const session: PetsAppSessionData = {
       token: "primary-real-token",
       user: { id: "real", name: "Real", email: "real@example.test", role: "admin", roles: ["admin"], country: null },
     };
-    localStorage.setItem(sessionKeys[1], JSON.stringify({ ...session, token: "alternate-real-token" }));
+    const alternate: PetsAppSessionData = { ...session, user: { ...session.user, id: "alternate" } };
+    localStorage.setItem(sessionKeys[1], JSON.stringify(alternate));
     localStorage.setItem(sessionKeys[0], JSON.stringify(session));
-    expect(getPetsAppSession()).toEqual(session);
+    expect(getPetsAppSession()?.user.id).toBe("real");
     localStorage.setItem(sessionKeys[0], "{invalid");
     const before = sessionKeys.map((key) => localStorage.getItem(key));
     expect(getPetsAppSession()).toBeNull();
@@ -113,17 +116,22 @@ describe("auth-session store", () => {
     expect(sessionKeys.map((key) => localStorage.getItem(key))).toEqual(before);
   });
 
-  it("S6 preserves absent and malformed session outcomes", () => {
+  it("S1 preserves absent and malformed session outcomes and accepts a tokenless user", () => {
     expect(getPetsAppSession()).toBeNull();
     expect(getSessionToken()).toBeNull();
     expect(getSession()).toBeNull();
-    for (const raw of ["null", "{}", JSON.stringify({ token: "t", user: { email: "real@example.test", role: "unknown" } }), JSON.stringify({ token: "", user: { email: "real@example.test", role: "admin" } })]) {
+    const validUser = { id: "real", name: "Real", email: "real@example.test", role: "admin", roles: ["admin"], country: null };
+    for (const raw of ["null", "{}", JSON.stringify({ user: { ...validUser, role: "unknown" } }), "{"] ) {
       localStorage.setItem(sessionKeys[0], raw);
       expect(getPetsAppSession()).toBeNull();
       expect(getSessionToken()).toBeNull();
       expect(getSession()).toBeNull();
       expect(localStorage.getItem(sessionKeys[0])).toBe(raw);
     }
+    // A user-only persisted session is valid without any token.
+    localStorage.setItem(sessionKeys[0], JSON.stringify({ user: validUser }));
+    expect(getPetsAppSession()).toEqual({ token: "", user: validUser });
+    expect(getSession()).toEqual({ email: "real@example.test", role: "admin" });
   });
 
   it("S6 preserves unavailable-storage reader, save and update behavior", () => {
@@ -140,7 +148,7 @@ describe("auth-session store", () => {
     expect(() => updateUserInSession(session.user)).not.toThrow();
   });
 
-  it("persists and recovers token and member user", () => {
+  it("persists the user and keeps the token only in memory", () => {
     savePetsAppSession({
       token: "jwt-abc",
       user: {
@@ -153,6 +161,19 @@ describe("auth-session store", () => {
       },
     });
 
+    // No JWT bytes ever reach storage (S1).
+    expect(localStorage.getItem("petsapp_session_v1")).toBe(JSON.stringify({
+      user: {
+        id: "u1",
+        name: "Demo",
+        email: "Member@Test.App",
+        role: "member",
+        roles: ["member"],
+        country: "BO",
+      },
+    }));
+    expect(localStorage.getItem("petsapp_session_v1")).not.toContain("jwt-abc");
+
     const session = getPetsAppSession();
     expect(session?.token).toBe("jwt-abc");
     expect(session?.user.email).toBe("Member@Test.App");
@@ -164,12 +185,46 @@ describe("auth-session store", () => {
     });
   });
 
+  it("S1 drops a stored legacy token on read but keeps the user", () => {
+    localStorage.setItem(
+      "petsapp_session_v1",
+      JSON.stringify({
+        token: "stale-jwt",
+        user: {
+          id: "1",
+          name: "Legacy",
+          email: "legacy@test.app",
+          role: "admin",
+          roles: ["admin"],
+          country: "BO",
+        },
+      }),
+    );
+    const session = getPetsAppSession();
+    expect(session?.token).toBe("");
+    expect(session?.user.email).toBe("legacy@test.app");
+    expect(getSessionToken()).toBeNull();
+    // Migration rewrites storage without the token.
+    expect(localStorage.getItem("petsapp_session_v1")).not.toContain("stale-jwt");
+  });
+
+  it("S1 clears the in-memory token with the session", () => {
+    savePetsAppSession({
+      token: "t",
+      user: { id: "1", name: "A", email: "a@test.app", role: "admin", roles: ["admin"], country: null },
+    });
+    expect(getSessionToken()).toBe("t");
+    clearSession();
+    expect(getSessionToken()).toBeNull();
+    expect(getPetsAppSession()).toBeNull();
+  });
+
   it("returns null when localStorage JSON is invalid", () => {
     localStorage.setItem("petsapp_session_v1", "{not-json");
     expect(getPetsAppSession()).toBeNull();
   });
 
-  it("reads legacy session key and migrates on save", () => {
+  it("reads legacy session key and migrates it to a user-only primary entry", () => {
     localStorage.setItem(
       "petsapp_sesion_v1",
       JSON.stringify({
@@ -184,9 +239,11 @@ describe("auth-session store", () => {
         },
       }),
     );
-    expect(getPetsAppSession()?.token).toBe("legacy");
-    savePetsAppSession(getPetsAppSession()!);
-    expect(localStorage.getItem("petsapp_session_v1")).toBeTruthy();
+    expect(getPetsAppSession()?.token).toBe("");
+    expect(getPetsAppSession()?.user.email).toBe("legacy@test.app");
+    expect(JSON.parse(localStorage.getItem("petsapp_session_v1") ?? "")).toEqual({
+      user: expect.objectContaining({ email: "legacy@test.app" }),
+    });
     expect(localStorage.getItem("petsapp_sesion_v1")).toBeNull();
   });
 

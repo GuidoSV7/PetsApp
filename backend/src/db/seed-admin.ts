@@ -4,7 +4,7 @@ import pg from 'pg';
 import { resolveDrizzleCredentials } from '../database/drizzle-credentials.js';
 import { DrizzleUserRepository } from '../users/infrastructure/drizzle-user.repository.js';
 import { schema } from './schema.js';
-import { seedSuperAdmin } from './seed-admin-logic.js';
+import { seedAdminLogLine, seedSuperAdmin } from './seed-admin-logic.js';
 
 /** Same cost factor as `AuthService` registration / change-password. */
 const BCRYPT_ROUNDS = 10;
@@ -37,13 +37,7 @@ async function main(): Promise<void> {
       bcrypt.hash(plain, BCRYPT_ROUNDS),
     );
 
-    if (result.status === 'created') {
-      console.log(`Created super_admin ${result.email} (${result.userId})`);
-    } else {
-      console.log(
-        `super_admin already exists for ${result.email} (${result.userId}); skipped`,
-      );
-    }
+    console.log(seedAdminLogLine(result));
   } finally {
     await pool.end();
   }

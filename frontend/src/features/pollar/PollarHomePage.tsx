@@ -10,6 +10,7 @@ import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 import { LoginGateModal } from "@/features/pollar/LoginGateModal";
 import { pollarDisplayName } from "@/features/pollar/pollar-display-name";
 import { usePollarLoginBusy } from "@/features/pollar/usePollarLoginBusy";
+import { signOutPetsAppUser } from "@/features/auth/api/auth.service";
 import { clearSession } from "@/stores/auth-session";
 
 /** Home when Pollar is configured: modal gate, then pet stage. */
@@ -27,6 +28,8 @@ export function PollarHomePage() {
   const userName = pollarDisplayName(getClient().getUserProfile(), wallet);
 
   const onLogout = () => {
+    // Best-effort Nest cookie clear alongside Pollar + local session (#53 / S4).
+    void signOutPetsAppUser().catch(() => undefined);
     clearSession();
     setCoins(null);
     logout();

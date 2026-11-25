@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import BrandMark from "@/components/ui/BrandMark";
-import { signInPetsAppUser } from "@/features/auth/api/auth.service";
+import {
+  signInPetsAppUser,
+  signOutPetsAppUser,
+} from "@/features/auth/api/auth.service";
 import {
   getPetsAppSession,
   isAdminRole,
@@ -35,6 +38,8 @@ export default function LoginPage() {
     try {
       const respuesta = await signInPetsAppUser(email, password);
       if (!isAdminRole(respuesta.user.role)) {
+        // Nest already set the HttpOnly cookie on login; clear it for members.
+        await signOutPetsAppUser().catch(() => undefined);
         setError("Esta cuenta no tiene acceso de administración.");
         return;
       }

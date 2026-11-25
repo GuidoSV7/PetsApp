@@ -2,6 +2,7 @@
 // Centralizes the public base URL and Bearer header for UI callers.
 
 import { PetsAppApiError } from "@/lib/errors";
+import { handleSessionExpired } from "@/lib/session-expiry";
 import { petsappPublicClientUrl } from "@/lib/petsapp-api-origin";
 import {
   signInPetsAppUser,
@@ -79,6 +80,9 @@ async function requestJson<T>(
   if (!headers.has("Content-Type") && options.body !== undefined) {
     headers.set("Content-Type", "application/json");
   }
+  // Bearer only when this tab holds an in-memory token; otherwise the
+  // HttpOnly session cookie sent along the same-origin request is the
+  // credential (S1).
   if (options.token) {
     headers.set("Authorization", `Bearer ${options.token}`);
   }
@@ -94,6 +98,9 @@ async function requestJson<T>(
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleSessionExpired();
+    }
     await parseError(response);
   }
 
@@ -106,7 +113,7 @@ async function requestJson<T>(
   return JSON.parse(text) as T;
 }
 
-export async function updateCurrentUser(token: string, data: { name: string }) {
+export async function updateCurrentUser(token: string | undefined, data: { name: string }) {
   return requestJson<unknown>("/users/me", {
     method: "PATCH",
     token,
@@ -114,7 +121,7 @@ export async function updateCurrentUser(token: string, data: { name: string }) {
   });
 }
 
-export async function deleteCurrentUserAccount(token: string, password: string) {
+export async function deleteCurrentUserAccount(token: string | undefined, password: string) {
   return requestJson<void>("/users/me", {
     method: "DELETE",
     token,
@@ -123,7 +130,7 @@ export async function deleteCurrentUserAccount(token: string, password: string) 
 }
 
 export async function changePetsAppPassword(
-  token: string,
+  token: string | undefined,
   currentPassword: string,
   newPassword: string,
 ) {
@@ -137,7 +144,7 @@ export async function changePetsAppPassword(
   });
 }
 
-export async function verifyPetsAppPassword(token: string, password: string) {
+export async function verifyPetsAppPassword(token: string | undefined, password: string) {
   return requestJson<unknown>("/auth/verify-password", {
     method: "POST",
     token,
@@ -146,7 +153,7 @@ export async function verifyPetsAppPassword(token: string, password: string) {
 }
 
 /** `GET /admin/users` returns a CompleteUserDto array; optional `search` only. */
-export async function listAdminUsers(token: string, search?: string) {
+export async function listAdminUsers(token: string | undefined, search?: string) {
   const query = new URLSearchParams();
   const trimmed = search?.trim();
   if (trimmed) query.set("search", trimmed);
@@ -159,7 +166,7 @@ export async function listAdminUsers(token: string, search?: string) {
   return [];
 }
 
-export async function getAdminUserById(token: string, userId: string) {
+export async function getAdminUserById(token: string | undefined, userId: string) {
   return requestJson<AdminUserResponse>(
     `/admin/users/${encodeURIComponent(userId)}`,
     { method: "GET", token },
@@ -167,7 +174,7 @@ export async function getAdminUserById(token: string, userId: string) {
 }
 
 export async function updateAdminUser(
-  token: string,
+  token: string | undefined,
   userId: string,
   data: {
     name?: string;
@@ -195,7 +202,7 @@ export async function updateAdminUser(
 }
 
 /** Toggles `isBlocked` on the server. */
-export async function toggleAdminUserBlock(token: string, userId: string) {
+export async function toggleAdminUserBlock(token: string | undefined, userId: string) {
   return requestJson<unknown>(
     `/admin/users/${encodeURIComponent(userId)}/toggle-block`,
     {

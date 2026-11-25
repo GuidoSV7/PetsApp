@@ -126,21 +126,30 @@ export class AuthController {
     return this.authService.getProfile(user);
   }
 
+  /** S6: the answer is a brand-new session; the old token stops working.
+   * S7: five attempts per minute per client IP. */
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
-  changePassword(
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async changePassword(
     @CurrentUser() user: UserRow,
+    @Res({ passthrough: true }) res: Response,
     @Body() body: ChangePasswordDto,
   ) {
-    return this.authService.changePassword(
-      user,
-      body.currentPassword,
-      body.newPassword,
+    return this.respondWithSession(
+      res,
+      await this.authService.changePassword(
+        user,
+        body.currentPassword,
+        body.newPassword,
+      ),
     );
   }
 
+  /** S7: five attempts per minute per client IP. */
   @Post('verify-password')
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   verifyPassword(
     @CurrentUser() user: UserRow,
     @Body() verifyPasswordDto: VerifyPasswordDto,
