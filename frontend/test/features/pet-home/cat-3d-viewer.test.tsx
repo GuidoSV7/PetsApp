@@ -72,6 +72,16 @@ vi.mock("@react-three/drei", () => ({
     return <><button onClick={props.onStart}>Orbit start</button><button onClick={props.onEnd}>Orbit end</button></>;
   },
 }));
+
+function stubWebGL(available: boolean) {
+  HTMLCanvasElement.prototype.getContext = vi.fn((type: string) => {
+    if (!available) return null;
+    if (type === "webgl2" || type === "webgl" || type === "experimental-webgl") {
+      return {} as unknown as RenderingContext;
+    }
+    return null;
+  }) as typeof HTMLCanvasElement.prototype.getContext;
+}
 vi.mock("@/features/pet-home/components/Cat3DModel", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/features/pet-home/components/Cat3DModel")>();
   return {
@@ -95,9 +105,18 @@ function callbacks(): MonitorProps {
   expect(monitor).toHaveBeenCalled();
   return monitor.mock.lastCall![0];
 }
-beforeEach(() => { hints(8, 8, 3); window.history.replaceState(null, "", "/"); });
+beforeEach(() => {
+  hints(8, 8, 3);
+  stubWebGL(true);
+  window.history.replaceState(null, "", "/");
+  vi.stubGlobal("matchMedia", vi.fn(() => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  })));
+});
 afterEach(() => {
-  cleanup(); vi.clearAllMocks(); window.history.replaceState(null, "", "/");
+  cleanup(); vi.clearAllMocks(); vi.unstubAllGlobals(); window.history.replaceState(null, "", "/");
   for (const { object, key, descriptor } of originals) {
     if (descriptor) Object.defineProperty(object, key, descriptor);
     else Reflect.deleteProperty(object, key);
@@ -141,6 +160,35 @@ describe("Cat3DViewer", () => {
     expect(forwarded().orbiting).toBe(false);
     expect(canvas.mock.lastCall![0]).toMatchObject({ camera: { position: [0, 0.42, 3.05], fov: 28 }, gl: { antialias: true, alpha: true } });
     expect(controls.mock.lastCall![0]).toMatchObject({ enablePan: false, enableZoom: false, target: [0, 0.18, 0.05], rotateSpeed: 0.85, dampingFactor: 0.08, enableDamping: true });
+  });
+
+  it("turns antialias off on low-power device hints (#55)", () => {
+    hints(2, 2, 3);
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(canvas.mock.lastCall![0].gl).toMatchObject({ antialias: false, alpha: true });
+  });
+
+  it("shows a reduced-motion poster until the user opts into 3D (#54)", () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(canvas).not.toHaveBeenCalled();
+    expect(document.querySelector("[data-capability='reduced-motion']")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Ver en 3D" }));
+    expect(canvas).toHaveBeenCalled();
+  });
+
+  it("shows a no-WebGL poster with retry that re-probes (#54)", () => {
+    stubWebGL(false);
+    render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    expect(canvas).not.toHaveBeenCalled();
+    expect(document.querySelector("[data-capability='no-webgl']")).toBeTruthy();
+    stubWebGL(true);
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+    expect(canvas).toHaveBeenCalled();
   });
 
   it.each([
@@ -206,9 +254,12 @@ describe("Cat3DViewer", () => {
     expect(screen.queryByTestId("pet-fps-panel")).toBeNull();
   });
 
-  it("opts into the existing FPS panel with a local parent and cleans it up on unmount", () => {
+  it("opts into the existing FPS panel with a local parent and cleans it up on unmount", async () => {
     window.history.replaceState(null, "", "/?other=ok&pet3dStats=1");
     const { unmount } = render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
     expect(stats).toHaveBeenCalled();
     expect(stats.mock.lastCall![0].showPanel).toBe(0);
     expect(stats.mock.lastCall![0].parent.current).not.toBe(document.body);
@@ -219,6 +270,19 @@ describe("Cat3DViewer", () => {
     expect(screen.queryByTestId("pet-fps-panel")).toBeNull();
   });
 
+  it("does not statically import Stats from drei in the viewer module (#55)", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const { resolve } = await import("node:path");
+    const source = await readFile(
+      resolve(process.cwd(), "src/features/pet-home/components/Cat3DViewer.tsx"),
+      "utf8",
+    );
+    expect(source).not.toMatch(
+      /import\s*\{[^}]*\bStats\b[^}]*\}\s*from\s*["']@react-three\/drei["']/,
+    );
+    expect(source).toMatch(/import\("@react-three\/drei"\)/);
+  });
+
   it("derives the contact-shadow plane from the rig ground instead of the old -0.62 float", () => {
     render(<Cat3DViewer colors={DEFAULT_GREY_COAT} />);
     // The A2 floor oracle plants every pose on catGroundY(modelScale): root -0.22
@@ -226,6 +290,7 @@ describe("Cat3DViewer", () => {
     const expected = catGroundY(CAT_MODEL_SCALE) + CAT_VIEW_SHADOW.offset;
     expect(expected).toBeCloseTo(-0.4382, 4);
     expect(shadow.mock.lastCall![0]).toEqual({
+      frames: 1,
       resolution: 256,
       position: [0, expected, 0],
       opacity: CAT_VIEW_SHADOW.opacity,

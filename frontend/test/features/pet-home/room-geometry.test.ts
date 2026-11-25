@@ -1,6 +1,14 @@
 import { expect, it, vi } from "vitest";
 import { Color, PerspectiveCamera, Raycaster, Vector3 } from "three";
-import { createRoom, isRugVoxel, ROOM_SOLIDS, ROOM_PALETTE, ROOM_WALL_HEIGHT, VOXEL_SIZE } from "@/features/pet-home/room-geometry";
+import {
+  createRoom,
+  createRoomAsync,
+  isRugVoxel,
+  ROOM_SOLIDS,
+  ROOM_PALETTE,
+  ROOM_WALL_HEIGHT,
+  VOXEL_SIZE,
+} from "@/features/pet-home/room-geometry";
 import { ROOM_LENGTH, cellCenter, pointToCell } from "@/features/pet-home/room-grid";
 
 it("builds one caller-owned opaque mesh with no groups, caches, or shared resources", () => {
@@ -98,6 +106,28 @@ it("bakes real exposed-face AO, corner darkening, seamless coplanar edges and ch
     expect(flips).toBeGreaterThan(0);
   } finally { room.dispose(); }
 }, 20000);
+
+it("yields during async room build while matching sync mesh topology (#34)", async () => {
+  const sync = createRoom();
+  let yields = 0;
+  const asyncRoom = await createRoomAsync({
+    sliceMs: 0,
+    onYield: () => {
+      yields += 1;
+    },
+  });
+  try {
+    expect(yields).toBeGreaterThan(0);
+    expect(asyncRoom.geometry.getAttribute("position").count)
+      .toBe(sync.geometry.getAttribute("position").count);
+    expect(asyncRoom.geometry.getIndex()!.count).toBe(sync.geometry.getIndex()!.count);
+    expect(asyncRoom.mesh.layers.mask).toBe(sync.mesh.layers.mask);
+    expect(asyncRoom.mesh.name).toBe("procedural-room");
+  } finally {
+    sync.dispose();
+    asyncRoom.dispose();
+  }
+}, 30_000);
 
 it("is excluded by mask1, included by mask3, and raycasts the Y0 floor back into the grid", () => {
   const room = createRoom();

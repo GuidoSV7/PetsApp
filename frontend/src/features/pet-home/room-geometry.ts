@@ -61,11 +61,33 @@ const FACES: readonly { n: Triple; u: Triple; v: Triple }[] = [
 const CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const;
 const key = (x: number, y: number, z: number) => `${x},${y},${z}`;
 
-/** Builds an isolated, unregistered room. Caller owns mesh, geometry and material.
- * Add mesh to the caller's scene; on replacement/unmount remove it and dispose().
- * No cache, assets, temporary GPU geometries, runtime cat imports or frame hooks.
- */
-export function createRoom() {
+/** Soft time slice so face meshing does not monopolize the main thread (~8–12 ms). */
+export const ROOM_BUILD_SLICE_MS = 10;
+
+export type RoomHandle = {
+  mesh: Mesh;
+  geometry: BufferGeometry;
+  material: MeshLambertMaterial;
+  dispose: () => void;
+};
+
+export type CreateRoomAsyncOptions = {
+  /** Abort check between slices. */
+  isCancelled?: () => boolean;
+  /** Invoked after each yield (tests assert the build breathes). */
+  onYield?: () => void;
+  /** Override slice budget (ms). */
+  sliceMs?: number;
+};
+
+type MeshBuffers = {
+  positions: number[];
+  normals: number[];
+  colors: number[];
+  indices: number[];
+};
+
+function fillVoxels(): Map<string, Surface> {
   const voxels = new Map<string, Surface>();
   for (const solid of ROOM_SOLIDS) {
     for (let x = solid.min[0]; x < solid.max[0]; x++) {
@@ -74,19 +96,28 @@ export function createRoom() {
       }
     }
   }
-  const positions: number[] = [];
-  const normals: number[] = [];
   // Rug: recolour the floor's top voxel layer instead of adding geometry, so its
   // visible face is still Y0 and the A2 ground and the floor raycast are untouched.
-  for (let x = ROOM_RUG.minX; x < ROOM_RUG.maxX; x++) for (let z = ROOM_RUG.minZ; z < ROOM_RUG.maxZ; z++) {
-    const top = key(x, ROOM_RUG.layer, z);
-    if (voxels.get(top) === "floor") voxels.set(top, "rug");
+  for (let x = ROOM_RUG.minX; x < ROOM_RUG.maxX; x++) {
+    for (let z = ROOM_RUG.minZ; z < ROOM_RUG.maxZ; z++) {
+      const top = key(x, ROOM_RUG.layer, z);
+      if (voxels.get(top) === "floor") voxels.set(top, "rug");
+    }
   }
-  const colors: number[] = [];
-  const indices: number[] = [];
-  // Color(hex) performs sRGB -> Linear-sRGB conversion with Three color management.
-  const palette = Object.fromEntries(Object.entries(ROOM_PALETTE).map(([name, hex]) => [name, new Color(hex)])) as Record<Surface, Color>;
-  for (const [coordinate, surface] of voxels) {
+  return voxels;
+}
+
+function appendExposedFaces(
+  voxels: Map<string, Surface>,
+  palette: Record<Surface, Color>,
+  buffers: MeshBuffers,
+  entries: readonly [string, Surface][],
+  from: number,
+  to: number,
+): void {
+  const { positions, normals, colors, indices } = buffers;
+  for (let i = from; i < to; i++) {
+    const [coordinate, surface] = entries[i];
     const p = coordinate.split(",").map(Number);
     for (const { n, u, v } of FACES) {
       const outside = p.map((value, axis) => value + n[axis]);
@@ -111,11 +142,14 @@ export function createRoom() {
       for (const index of diagonal ? [0, 1, 3, 1, 2, 3] : [0, 1, 2, 0, 2, 3]) indices.push(start + index);
     }
   }
+}
+
+function finalizeRoom(buffers: MeshBuffers): RoomHandle {
   const geometry = new BufferGeometry();
-  geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
-  geometry.setIndex(indices);
+  geometry.setAttribute("position", new Float32BufferAttribute(buffers.positions, 3));
+  geometry.setAttribute("normal", new Float32BufferAttribute(buffers.normals, 3));
+  geometry.setAttribute("color", new Float32BufferAttribute(buffers.colors, 3));
+  geometry.setIndex(buffers.indices);
   geometry.computeBoundingSphere();
   const material = new MeshLambertMaterial({ vertexColors: true, transparent: false, opacity: 1 });
   const mesh = new Mesh(geometry, material);
@@ -131,4 +165,77 @@ export function createRoom() {
       material.dispose();
     },
   };
+}
+
+function scheduleSliceYield(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+    };
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      idleWindow.requestIdleCallback(() => resolve(), { timeout: 48 });
+      return;
+    }
+    window.setTimeout(() => resolve(), 0);
+  });
+}
+
+/** Builds an isolated, unregistered room. Caller owns mesh, geometry and material.
+ * Add mesh to the caller's scene; on replacement/unmount remove it and dispose().
+ * No cache, assets, temporary GPU geometries, runtime cat imports or frame hooks.
+ */
+export function createRoom(): RoomHandle {
+  const voxels = fillVoxels();
+  const palette = Object.fromEntries(
+    Object.entries(ROOM_PALETTE).map(([name, hex]) => [name, new Color(hex)]),
+  ) as Record<Surface, Color>;
+  const buffers: MeshBuffers = { positions: [], normals: [], colors: [], indices: [] };
+  const entries = [...voxels.entries()];
+  appendExposedFaces(voxels, palette, buffers, entries, 0, entries.length);
+  return finalizeRoom(buffers);
+}
+
+/**
+ * Same mesh as `createRoom`, but face meshing yields every ~`sliceMs` so the
+ * main thread can handle input/paint between slices (issue #34).
+ */
+export async function createRoomAsync(options: CreateRoomAsyncOptions = {}): Promise<RoomHandle> {
+  const sliceMs = options.sliceMs ?? ROOM_BUILD_SLICE_MS;
+  if (options.isCancelled?.()) throw new DOMException("Room build cancelled", "AbortError");
+  const voxels = fillVoxels();
+  if (options.isCancelled?.()) throw new DOMException("Room build cancelled", "AbortError");
+  const palette = Object.fromEntries(
+    Object.entries(ROOM_PALETTE).map(([name, hex]) => [name, new Color(hex)]),
+  ) as Record<Surface, Color>;
+  const buffers: MeshBuffers = { positions: [], normals: [], colors: [], indices: [] };
+  const entries = [...voxels.entries()];
+  let cursor = 0;
+  let sliceStart = typeof performance !== "undefined" ? performance.now() : 0;
+  let yielded = false;
+  while (cursor < entries.length) {
+    if (options.isCancelled?.()) throw new DOMException("Room build cancelled", "AbortError");
+    // Process a small batch, then check the time budget.
+    const batchEnd = Math.min(cursor + 32, entries.length);
+    appendExposedFaces(voxels, palette, buffers, entries, cursor, batchEnd);
+    cursor = batchEnd;
+    const now = typeof performance !== "undefined" ? performance.now() : sliceStart + sliceMs + 1;
+    if (cursor < entries.length && now - sliceStart >= sliceMs) {
+      options.onYield?.();
+      yielded = true;
+      await scheduleSliceYield();
+      sliceStart = typeof performance !== "undefined" ? performance.now() : 0;
+    }
+  }
+  // Guarantee at least one yield on large rooms when the environment is fast
+  // enough to finish under the budget in one go (still splits attach from paint).
+  if (!yielded && entries.length > 0) {
+    options.onYield?.();
+    await scheduleSliceYield();
+  }
+  if (options.isCancelled?.()) throw new DOMException("Room build cancelled", "AbortError");
+  return finalizeRoom(buffers);
 }
