@@ -6,7 +6,7 @@
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, #e8f7ee 0%, transparent 55%),
     #dceee3;
-  color: #143022;
+  color: var(--texto-fuerte);
 }
 
 .card {
@@ -40,7 +40,7 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #5a7a66;
+  color: var(--texto-suave);
   line-height: 1.35;
 }
 
@@ -67,7 +67,35 @@
   border-radius: 12px;
   border: 1.5px solid #c5cec8;
   font: inherit;
-  color: #143022;
+  color: var(--texto-fuerte);
+}
+
+.controlContrasena {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.controlContrasena input {
+  flex: 1;
+}
+
+.toggleContrasena {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid #c5cec8;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--texto-medio);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.toggleContrasena[aria-pressed="true"] {
+  color: var(--primario-texto);
+  border-color: #2fbf6b;
 }
 
 .field input:focus {
@@ -94,7 +122,7 @@
 
 .error {
   margin: 0;
-  color: #c0392b;
+  color: var(--estado-error);
   font-weight: 700;
   font-size: 0.88rem;
 }
@@ -103,5 +131,5 @@
   text-align: center;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #1f8f4e;
+  color: var(--primario-texto);
 }

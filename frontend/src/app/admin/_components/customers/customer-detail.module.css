@@ -18,6 +18,32 @@
   text-decoration: underline;
 }
 
+.filaAccionesError {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.mensajeErrorCarga {
+  color: var(--estado-error, #b3261e);
+}
+
+.botonReintentar {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--texto-primario, #1a1a2e);
+  cursor: pointer;
+}
+
+.botonReintentar:hover {
+  background: #f9fafb;
+}
+
 .tarjetaFicha {
   background: #fff;
   border-radius: 18px;

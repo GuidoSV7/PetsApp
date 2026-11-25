@@ -34,10 +34,10 @@ export function LoginGateModal({
       <div className={estilos.panel}>
         <div className={estilos.brandRow}>
           <BrandMark size={40} />
-          <p className={estilos.brandName}>PetsApp</p>
+          <h1 className={estilos.brandName}>PetsApp</h1>
         </div>
         <p className={estilos.eyebrow}>Cuidado virtual</p>
-        <h2 className={estilos.title}>Entrá para cuidar a Michi</h2>
+        <p className={estilos.title}>Entrá para cuidar a Michi</p>
         <p className={estilos.hint}>
           Continuá con Google o conectá tu billetera Freighter de Stellar.
         </p>

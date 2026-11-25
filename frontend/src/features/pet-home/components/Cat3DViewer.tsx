@@ -1,12 +1,27 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+} from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, OrbitControls, PerformanceMonitor, Stats } from "@react-three/drei";
+import { ContactShadows, OrbitControls, PerformanceMonitor } from "@react-three/drei";
 import type { PerspectiveCamera, Raycaster, Scene } from "three";
 import { Vector3 } from "three";
 import { useReducedMotion } from "@/features/pet-home/use-reduced-motion";
-import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-quality";
+import {
+  antialiasForDevice,
+  contactShadowFramesForDevice,
+  dprForFactor,
+  maxDprForDevice,
+} from "@/features/pet-home/pet-render-quality";
+import { detectWebGLSupport } from "@/features/pet-home/webgl-capability";
 import { defaultCatDesign, type CatDesignTunables } from "@/features/admin/cat-design-settings";
 import { resolveModelScale } from "@/features/admin/resolve-cat-design";
 import { Cat3DModel } from "@/features/pet-home/components/Cat3DModel";
@@ -24,7 +39,7 @@ import {
   type PetNeeds,
 } from "@/features/pet-home/pet-stats";
 import { PET_NAME } from "@/features/pet-home/pet-status";
-import { createRoom, ROOM_WALL_HEIGHT } from "@/features/pet-home/room-geometry";
+import { createRoomAsync, ROOM_WALL_HEIGHT } from "@/features/pet-home/room-geometry";
 import { ROOM_HALF } from "@/features/pet-home/room-grid";
 import {
   CAT_MODEL_SCALE,
@@ -33,6 +48,28 @@ import {
   catPartWorldY,
 } from "@/features/pet-home/pet-layout";
 import styles from "./pet-home.module.css";
+
+type StatsProps = {
+  showPanel?: number;
+  parent?: { current: HTMLDivElement | null };
+  className?: string;
+};
+
+/** Opt-in FPS overlay — never pull Stats into the default pet-3d chunk. */
+function OptInStats(props: StatsProps) {
+  const [Stats, setStats] = useState<ComponentType<StatsProps> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void import("@react-three/drei").then((mod) => {
+      if (!cancelled) setStats(() => mod.Stats as ComponentType<StatsProps>);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  if (!Stats) return null;
+  return <Stats {...props} />;
+}
 
 const performanceBounds = (): [number, number] => [45, 58];
 
@@ -74,6 +111,8 @@ export const ROOM_VIEW = {
   zoomRange: [0.8, 1.2] as readonly [number, number],
   zoomStep: 0.1,
   focusMs: 250,
+  /** How long the head close-up stays before returning to the room overview. */
+  focusHoldMs: 2500,
   /** Paws land on the lower third; the far wall top keeps a 10% sky margin. */
   lowerNdcY: -0.45,
   upperNdcY: 0.9,
@@ -353,6 +392,22 @@ function ClockGuard({ paused }: { paused: boolean }) {
   return null;
 }
 
+/** Fires once on the first R3F frame so the HTML poster can yield to the cat. */
+function FirstUsefulFrame({ onReady }: { onReady: () => void }) {
+  const sent = useRef(false);
+  useFrame(() => {
+    if (sent.current) return;
+    sent.current = true;
+    onReady();
+  });
+  return null;
+}
+
+/** Non-null Suspense fallback so the sage plane is never the only signal. */
+function CanvasSuspenseFallback() {
+  return <group />;
+}
+
 /** Mounts the merged room on layer 1 and scopes the layer masks to this view. */
 function RoomScene({ floorY }: { floorY: number }) {
   const scene = useThree((state) => state.scene) as Scene;
@@ -365,12 +420,22 @@ function RoomScene({ floorY }: { floorY: number }) {
     camera.layers.enable(1);
     raycaster.layers.enable(1);
     let cancelled = false;
-    let room: ReturnType<typeof createRoom> | null = null;
+    let room: Awaited<ReturnType<typeof createRoomAsync>> | null = null;
     const attach = () => {
       if (cancelled || room) return;
-      room = createRoom();
-      room.mesh.position.y = floorY;
-      scene.add(room.mesh);
+      void createRoomAsync({ isCancelled: () => cancelled })
+        .then((built) => {
+          if (cancelled) {
+            built.dispose();
+            return;
+          }
+          room = built;
+          room.mesh.position.y = floorY;
+          scene.add(room.mesh);
+        })
+        .catch(() => {
+          /* cancelled or aborted — nothing to attach */
+        });
     };
     const cancel = scheduleIdle(attach);
     return () => {
@@ -420,11 +485,19 @@ export function Cat3DViewer({
   const isHome = variant === "home";
   const [orbiting, setOrbiting] = useState(false);
   const poseMount = useMemo(() => ({ careEvent, posePreview }), [careEvent, posePreview]);
-  const [ceiling] = useState(() => typeof window === "undefined" ? 1 : maxDprForDevice({
-    deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
-    hardwareConcurrency: navigator.hardwareConcurrency,
-    devicePixelRatio: window.devicePixelRatio,
-  }));
+  const deviceHints = useMemo(() => {
+    if (typeof window === "undefined") {
+      return { devicePixelRatio: 1 } as const;
+    }
+    return {
+      deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      devicePixelRatio: window.devicePixelRatio,
+    };
+  }, []);
+  const [ceiling] = useState(() => maxDprForDevice(deviceHints));
+  const [antialias] = useState(() => antialiasForDevice(deviceHints));
+  const [shadowFrames] = useState(() => contactShadowFramesForDevice(deviceHints));
   const [selectedDpr, setSelectedDpr] = useState(ceiling);
   const [statsEnabled] = useState(() => typeof window !== "undefined"
     && new URLSearchParams(window.location.search).get("pet3dStats") === "1");
@@ -451,12 +524,26 @@ export function Cat3DViewer({
   const [zoom, setZoom] = useState<number>(1);
   const [focus, setFocus] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [webglOk, setWebglOk] = useState(() =>
+    typeof document === "undefined" ? true : detectWebGLSupport(),
+  );
+  const [force3d, setForce3d] = useState(false);
   const hostRef = useRef<HTMLDivElement | null>(null);
   const reducedMotion = useReducedMotion();
   const modelScale = resolveModelScale(design ?? defaultCatDesign());
   const groundY = catGroundY(modelScale);
   const swallowTap = useRef(false);
   const pointers = useRef(new Set<number>());
+  const onSceneReady = useCallback(() => setSceneReady(true), []);
+  /** Prefer poster when WebGL is missing or the user asked for less motion. */
+  const mountCanvas = webglOk && (!reducedMotion || force3d);
+  const retryWebGL = useCallback(() => {
+    setWebglOk(detectWebGLSupport());
+  }, []);
+  const enable3d = useCallback(() => {
+    setForce3d(true);
+  }, []);
 
   // Pause the owned loop when the viewer leaves the screen or the tab hides.
   useEffect(() => {
@@ -483,6 +570,16 @@ export function Cat3DViewer({
       document.removeEventListener("visibilitychange", update);
     };
   }, [isHome]);
+
+  // Head focus auto-returns after the pet gesture window / hold timeout.
+  useEffect(() => {
+    if (!isHome || !focus) return;
+    const timer = window.setTimeout(() => {
+      setFocus(false);
+      setZoom(1);
+    }, ROOM_VIEW.focusHoldMs);
+    return () => window.clearTimeout(timer);
+  }, [focus, isHome]);
 
   const petOnce = useCallback(() => {
     if (swallowTap.current) {
@@ -532,8 +629,37 @@ export function Cat3DViewer({
     pointers.current.delete(event.pointerId);
   };
 
+  if (!mountCanvas) {
+    const noWebGL = !webglOk;
+    return (
+      <div
+        className={styles.viewerShell}
+        data-scene-ready="false"
+        data-capability={noWebGL ? "no-webgl" : "reduced-motion"}
+      >
+        <div className={styles.viewerFallback} role="status" aria-live="polite">
+          <span className={styles.viewerPosterSkel} aria-hidden="true" />
+          <p className={styles.viewerPosterCopy}>
+            {noWebGL
+              ? `No pudimos iniciar el 3D de ${PET_NAME} en este dispositivo.`
+              : `Mostramos a ${PET_NAME} en modo calmado porque pediste menos movimiento.`}
+          </p>
+          {noWebGL ? (
+            <button type="button" className={styles.loadRetry} onClick={retryWebGL}>
+              Reintentar
+            </button>
+          ) : (
+            <button type="button" className={styles.loadRetry} onClick={enable3d}>
+              Ver en 3D
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.viewerShell}>
+    <div className={styles.viewerShell} data-scene-ready={sceneReady ? "true" : "false"}>
       <div
         ref={hostRef}
         className={styles.canvasHost}
@@ -551,14 +677,21 @@ export function Cat3DViewer({
             }
           : {})}
       >
+        {!sceneReady ? (
+          <div className={styles.viewerPoster} role="status" aria-live="polite">
+            <span className={styles.viewerPosterSkel} aria-hidden="true" />
+            <span className={styles.viewerPosterCopy}>Preparando a {PET_NAME}…</span>
+          </div>
+        ) : null}
         {statsEnabled && <div ref={setStatsParent} aria-hidden="true" />}
         <Canvas
           camera={{ position: [0, 0.42, 3.05], fov: 28 }}
           dpr={selectedDpr}
           frameloop={isHome && paused ? "never" : "always"}
           flat
-          gl={{ antialias: true, alpha: true }}
+          gl={{ antialias, alpha: true }}
         >
+          <FirstUsefulFrame onReady={onSceneReady} />
           <PerformanceMonitor
             factor={1}
             step={0.15}
@@ -567,7 +700,9 @@ export function Cat3DViewer({
             onChange={onChange}
             onFallback={onFallback}
           />
-          {statsEnabled && statsParentRef && <Stats showPanel={0} parent={statsParentRef} className={styles.fpsOverlay} />}
+          {statsEnabled && statsParentRef && (
+            <OptInStats showPanel={0} parent={statsParentRef} className={styles.fpsOverlay} />
+          )}
           <hemisphereLight args={[...CAT_VIEW_LIGHTS.hemisphere.args]} />
           <directionalLight
             position={[...CAT_VIEW_LIGHTS.key.position]}
@@ -584,7 +719,7 @@ export function Cat3DViewer({
             intensity={CAT_VIEW_LIGHTS.rim.intensity}
             color={CAT_VIEW_LIGHTS.rim.color}
           />
-          <Suspense fallback={null}>
+          <Suspense fallback={<CanvasSuspenseFallback />}>
             <CatPoseMountContext.Provider value={poseMount}>
             <Cat3DModel
               colors={colors}
@@ -598,6 +733,7 @@ export function Cat3DViewer({
             </CatPoseMountContext.Provider>
           </Suspense>
           <ContactShadows
+            frames={shadowFrames}
             resolution={CAT_VIEW_SHADOW.resolution}
             position={[0, groundY + CAT_VIEW_SHADOW.offset, 0]}
             opacity={CAT_VIEW_SHADOW.opacity}

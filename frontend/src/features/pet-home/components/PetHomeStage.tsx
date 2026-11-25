@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   applyPetAction,
   applyPetCoat,
@@ -10,6 +10,7 @@ import {
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
+import { Cat3DViewerErrorBoundary } from "@/features/pet-home/components/Cat3DViewerErrorBoundary";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
@@ -32,6 +33,19 @@ import {
 } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
 
+function StageCanvasLoading({ name }: { name: string }) {
+  return (
+    <div
+      className={styles.stageLoading}
+      role="status"
+      aria-label={`Cargando a ${name}`}
+    >
+      <span className={styles.stageLoadingPoster} aria-hidden="true" />
+      <span className={styles.stageLoadingCopy}>Cargando a {name}…</span>
+    </div>
+  );
+}
+
 const Cat3DViewer = dynamic(
   () =>
     import("@/features/pet-home/components/Cat3DViewer").then(
@@ -39,11 +53,7 @@ const Cat3DViewer = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className={styles.canvasHost} role="status">
-        Cargando a {DEFAULT_PET_NAME}…
-      </div>
-    ),
+    loading: () => <StageCanvasLoading name={DEFAULT_PET_NAME} />,
   },
 );
 
@@ -87,7 +97,22 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const onCoinsChangeRef = useRef(onCoinsChange);
   onCoinsChangeRef.current = onCoinsChange;
   const locked = busy || !ready;
-  const needCues = needVisualCues(needs);
+  // Gate crisis cues until hydrate: EMPTY_PET_NEEDS zeros would look like crisis.
+  const needCues = ready
+    ? needVisualCues(needs)
+    : {
+        hungerLow: false,
+        funLow: false,
+        energyLow: false,
+        hygieneLow: false,
+        bodySlim: 1,
+        earDroop: 0,
+        headDroop: 0,
+        idleAmp: 1,
+        idleSpeed: 1,
+        pupilScale: 1,
+        dirtMix: 0,
+      };
 
   useEffect(() => {
     const player = purrRef.current;
@@ -102,7 +127,7 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     return () => window.clearTimeout(timer);
   }, [statusKey]);
 
-  const applyState = (state: PetStateResponse, bounce = false) => {
+  const applyState = useCallback((state: PetStateResponse, bounce = false) => {
     onCoinsChangeRef.current?.(state.coins);
     setNeeds(state.needs);
     setCoat(state.coat);
@@ -115,28 +140,29 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     setReady(true);
     setPulse((n) => n + 1);
     if (bounce) setReactPulse((n) => n + 1);
-  };
+  }, []);
+
+  const cargarEstado = useCallback(async () => {
+    try {
+      const state = await fetchPetState();
+      applyState(state);
+      setLoadError(null);
+    } catch {
+      setReady(false);
+      setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
+    }
+  }, [applyState]);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      try {
-        const state = await fetchPetState();
-        if (!cancelled) {
-          applyState(state);
-          setLoadError(null);
-        }
-      } catch {
-        if (!cancelled) {
-          setReady(false);
-          setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
-        }
-      }
+      if (cancelled) return;
+      await cargarEstado();
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [cargarEstado]);
 
   const onRename = async (nextName: string) => {
     if (locked) return;
@@ -222,9 +248,18 @@ export function PetHomeStage({ onCoinsChange }: Props) {
               <span className={styles.moodValue}>{moodCaption(mood)}</span>
             </p>
             {loadError ? (
-              <p className={styles.loadError} role="alert">
-                {loadError}
-              </p>
+              <div className={styles.loadErrorRow}>
+                <p className={styles.loadError} role="alert">
+                  {loadError}
+                </p>
+                <button
+                  type="button"
+                  className={styles.loadRetry}
+                  onClick={() => void cargarEstado()}
+                >
+                  Reintentar
+                </button>
+              </div>
             ) : null}
           </div>
           <PersonalizeStrip
@@ -247,22 +282,37 @@ export function PetHomeStage({ onCoinsChange }: Props) {
           </p>
 
           <div className={styles.petFrame}>
-            <Cat3DViewer
-              variant="home"
-              colors={coat}
-              design={catDesign}
-              reactPulse={reactPulse}
-              careEvent={careEvent}
-              needs={needs}
-              onPetInteract={() =>
-                void runAction("pet", { purr: true, bounce: true })
-              }
-            />
+            {!ready ? (
+              <StageCanvasLoading name={petName} />
+            ) : (
+              <Cat3DViewerErrorBoundary petName={petName}>
+                <Cat3DViewer
+                  variant="home"
+                  colors={coat}
+                  design={catDesign}
+                  reactPulse={reactPulse}
+                  careEvent={careEvent}
+                  needs={needs}
+                  onPetInteract={() =>
+                    void runAction("pet", { purr: true, bounce: true })
+                  }
+                />
+              </Cat3DViewerErrorBoundary>
+            )}
           </div>
         </div>
       </div>
 
       <div className={styles.actions}>
+        <button
+          type="button"
+          className={`${styles.careButton} ${styles.carePet}`}
+          disabled={locked}
+          onClick={() => void runAction("pet", { purr: true, bounce: true })}
+        >
+          <CareIcon kind="pet" />
+          Acariciar
+        </button>
         <button
           type="button"
           className={`${styles.careButton} ${styles.careFeed}`}
@@ -310,7 +360,18 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   );
 }
 
-function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" }) {
+function CareIcon({ kind }: { kind: "feed" | "play" | "sleep" | "bathe" | "pet" }) {
+  if (kind === "pet") {
+    return (
+      <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">
+        {/* Heart for the petting action */}
+        <path
+          fill="currentColor"
+          d="M12 20.4l-1.7-1.55C5.4 14.5 2.6 12 2.6 8.8A4.3 4.3 0 0 1 7 4.3c1.6 0 3.1.75 4.1 1.95l.9 1.05.9-1.05a5.35 5.35 0 0 1 4.1-1.95 4.3 4.3 0 0 1 4.4 4.5c0 3.2-2.8 5.7-7.7 10.05L12 20.4z"
+        />
+      </svg>
+    );
+  }
   if (kind === "feed") {
     return (
       <svg viewBox="0 0 24 24" className={styles.careSvg} aria-hidden="true">

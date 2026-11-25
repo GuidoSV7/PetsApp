@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -35,8 +34,8 @@ const countryOptions: CountryOption[] = [
   { code: "CO", label: "Colombia" },
   { code: "EC", label: "Ecuador" },
   { code: "GT", label: "Guatemala" },
-  { code: "MX", label: "Mexico" },
-  { code: "PE", label: "Peru" },
+  { code: "MX", label: "México" },
+  { code: "PE", label: "Perú" },
   { code: "UY", label: "Uruguay" },
   { code: "VE", label: "Venezuela" },
 ];
@@ -44,6 +43,15 @@ const countryOptions: CountryOption[] = [
 const DEFAULT_COUNTRY = "BO";
 /** Mirrors the API rule shared by register and change-password. */
 const MIN_PASSWORD_LENGTH = 8;
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Field-level validation problems, shown with aria-invalid + aria-describedby. */
+type ErroresCampo = {
+  contrasena?: string;
+  nombreCompleto?: string;
+};
 
 // Login and registration modal against the PetsApp API (admin or regular user).
 export default function AuthDemoModal({
@@ -62,15 +70,14 @@ export default function AuthDemoModal({
   const [contrasena, setContrasena] = useState("");
   const [nombreCompleto, setNombreCompleto] = useState("");
   const [codigoPais, setCodigoPais] = useState(DEFAULT_COUNTRY);
-  const [paisDropdownAbierto, setPaisDropdownAbierto] = useState(false);
-  const wrapperPaisRef = useRef<HTMLDivElement | null>(null);
 
   const [cargando, setCargando] = useState(false);
   const [mensajeAuth, setMensajeAuth] = useState<string | null>(null);
+  const [erroresCampo, setErroresCampo] = useState<ErroresCampo>({});
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
-  const paisSeleccionado = useMemo(() => {
-    return countryOptions.find((p) => p.code === codigoPais) ?? countryOptions[0]!;
-  }, [codigoPais]);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const primerCampoRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!abierta) return;
@@ -85,7 +92,8 @@ export default function AuthDemoModal({
     setNombreCompleto("");
     setCodigoPais(DEFAULT_COUNTRY);
     setMensajeAuth(null);
-    setPaisDropdownAbierto(false);
+    setErroresCampo({});
+    setMostrarContrasena(false);
   }, [abierta]);
 
   const cerrarModalInterno = () => {
@@ -93,36 +101,55 @@ export default function AuthDemoModal({
     onClose();
   };
 
+  // S4: foco inicial en el primer campo, trampa de Tab, Escape cierra y el
+  // foco vuelve al elemento que abrió el modal.
   useEffect(() => {
     if (!abierta) return;
 
-    const manejadorTeclado = (evento: KeyboardEvent) => {
-      if (evento.key === "Escape") cerrarModalInterno();
-    };
-
+    const elementoPrevio = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", manejadorTeclado);
 
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", manejadorTeclado);
-    };
-  }, [abierta]);
-
-  useEffect(() => {
-    if (!paisDropdownAbierto) return;
-
-    const manejarClickFuera = (evento: MouseEvent) => {
-      const objetivo = evento.target as Node | null;
-      if (!objetivo) return;
-      if (!wrapperPaisRef.current?.contains(objetivo)) {
-        setPaisDropdownAbierto(false);
+    const atraparFoco = (evento: KeyboardEvent) => {
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+      const enfocables = Array.from(
+        overlay.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      );
+      if (enfocables.length === 0) return;
+      const primero = enfocables[0]!;
+      const ultimo = enfocables[enfocables.length - 1]!;
+      const activo = document.activeElement as HTMLElement | null;
+      if (evento.shiftKey && (activo === primero || !overlay.contains(activo))) {
+        evento.preventDefault();
+        ultimo.focus();
+        return;
+      }
+      if (!evento.shiftKey && (!activo || !overlay.contains(activo) || activo === ultimo)) {
+        evento.preventDefault();
+        primero.focus();
       }
     };
 
-    window.addEventListener("mousedown", manejarClickFuera);
-    return () => window.removeEventListener("mousedown", manejarClickFuera);
-  }, [paisDropdownAbierto]);
+    const manejarTeclado = (evento: KeyboardEvent) => {
+      if (evento.key === "Escape") {
+        cerrarModalInterno();
+        return;
+      }
+      if (evento.key === "Tab") {
+        atraparFoco(evento);
+      }
+    };
+
+    primerCampoRef.current?.focus();
+    window.addEventListener("keydown", manejarTeclado);
+
+    return () => {
+      window.removeEventListener("keydown", manejarTeclado);
+      document.body.style.overflow = "";
+      elementoPrevio?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abierta]);
 
   /** Persists the session exactly as the API answered it and routes by role. */
   const completarSesion = (respuesta: LoginRegisterResponse) => {
@@ -141,36 +168,52 @@ export default function AuthDemoModal({
     router.push(landingPathForRole(respuesta.user.role));
   };
 
+  const cambiarContrasena = (valor: string) => {
+    setContrasena(valor);
+    if (erroresCampo.contrasena) {
+      setErroresCampo((previos) => ({ ...previos, contrasena: undefined }));
+    }
+  };
+
+  const cambiarNombreCompleto = (valor: string) => {
+    setNombreCompleto(valor);
+    if (erroresCampo.nombreCompleto) {
+      setErroresCampo((previos) => ({ ...previos, nombreCompleto: undefined }));
+    }
+  };
+
   const enviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
     if (cargando) return;
 
     setMensajeAuth(null);
-    setCargando(true);
 
     try {
       if (modalMode === "sign-in") {
+        setCargando(true);
         completarSesion(await signInPetsAppUser(correo, contrasena));
         return;
       }
 
+      const errores: ErroresCampo = {};
       if (!nombreCompleto.trim()) {
-        setMensajeAuth("Indica tu nombre completo.");
-        setCargando(false);
-        return;
+        errores.nombreCompleto = "Indicá tu nombre completo.";
       }
       if (contrasena.length < MIN_PASSWORD_LENGTH) {
-        setMensajeAuth(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
-        setCargando(false);
+        errores.contrasena = `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`;
+      }
+      if (errores.nombreCompleto || errores.contrasena) {
+        setErroresCampo(errores);
         return;
       }
 
+      setCargando(true);
       completarSesion(
         await registerPetsAppUser({
           email: correo,
           password: contrasena,
           name: nombreCompleto,
-          country: paisSeleccionado.code,
+          country: codigoPais,
         }),
       );
     } catch (error) {
@@ -182,11 +225,77 @@ export default function AuthDemoModal({
 
   if (!abierta) return null;
 
+  const estiloCampoError = (campo: keyof ErroresCampo) =>
+    erroresCampo[campo] ? estilosModal.inputError : "";
+
   /** Same width in both modes. */
   const claseTamano = estilosModal.tamanoRegistro;
 
+  const campoContrasena = (
+    <div>
+      <label className={estilosModal.label} htmlFor="contrasena-modal">
+        Contraseña
+      </label>
+      <span className={estilosModal.controlContrasena}>
+        <input
+          id="contrasena-modal"
+          className={`${estilosModal.input} ${estiloCampoError("contrasena")}`}
+          type={mostrarContrasena ? "text" : "password"}
+          name="contrasena"
+          required
+          placeholder="••••••••"
+          autoComplete={modalMode === "sign-in" ? "current-password" : "new-password"}
+          minLength={MIN_PASSWORD_LENGTH}
+          value={contrasena}
+          onChange={(e) => cambiarContrasena(e.target.value)}
+          aria-invalid={erroresCampo.contrasena ? "true" : undefined}
+          aria-describedby={
+            erroresCampo.contrasena
+              ? "error-contrasena-modal"
+              : "regla-contrasena-modal"
+          }
+        />
+        <button
+          type="button"
+          className={estilosModal.mostrarContrasena}
+          aria-pressed={mostrarContrasena}
+          onClick={() => setMostrarContrasena((valor) => !valor)}
+        >
+          {mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+        </button>
+      </span>
+      {erroresCampo.contrasena ? (
+        <p id="error-contrasena-modal" className={estilosModal.errorCampo}>
+          {erroresCampo.contrasena}
+        </p>
+      ) : (
+        <p id="regla-contrasena-modal" className={estilosModal.hintCampo}>
+          Mínimo 8 caracteres
+        </p>
+      )}
+    </div>
+  );
+
+  const campoCorreo = (
+    <label className={`${estilosModal.label} ${estilosModal.campoLargo}`}>
+      Correo
+      <input
+        ref={primerCampoRef}
+        className={estilosModal.input}
+        type="email"
+        name="correo"
+        required
+        placeholder="tu@correo.com"
+        autoComplete="email"
+        value={correo}
+        onChange={(e) => setCorreo(e.target.value)}
+      />
+    </label>
+  );
+
   return (
     <div
+      ref={overlayRef}
       className={estilosHome.modalOverlay}
       role="dialog"
       aria-modal="true"
@@ -241,6 +350,7 @@ export default function AuthDemoModal({
                 disabled={cargando}
                 onClick={() => {
                   setMensajeAuth(null);
+                  setErroresCampo({});
                   setModalMode("sign-in");
                 }}
               >
@@ -254,6 +364,7 @@ export default function AuthDemoModal({
                 disabled={cargando}
                 onClick={() => {
                   setMensajeAuth(null);
+                  setErroresCampo({});
                   setModalMode("sign-up");
                 }}
               >
@@ -270,132 +381,60 @@ export default function AuthDemoModal({
             <form className={estilosModal.formulario} onSubmit={enviarFormulario}>
               {modalMode === "sign-up" ? (
                 <div className={estilosModal.gridRegistro}>
-                  <label
-                    className={`${estilosModal.label} ${estilosModal.campoLargo}`}
-                  >
-                    Correo
-                    <input
-                      className={estilosModal.input}
-                      type="email"
-                      name="correo"
-                      required
-                      placeholder="tu@correo.com"
-                      autoComplete="email"
-                      value={correo}
-                      onChange={(e) => setCorreo(e.target.value)}
-                    />
-                  </label>
+                  {campoCorreo}
 
-                  <label className={estilosModal.label}>
-                    Contraseña
-                    <input
-                      className={estilosModal.input}
-                      type="password"
-                      name="contrasena"
-                      required
-                      placeholder="••••••••"
-                      autoComplete="new-password"
-                      minLength={MIN_PASSWORD_LENGTH}
-                      value={contrasena}
-                      onChange={(e) => setContrasena(e.target.value)}
-                    />
-                  </label>
+                  {campoContrasena}
 
                   <label className={estilosModal.label}>
                     País
-                    <div
-                      ref={wrapperPaisRef}
-                      className={estilosModal.dropdownControl}
+                    <select
+                      className={estilosModal.input}
+                      name="pais"
+                      autoComplete="country"
+                      value={codigoPais}
+                      onChange={(e) => setCodigoPais(e.target.value)}
                     >
-                      <button
-                        type="button"
-                        className={estilosModal.dropdownBoton}
-                        aria-haspopup="listbox"
-                        aria-expanded={paisDropdownAbierto}
-                        onClick={() => setPaisDropdownAbierto((v) => !v)}
-                      >
-                        <span className={estilosModal.dropdownTexto}>
-                          {paisSeleccionado.label}
-                        </span>
-                        <span
-                          className={estilosModal.dropdownFlecha}
-                          aria-hidden="true"
-                        />
-                      </button>
-
-                      {paisDropdownAbierto ? (
-                        <div
-                          className={estilosModal.dropdownMenu}
-                          role="listbox"
-                          aria-label="Seleccionar país"
-                        >
-                          {countryOptions.map((pais) => (
-                            <button
-                              key={pais.code}
-                              type="button"
-                              className={estilosModal.dropdownItem}
-                              data-activo={pais.code === codigoPais}
-                              aria-selected={pais.code === codigoPais}
-                              onClick={() => {
-                                setCodigoPais(pais.code);
-                                setPaisDropdownAbierto(false);
-                              }}
-                            >
-                              {pais.label}
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
+                      {countryOptions.map((pais) => (
+                        <option key={pais.code} value={pais.code}>
+                          {pais.label}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
-                  <label
-                    className={`${estilosModal.label} ${estilosModal.campoLargo}`}
-                  >
+                  <label className={estilosModal.label}>
                     Nombre completo
                     <input
-                      className={estilosModal.input}
+                      className={`${estilosModal.input} ${estiloCampoError("nombreCompleto")}`}
                       type="text"
                       name="nombreCompleto"
                       required
                       placeholder="Ej. Ana Pérez"
                       autoComplete="name"
                       value={nombreCompleto}
-                      onChange={(e) => setNombreCompleto(e.target.value)}
+                      onChange={(e) => cambiarNombreCompleto(e.target.value)}
+                      aria-invalid={erroresCampo.nombreCompleto ? "true" : undefined}
+                      aria-describedby={
+                        erroresCampo.nombreCompleto
+                          ? "error-nombre-completo"
+                          : undefined
+                      }
                     />
                   </label>
+                  {erroresCampo.nombreCompleto ? (
+                    <p
+                      id="error-nombre-completo"
+                      className={`${estilosModal.errorCampo} ${estilosModal.campoLargo}`}
+                    >
+                      {erroresCampo.nombreCompleto}
+                    </p>
+                  ) : null}
                 </div>
               ) : (
                 <div className={estilosModal.gridRegistro}>
-                  <label
-                    className={`${estilosModal.label} ${estilosModal.campoLargo}`}
-                  >
-                    Correo
-                    <input
-                      className={estilosModal.input}
-                      type="email"
-                      name="correo"
-                      required
-                      placeholder="tu@correo.com"
-                      autoComplete="email"
-                      value={correo}
-                      onChange={(e) => setCorreo(e.target.value)}
-                    />
-                  </label>
+                  {campoCorreo}
 
-                  <label className={estilosModal.label}>
-                    Contraseña
-                    <input
-                      className={estilosModal.input}
-                      type="password"
-                      name="contrasena"
-                      required
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                      value={contrasena}
-                      onChange={(e) => setContrasena(e.target.value)}
-                    />
-                  </label>
+                  {campoContrasena}
                 </div>
               )}
 

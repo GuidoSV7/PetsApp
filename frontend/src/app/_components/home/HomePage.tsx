@@ -84,7 +84,7 @@ function NestHomePage() {
     return (
       <div className={estilosHome.contenedor}>
         <HomeHeader />
-        <main className={estilosHome.main}>
+        <main id="inicio" className={estilosHome.main}>
           <p className={estilosHome.gateLoading} role="status">
             Cargando…
           </p>

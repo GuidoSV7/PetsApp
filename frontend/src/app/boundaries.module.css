@@ -1,0 +1,127 @@
+/* Boundary shells (not-found, error, global-error, loading): soft mint panel. */
+
+.panel {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--superficie, #eef6f0);
+  color: var(--texto-fuerte, #143022);
+}
+
+.card {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--texto-fuerte, #143022) 8%, transparent);
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(20, 48, 34, 0.1);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.detail {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-suave, #5a7a66);
+  line-height: 1.4;
+}
+
+.action {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primario-texto, #177241);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Skeleton rows for route-level loading states. */
+
+.skeletonBox {
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--texto-fuerte, #143022) 6%, #ffffff);
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 720px;
+  margin: 24px auto 8px;
+  padding: 0 16px;
+}
+
+.headerBrand {
+  width: 46%;
+  height: 28px;
+}
+
+.headerAction {
+  margin-left: auto;
+  width: 108px;
+  height: 36px;
+  border-radius: 999px;
+}
+
+.bodyRow {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 440px;
+  margin: 16px auto 0;
+  padding: 0 16px 32px;
+}
+
+.bodyCard {
+  height: 120px;
+}
+
+.bodyRowSmall {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 440px;
+  margin: 16px auto 0;
+  padding: 0 16px 32px;
+}
+
+.statusLine {
+  min-height: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBox {
+    animation: none;
+  }
+}
+
+@keyframes skeletonPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}

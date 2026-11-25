@@ -4,94 +4,88 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import estilos from "./notification.module.css";
 
+/** Default visibility: ~6s, per audit S6. */
+const DURACION_DEFAULT_MS = 6000;
+
 type Props = Readonly<{
   mensaje: string;
   durationMs?: number;
   alTerminar?: () => void;
 }>;
 
-// Toast superior derecha: cuenta atrás real; al pasar el mouse se pausa el tiempo.
+// Toast superior derecha: la barra avanza por CSS; hover o foco pausan el tiempo.
 export default function TopNotification({
   mensaje,
-  durationMs = 12_000,
+  durationMs = DURACION_DEFAULT_MS,
   alTerminar,
 }: Props) {
   const [visible, setVisible] = useState(true);
   const [pausado, setPausado] = useState(false);
-  const [restanteMs, setRestanteMs] = useState(durationMs);
 
-  const deadlineRef = useRef(Date.now() + durationMs);
-  const pausaRestanteRef = useRef<number | null>(null);
+  const inicioRef = useRef(Date.now());
+  const restanteRef = useRef(durationMs);
   const alTerminarRef = useRef(alTerminar);
-  const yaNotificoFinRef = useRef(false);
+  const finNotificadoRef = useRef(false);
 
   alTerminarRef.current = alTerminar;
 
   useLayoutEffect(() => {
-    deadlineRef.current = Date.now() + durationMs;
-    pausaRestanteRef.current = null;
-    yaNotificoFinRef.current = false;
-    setRestanteMs(durationMs);
+    inicioRef.current = Date.now();
+    restanteRef.current = durationMs;
+    finNotificadoRef.current = false;
+    setPausado(false);
     setVisible(true);
   }, [durationMs, mensaje]);
+
+  const terminar = () => {
+    if (finNotificadoRef.current) return;
+    finNotificadoRef.current = true;
+    alTerminarRef.current?.();
+    setVisible(false);
+  };
 
   useEffect(() => {
     if (!visible) return;
 
-    let frameId = 0;
+    if (pausado) return;
 
-    const tick = () => {
-      if (pausado) {
-        frameId = requestAnimationFrame(tick);
-        return;
-      }
+    const restante = Math.max(0, restanteRef.current);
+    if (restante <= 0) {
+      terminar();
+      return;
+    }
 
-      const r = Math.max(0, deadlineRef.current - Date.now());
-      setRestanteMs(r);
-
-      if (r <= 0) {
-        if (!yaNotificoFinRef.current) {
-          yaNotificoFinRef.current = true;
-          alTerminarRef.current?.();
-        }
-        setVisible(false);
-        return;
-      }
-
-      frameId = requestAnimationFrame(tick);
-    };
-
-    frameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameId);
+    const id = window.setTimeout(terminar, restante);
+    return () => window.clearTimeout(id);
+    // `terminar` es estable por cierre sobre refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, pausado]);
 
-  const alEntrar = () => {
-    const r = Math.max(0, deadlineRef.current - Date.now());
-    pausaRestanteRef.current = r;
-    setRestanteMs(r);
+  const pausar = () => {
+    if (pausado || !visible || finNotificadoRef.current) return;
+    restanteRef.current = Math.max(
+      0,
+      restanteRef.current - (Date.now() - inicioRef.current),
+    );
     setPausado(true);
   };
 
-  const alSalir = () => {
-    const guardado = pausaRestanteRef.current;
-    if (guardado !== null && guardado > 0) {
-      deadlineRef.current = Date.now() + guardado;
-    }
-    pausaRestanteRef.current = null;
+  const reanudar = () => {
+    if (!pausado || !visible || finNotificadoRef.current) return;
+    inicioRef.current = Date.now();
     setPausado(false);
   };
 
   if (!visible) return null;
 
-  const porcentaje =
-    durationMs > 0 ? Math.max(0, Math.min(100, (restanteMs / durationMs) * 100)) : 0;
-
   return (
     <div
       className={estilos.notificationCard}
       role="status"
-      onMouseEnter={alEntrar}
-      onMouseLeave={alSalir}
+      onMouseEnter={pausar}
+      onMouseLeave={reanudar}
+      onFocus={pausar}
+      onBlur={reanudar}
     >
       <div className={estilos.notificationBody}>
         <span className={estilos.notificationIcon} aria-hidden>
@@ -110,11 +104,22 @@ export default function TopNotification({
           </svg>
         </span>
         <p className={estilos.notificationText}>{mensaje}</p>
+        <button
+          type="button"
+          className={estilos.notificationClose}
+          aria-label="Cerrar notificación"
+          onClick={terminar}
+        >
+          ×
+        </button>
       </div>
       <div className={estilos.notificationBarTrack} aria-hidden>
         <div
           className={estilos.notificationBarFill}
-          style={{ width: `${porcentaje}%` }}
+          style={{
+            animationDuration: `${durationMs}ms`,
+            animationPlayState: pausado ? "paused" : "running",
+          }}
         />
       </div>
     </div>

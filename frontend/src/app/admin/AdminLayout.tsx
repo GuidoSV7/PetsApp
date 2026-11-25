@@ -36,10 +36,13 @@ const adminNavItems: AdminNavItem[] = [
   { href: "/admin/design-3d", label: "Diseño 3D", iconSrc: "/iconos/icon-3d.svg" },
 ];
 
+const MOBILE_NAV_MQ = "(max-width: 720px)";
+
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
   const currentPath = usePathname();
   const router = useRouter();
   const [sessionReady, setSesionLista] = useState(false);
+  const [navAbierta, setNavAbierta] = useState(false);
   /** Bumps when another tab clears/changes the session so the gate remounts (#23). */
   const [gateEpoch, setGateEpoch] = useState(0);
 
@@ -116,6 +119,29 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [sessionReady]);
 
+  useEffect(() => {
+    setNavAbierta(false);
+  }, [currentPath]);
+
+  useEffect(() => {
+    if (!navAbierta) return;
+    const onKey = (evento: KeyboardEvent) => {
+      if (evento.key === "Escape") setNavAbierta(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navAbierta]);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia(MOBILE_NAV_MQ);
+    const onChange = () => {
+      if (!mq.matches) setNavAbierta(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
   const signOutAndLeave = () => {
     // Best effort: the cookie clear must not block leaving the admin area.
     void signOutPetsAppUser().catch(() => undefined);
@@ -146,7 +172,43 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
 
   return (
     <div className={estilos.contenedor} key={gateEpoch}>
-      <aside className={estilos.barra} data-purpose="admin-sidebar">
+      <div className={estilos.barraMovil}>
+        <button
+          type="button"
+          className={estilos.botonMenuMovil}
+          aria-expanded={navAbierta}
+          aria-controls="admin-sidebar-nav"
+          data-purpose="admin-mobile-nav-toggle"
+          onClick={() => setNavAbierta((abierta) => !abierta)}
+        >
+          {navAbierta ? "Cerrar menú" : "Menú"}
+        </button>
+        <span className={estilos.tituloMovil}>PetsApp Admin</span>
+        <button
+          type="button"
+          className={estilos.botonLogoutMovil}
+          onClick={signOutAndLeave}
+          data-purpose="admin-logout-trigger-mobile"
+        >
+          Salir
+        </button>
+      </div>
+
+      {navAbierta ? (
+        <button
+          type="button"
+          className={estilos.fondoDrawer}
+          aria-label="Cerrar menú de navegación"
+          data-purpose="admin-mobile-nav-backdrop"
+          onClick={() => setNavAbierta(false)}
+        />
+      ) : null}
+
+      <aside
+        id="admin-sidebar-nav"
+        className={`${estilos.barra} ${navAbierta ? estilos.barraAbierta : ""}`}
+        data-purpose="admin-sidebar"
+      >
         <div className={estilos.sidebarHeader}>
           <div className={estilos.brandHeader}>
             <BrandMark className={estilos.brandLogo} size={40} />
@@ -167,6 +229,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
               href={opcion.href}
               scroll
               className={`${estilos.enlace} ${isActive(opcion) ? estilos.primaryLink : ""}`}
+              onClick={() => setNavAbierta(false)}
             >
               <span
                 className={estilos.navIconMask}

@@ -32,19 +32,29 @@
   --primario: #3dff8a;
   --secundario: #2fd976;
 
+  /* Verde seguro para texto sobre superficies claras (WCAG AA 4.5:1) */
+  --primario-texto: #177241;
+
+  /* Texto sobre superficies claras */
+  --texto-fuerte: #143022;
+  --texto-cuerpo: #1c2b22;
+  --texto-medio: #3a5246;
+  --texto-suave: #5a7a66;
+
+  /* Acentos de las acciones de cuidado (texto AA sobre su fondo claro) */
+  --acento-comida: #c92a3d;
+  --acento-descanso: #9a5b12;
+  --acento-banio: #1d6fa8;
+  --acento-caricia: #6d28d9;
+
   /* Colores para estados */
   --estado-exito: #3dff8a;
   --estado-informacion: #6ee7b0;
-  --estado-error: #f500dc;
+  --estado-error: #b3261e;
   --estado-advertencia: #ffcc33;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Mantener la misma identidad de color en modo oscuro */
-    --fondo: #07140c;
-    --texto: #131317;
-  }
+  /* Unified keyboard focus ring (home / auth / admin) */
+  --anillo-foco: color-mix(in srgb, var(--primario) 70%, #1f8f4e);
 }
 
 /* Overrides del tema por ruta (se aplican vía RouteThemeProvider) */
@@ -60,12 +70,15 @@
 
 html {
   height: 100%;
+  /* Force light until a full AA dark palette exists (#59). */
+  color-scheme: light;
 }
 
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  color-scheme: light;
 }
 
 body {
@@ -106,8 +119,42 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Skip link: first focusable control in the document (#52). */
+.skipLink {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 10000;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--texto-fuerte);
+  font-weight: 750;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(20, 48, 34, 0.18);
+  transform: translateY(-160%);
+  transition: transform 0.15s ease;
+}
+
+.skipLink:focus,
+.skipLink:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--anillo-foco);
+  outline-offset: 2px;
+}
+
+/* Unified :focus-visible ring for interactive controls (#52). */
+:where(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [role="button"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: 2px solid var(--anillo-foco);
+  outline-offset: 2px;
 }

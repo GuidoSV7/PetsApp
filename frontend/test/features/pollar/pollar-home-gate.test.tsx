@@ -111,6 +111,17 @@ describe("HomePage Pollar gate", () => {
     expect(screen.queryByLabelText("Escenario de Michi")).toBeNull();
   });
 
+  it("exposes a PetsApp h1 in the modal and Nest-parity brand behind it", async () => {
+    render(<HomePage />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("Iniciar sesión")).toBeTruthy(),
+    );
+    const heading = screen.getByRole("heading", { level: 1, name: "PetsApp" });
+    expect(heading.getAttribute("aria-hidden")).toBeNull();
+    expect(document.getElementById("inicio")).toBeTruthy();
+    expect(screen.getAllByText(/Entrá para cuidar a Michi/i).length).toBeGreaterThan(0);
+  });
+
   it("calls Pollar login for Google and Freighter", async () => {
     render(<HomePage />);
     await waitFor(() =>

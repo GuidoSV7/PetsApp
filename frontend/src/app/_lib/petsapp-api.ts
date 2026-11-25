@@ -54,20 +54,21 @@ async function parseError(response: Response): Promise<never> {
     "message" in body &&
     typeof (body as ApiErrorBody).message === "string"
       ? (body as ApiErrorBody).message!
-      : response.statusText || "Network error";
+      : response.statusText || "Error de red";
   throw new PetsAppApiError(message, response.status, body);
 }
 
-function networkErrorMessage(base: string, cause: unknown): string {
+/** Spanish copy for fetch failures shown in the admin UI. */
+export function networkErrorMessage(base: string, cause: unknown): string {
   const text =
     cause instanceof Error ? cause.message : typeof cause === "string" ? cause : "";
   const isConnection =
     /failed to fetch|networkerror|load failed|connection refused|aborted/i.test(text) ||
     text === "";
   if (isConnection) {
-    return `Could not reach the API (${base}). Is the backend running?`;
+    return `No se pudo conectar con la API (${base}). ¿Está el backend en marcha?`;
   }
-  return `Network error: ${text || "unknown"}`;
+  return `Error de red: ${text || "desconocido"}`;
 }
 
 async function requestJson<T>(
