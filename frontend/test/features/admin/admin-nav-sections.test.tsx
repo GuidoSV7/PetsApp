@@ -31,6 +31,14 @@ vi.mock("next/link", () => ({
 
 vi.mock("@/features/auth/api/auth.service", () => ({
   signOutPetsAppUser: vi.fn(async () => undefined),
+  fetchAuthProfile: vi.fn(async () => ({
+    id: "1",
+    name: "Admin",
+    email: "admin@pets.app",
+    role: "admin",
+    roles: ["admin"],
+    country: null,
+  })),
 }));
 
 import AdminLayout from "@/app/admin/AdminLayout";

@@ -69,7 +69,15 @@ vi.mock("@pollar/react", () => ({
   PollarProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+const { signOutPetsAppUser } = vi.hoisted(() => ({
+  signOutPetsAppUser: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/features/auth/api/auth.service", () => ({
+  signOutPetsAppUser,
+}));
+
 import HomePage from "@/app/_components/home/HomePage";
+import { clearSession, savePetsAppSession } from "@/stores/auth-session";
 
 describe("HomePage Pollar gate", () => {
   beforeEach(() => {
@@ -79,8 +87,11 @@ describe("HomePage Pollar gate", () => {
     onAuthStateChange.mockImplementation(() => () => undefined);
     getUserProfile.mockReset();
     getUserProfile.mockReturnValue(null);
+    signOutPetsAppUser.mockReset();
+    signOutPetsAppUser.mockResolvedValue(undefined);
     state.isAuthenticated = false;
     state.wallet = null;
+    clearSession();
     window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
   });
 
@@ -170,5 +181,46 @@ describe("HomePage Pollar gate", () => {
       screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
     );
     expect(logout).toHaveBeenCalled();
+  });
+
+  it("#53 best-effort Nest logout alongside Pollar logout and clearSession", async () => {
+    savePetsAppSession({
+      token: "jwt",
+      user: {
+        id: "1",
+        name: "Ada",
+        email: "a@test.app",
+        role: "member",
+        roles: ["member"],
+        country: null,
+      },
+    });
+    state.isAuthenticated = true;
+    state.wallet = { address: "GABC" };
+    getUserProfile.mockReturnValue({
+      mail: "a@test.app",
+      first_name: "Ada",
+      last_name: "",
+      avatar: "",
+      providers: {
+        email: null,
+        google: null,
+        github: null,
+        wallet: null,
+      },
+    });
+
+    render(<HomePage />);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
+      ).toBeTruthy(),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
+    );
+    expect(signOutPetsAppUser).toHaveBeenCalledTimes(1);
+    expect(logout).toHaveBeenCalled();
+    expect(localStorage.getItem("petsapp_session_v1")).toBeNull();
   });
 });

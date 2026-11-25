@@ -93,6 +93,25 @@ function segmentosSeguros(segmentos: string[]): boolean {
 
 type Ctx = { params: Promise<{ path: string[] }> };
 
+type HeadersWithSetCookie = {
+  getSetCookie?: () => string[];
+  get: (name: string) => string | null;
+};
+
+/** Preserve every upstream Set-Cookie; Headers.set would drop siblings (#30 / S3). */
+function forwardSetCookies(from: HeadersWithSetCookie, to: Headers) {
+  const cookies =
+    typeof from.getSetCookie === "function" ? from.getSetCookie() : [];
+  if (cookies.length > 0) {
+    for (const cookie of cookies) {
+      to.append("set-cookie", cookie);
+    }
+    return;
+  }
+  const single = from.get("set-cookie");
+  if (single) to.append("set-cookie", single);
+}
+
 async function forwardRequest(req: NextRequest, segments: string[]) {
   if (!segmentosSeguros(segments)) {
     return NextResponse.json({ message: "Invalid path" }, { status: 400 });
@@ -123,10 +142,13 @@ async function forwardRequest(req: NextRequest, segments: string[]) {
     const res = await fetchUndici(destination, init);
     const responseHeaders = new Headers();
     res.headers.forEach((valor, clave) => {
+      // Never Headers.set("set-cookie"): multiple cookies must be appended (S3/#30).
+      if (clave.toLowerCase() === "set-cookie") return;
       if (!HOP_HEADERS.has(clave.toLowerCase())) {
         responseHeaders.set(clave, valor);
       }
     });
+    forwardSetCookies(res.headers, responseHeaders);
     return new NextResponse(Buffer.from(await res.arrayBuffer()), {
       status: res.status,
       headers: responseHeaders,

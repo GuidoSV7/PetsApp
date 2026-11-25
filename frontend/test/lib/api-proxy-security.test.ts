@@ -97,3 +97,37 @@ describe("proxy upstream failure (S7)", () => {
     );
   });
 });
+
+describe("proxy Set-Cookie forwarding (#30 / S3)", () => {
+  it("appends every Set-Cookie from getSetCookie instead of overwriting", async () => {
+    const upstreamHeaders = new Headers();
+    upstreamHeaders.append("set-cookie", "petsapp_session=a; Path=/; HttpOnly");
+    upstreamHeaders.append("set-cookie", "csrf=b; Path=/; SameSite=Lax");
+    upstreamHeaders.set("content-type", "application/json");
+    upstream.mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: upstreamHeaders,
+      }),
+    );
+
+    const res = await route.POST(
+      new NextRequest("http://front.invalid/petsapp-api/auth/login", {
+        method: "POST",
+        body: "{}",
+      }),
+      { params: Promise.resolve({ path: ["auth", "login"] }) },
+    );
+
+    expect(res.status).toBe(200);
+    const forwarded =
+      typeof res.headers.getSetCookie === "function"
+        ? res.headers.getSetCookie()
+        : [];
+    expect(forwarded).toEqual([
+      "petsapp_session=a; Path=/; HttpOnly",
+      "csrf=b; Path=/; SameSite=Lax",
+    ]);
+    expect(res.headers.get("content-type")).toMatch(/application\/json/);
+  });
+});
