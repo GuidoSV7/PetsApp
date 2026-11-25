@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { UserRepository } from '../ports/user-repository.port.js';
+import type {
+  UserListFilter,
+  UserRepository,
+} from '../ports/user-repository.port.js';
 import { MISSING_ID, userData } from './user-repository.fixtures.js';
 
 export function userReadsContract(repo: () => UserRepository): void {
@@ -55,10 +58,8 @@ export function userReadsContract(repo: () => UserRepository): void {
         const pct = await make('pct@y.com', '50% off', { isActive: false });
         return { alice, bob, carol, under, pct };
       };
-      const ids = async (filter?: {
-        search?: string;
-        includeInactive?: boolean;
-      }) => (await repo().findMany(filter)).map((u) => u.id);
+      const ids = async (filter?: UserListFilter) =>
+        (await repo().findMany(filter)).map((u) => u.id);
       const descending = (rows: { id: string }[]) =>
         rows.map((r) => r.id).sort((a, b) => (a < b ? 1 : -1));
 
@@ -80,24 +81,38 @@ export function userReadsContract(repo: () => UserRepository): void {
         }
       });
 
-      it('searches name and email with a case-sensitive LIKE', async () => {
+      it('searches name and email case-insensitively (S11)', async () => {
         const { alice, bob, carol } = await seed();
 
-        expect(await ids({ search: 'lic' })).toEqual([alice.id]);
-        expect(await ids({ search: 'ALICE' })).toEqual([carol.id]);
-        expect(await ids({ search: 'bob' })).toEqual([bob.id]);
+        expect(await ids({ search: 'lic' })).toEqual(
+          descending([alice, carol]),
+        );
+        expect(await ids({ search: 'ALICE' })).toEqual(
+          descending([alice, carol]),
+        );
+        expect(await ids({ search: 'BOB' })).toEqual([bob.id]);
         expect(await ids({ search: 'zzz' })).toEqual([]);
       });
 
-      it('does not escape LIKE wildcards', async () => {
-        const { alice, carol, under, pct } = await seed();
+      it('escapes LIKE wildcards so they match themselves (S11)', async () => {
+        const { under, pct } = await seed();
 
-        expect(await ids({ search: '%' })).toHaveLength(5);
+        expect(await ids({ search: '%' })).toEqual([pct.id]);
         expect(await ids({ search: 'a_c' })).toEqual([under.id]);
-        expect(await ids({ search: 'a_' })).toEqual(
-          descending([alice, carol, under]),
-        );
+        expect(await ids({ search: 'a_' })).toEqual([under.id]);
         expect(await ids({ search: '50%' })).toEqual([pct.id]);
+      });
+
+      it('supports limit and offset paging on the id-DESC order (S11)', async () => {
+        const all = Object.values(await seed());
+
+        expect(await ids({ limit: 2 })).toEqual(descending(all).slice(0, 2));
+        expect(await ids({ limit: 2, offset: 2 })).toEqual(
+          descending(all).slice(2, 4),
+        );
+        expect(await ids({ limit: 0 })).toEqual([]);
+        expect(await ids({ offset: 10 })).toEqual([]);
+        expect(await ids({ limit: 10, offset: 99 })).toEqual([]);
       });
 
       it('treats an empty search as no filter', async () => {
@@ -118,7 +133,7 @@ export function userReadsContract(repo: () => UserRepository): void {
           alice.id,
         ]);
         expect(await ids({ search: 'ALICE', includeInactive: false })).toEqual(
-          [],
+          [alice.id],
         );
       });
     });

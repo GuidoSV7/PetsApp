@@ -6,6 +6,7 @@ import {
   Patch,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UsersService } from '../users.service.js';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator.js';
@@ -32,7 +33,9 @@ export class UserProfileController {
     return this.usersService.update(user.id, updateData);
   }
 
+  /** S7: five attempts per minute per client IP. */
   @Delete()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   deleteMyAccount(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: DeleteAccountDto,

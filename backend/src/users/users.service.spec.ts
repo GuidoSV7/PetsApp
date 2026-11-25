@@ -23,6 +23,16 @@ describe('UsersService (in-memory repository)', () => {
   const notFound = (id: string) =>
     new NotFoundException(`User with id ${id} not found`);
 
+  describe('admin list paging (S11)', () => {
+    it('returns at most 100 users when no limit is given', async () => {
+      for (let i = 0; i < 101; i += 1) {
+        await repo.create(userData({ email: `paged${i}@example.com` }));
+      }
+      expect(await service.findAllComplete()).toHaveLength(100);
+      expect(await service.findAllComplete(undefined, true, 200)).toHaveLength(101);
+    });
+  });
+
   describe('profile', () => {
     it('maps the profile with userName, without credentials', async () => {
       const user = await repo.create(userData());
@@ -85,9 +95,9 @@ describe('UsersService (in-memory repository)', () => {
       await service.findAllComplete();
 
       expect(findMany.mock.calls).toEqual([
-        [{ search: 'Ad', includeInactive: false }],
-        [{ search: undefined, includeInactive: true }],
-        [{ search: undefined, includeInactive: true }],
+        [{ search: 'Ad', includeInactive: false, limit: 100 }],
+        [{ search: undefined, includeInactive: true, limit: 100 }],
+        [{ search: undefined, includeInactive: true, limit: 100 }],
       ]);
     });
 
@@ -155,22 +165,34 @@ describe('UsersService (in-memory repository)', () => {
         profileImage: null,
         country: null,
         isVerified: false,
+        tokenVersion: 0,
         lastLogin: null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
     });
 
-    it('maps a missing id to NotFoundException and lets repository errors through', async () => {
+    it('maps a missing id to NotFoundException and a taken email to a conflict (S4)', async () => {
       await repo.create(userData({ email: 'taken@x.com' }));
-      const other = await repo.create(userData({ email: 'other@x.com' }));
+      const other = await repo.create(
+        userData({
+          email: 'other@x.com',
+          password: bcrypt.hashSync('secret1', 4),
+        }),
+      );
 
       await expect(service.update(MISSING_ID, { name: 'x' })).rejects.toEqual(
         notFound(MISSING_ID),
       );
       await expect(
         service.update(other.id, { email: 'taken@x.com' }),
-      ).rejects.toThrow(/duplicate key/);
+      ).rejects.toThrow('the current password is required');
+      await expect(
+        service.update(other.id, {
+          email: 'taken@x.com',
+          currentPassword: 'secret1',
+        }),
+      ).rejects.toThrow('Email already registered');
     });
   });
 

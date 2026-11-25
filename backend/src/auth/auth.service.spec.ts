@@ -76,7 +76,11 @@ describe('AuthService login (in-memory repositories)', () => {
       },
       token: 'jwt-token',
     });
-    expect(jwt.sign).toHaveBeenCalledWith({ sub: user.id, email: user.email });
+    expect(jwt.sign).toHaveBeenCalledWith({
+      sub: user.id,
+      email: user.email,
+      tv: 0,
+    });
   });
 
   it.each([UserRole.ADMIN, UserRole.SUPER_ADMIN])(
@@ -113,6 +117,22 @@ describe('AuthService login (in-memory repositories)', () => {
       expect(error?.message).toBe(INVALID_CREDENTIALS);
     }
     expect(jwt.sign).not.toHaveBeenCalled();
+  });
+
+  it('runs the same password comparison for unknown emails (S8)', async () => {
+    const compare = vi.spyOn(bcrypt, 'compare');
+
+    const error = await failure(
+      service.login({ email: 'ghost@example.com', password: 'whatever' }),
+    );
+
+    expect(error).toBeInstanceOf(UnauthorizedException);
+    expect(error?.message).toBe(INVALID_CREDENTIALS);
+    expect(compare).toHaveBeenCalledTimes(1);
+    const [plain, hash] = compare.mock.calls[0];
+    expect(plain).toBe('whatever');
+    // The comparison runs against a real bcrypt hash, never a short-circuit.
+    expect(hash).toMatch(/^\$2[aby]\$/);
   });
 });
 

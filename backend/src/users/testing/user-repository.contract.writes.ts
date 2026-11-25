@@ -21,6 +21,7 @@ export function userWritesContract(repo: () => UserRepository): void {
         profileImage: null,
         country: null,
         isVerified: false,
+        tokenVersion: 0,
         lastLogin: null,
         createdAt: expect.any(Date) as unknown,
         updatedAt: expect.any(Date) as unknown,
@@ -68,7 +69,7 @@ export function userWritesContract(repo: () => UserRepository): void {
       expect(created).not.toHaveProperty('nope');
     });
 
-    it('rejects a duplicate email with unique_violation (23505) but accepts one that differs in case', async () => {
+    it('rejects a duplicate email with unique_violation (23505), case-insensitively (S3)', async () => {
       await repo().create(userData());
 
       const error = await repo()
@@ -79,9 +80,13 @@ export function userWritesContract(repo: () => UserRepository): void {
         );
       expect(error).toBeInstanceOf(Error);
       expect(pgErrorCode(error)).toBe('23505');
-      await expect(
-        repo().create(userData({ email: 'ADA@example.com' })),
-      ).resolves.toMatchObject({ email: 'ADA@example.com' });
+      const caseError = await repo()
+        .create(userData({ email: 'ADA@example.com' }))
+        .then(
+          () => undefined,
+          (e: unknown) => e,
+        );
+      expect(pgErrorCode(caseError)).toBe('23505');
     });
 
     it('rejects nulls on NOT NULL columns, a bad role, an oversized column and a non-boolean flag', async () => {
@@ -177,6 +182,14 @@ export function userWritesContract(repo: () => UserRepository): void {
       expect((await repo().findById(other.id))?.email).toBe(
         'other@example.com',
       );
+      // Case-insensitive: another account's email in any case is a conflict.
+      await expect(
+        repo().update(other.id, { email: 'TAKEN@example.com' }),
+      ).rejects.toThrow();
+      // Their own email in any case is not (the unique index is per row).
+      await expect(
+        repo().update(other.id, { email: 'OTHER@example.com' }),
+      ).resolves.toBeDefined();
       await expect(
         repo().update(other.id, { email: 'other@example.com' }),
       ).resolves.toMatchObject({ email: 'other@example.com' });
@@ -191,6 +204,23 @@ export function userWritesContract(repo: () => UserRepository): void {
       await expect(attempt({ email: null })).rejects.toThrow();
       await expect(attempt({ role: 'owner' })).rejects.toThrow();
       expect(await repo().findById(created.id)).toEqual(created);
+    });
+  });
+
+  describe('toggleBlock (S12)', () => {
+    it('flips is_blocked in one step and keeps every other column', async () => {
+      const created = await repo().create(userData({ role: 'admin' }));
+
+      const once = await repo().toggleBlock(created.id);
+      expect(once).toEqual({ ...created, isBlocked: true });
+      const twice = await repo().toggleBlock(created.id);
+      expect(twice).toEqual({ ...created, isBlocked: false });
+      expect(await repo().findById(created.id)).toEqual(created);
+    });
+
+    it('answers null for a missing id and rejects a malformed one', async () => {
+      expect(await repo().toggleBlock(MISSING_ID)).toBeNull();
+      await expect(repo().toggleBlock('nope')).rejects.toThrow();
     });
   });
 }

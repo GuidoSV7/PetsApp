@@ -44,7 +44,8 @@ describe('free care migration', () => {
       await readFile(join(migrationsFolder, 'meta/_journal.json'), 'utf8'),
     );
     expect(journal.entries[5]).toEqual(entry);
-    expect(journal.entries).toHaveLength(6);
+    // 0006 (account security) follows; its own spec pins its entry.
+    expect(journal.entries).toHaveLength(7);
     expect(entry.when).toBeGreaterThan(journal.entries[4].when);
   });
 
@@ -105,7 +106,7 @@ describe('free care migration', () => {
       const after = (await client.query(rowsQuery)).rows;
       const migrationsAfter = (await client.query(journalQuery)).rows;
       expect(migrationsAfter.slice(0, 5)).toEqual(migrationsBefore);
-      expect(migrationsAfter).toHaveLength(6);
+      expect(migrationsAfter).toHaveLength(7);
       expect(Number(migrationsAfter[5].created_at)).toBe(entry.when);
       expect((await client.query('SHOW lock_timeout')).rows).toEqual(
         lockBefore,
