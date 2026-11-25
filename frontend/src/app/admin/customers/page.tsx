@@ -106,9 +106,6 @@ export default function CustomersPage() {
         titulo="Usuarios"
         subtitulo="Cuentas de miembros. Las cuentas administrador no aparecen en este listado."
       />
-      {error ? (
-        <p style={{ marginBottom: 16, color: "#b91c1c", fontWeight: 700 }}>{error}</p>
-      ) : null}
       <CustomersKpiCards totalRegistros={totalRegistros} usuariosPagina={usuariosPagina} />
       <div className={estilosLista.barraHerramientas}>
         <input
@@ -121,24 +118,24 @@ export default function CustomersPage() {
             setPagina(1);
           }}
           aria-label="Buscar usuarios"
+          disabled={cargando || Boolean(error)}
         />
         <div className={estilosLista.barraPaginacion}>
           <button
             type="button"
             className={estilosLista.botonPagina}
-            disabled={paginaSegura <= 1 || cargando}
+            disabled={paginaSegura <= 1 || cargando || Boolean(error)}
             onClick={() => setPagina((p) => Math.max(1, p - 1))}
           >
             Anterior
           </button>
           <span className={estilosLista.textoPagina}>
             Página {paginaSegura} de {totalPaginas}
-            {cargando ? " · Cargando…" : ""}
           </span>
           <button
             type="button"
             className={estilosLista.botonPagina}
-            disabled={paginaSegura >= totalPaginas || cargando}
+            disabled={paginaSegura >= totalPaginas || cargando || Boolean(error)}
             onClick={() => setPagina((p) => p + 1)}
           >
             Siguiente
@@ -147,6 +144,9 @@ export default function CustomersPage() {
       </div>
       <CustomersListTable
         usuarios={usuariosPagina}
+        cargando={cargando}
+        error={error}
+        onReintentar={() => void cargar()}
         onVerDetalle={(idUsuario) => setIdUsuarioModal(idUsuario)}
       />
 
