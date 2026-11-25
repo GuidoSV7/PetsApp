@@ -183,3 +183,94 @@
   color: var(--texto-secundario, rgba(0, 0, 0, 0.6));
 }
 
+.barraMovil {
+  display: none;
+}
+
+.fondoDrawer {
+  display: none;
+}
+
+.botonMenuMovil,
+.botonLogoutMovil {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botonMenuMovil {
+  background: color-mix(in srgb, var(--panel-izquierdo-acento, #6b63ff) 22%, transparent);
+  color: var(--panel-izquierdo-texto, #f0f2f5);
+}
+
+.botonLogoutMovil {
+  background: var(--logout-bg, #2a2a3e);
+  color: #fff;
+}
+
+.tituloMovil {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--panel-izquierdo-texto, #f0f2f5);
+}
+
+@media (max-width: 720px) {
+  .contenedor {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .barraMovil {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--panel-izquierdo-fondo, #1a1a2e);
+    border-bottom: 1px solid var(--borde-panel, rgba(240, 242, 245, 0.18));
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .fondoDrawer {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(10, 10, 20, 0.45);
+    cursor: pointer;
+  }
+
+  .barra {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    width: min(280px, 86vw);
+    max-height: 100vh;
+    transform: translateX(-105%);
+    transition: transform 160ms ease;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.28);
+  }
+
+  .barraAbierta {
+    transform: translateX(0);
+  }
+
+  .contenido {
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+  }
+}
+

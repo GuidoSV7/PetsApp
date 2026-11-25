@@ -173,14 +173,29 @@ export default function AdminUserDetailView({
   if (errorCarga || !usuario) {
     return (
       <div>
-        <p style={{ marginBottom: 16, fontWeight: 700 }}>
+        <p
+          className={estilos.mensajeErrorCarga}
+          role="alert"
+          style={{ marginBottom: 16, fontWeight: 700 }}
+        >
           {errorCarga ?? "No encontramos este usuario."}
         </p>
-        {!modalMode ? (
-          <Link href="/admin/customers" className={estilos.enlaceVolver}>
-            ← Volver al listado
-          </Link>
-        ) : null}
+        <div className={estilos.filaAccionesError}>
+          {errorCarga ? (
+            <button
+              type="button"
+              className={estilos.botonReintentar}
+              onClick={() => void recargar()}
+            >
+              Reintentar
+            </button>
+          ) : null}
+          {!modalMode ? (
+            <Link href="/admin/customers" className={estilos.enlaceVolver}>
+              ← Volver al listado
+            </Link>
+          ) : null}
+        </div>
       </div>
     );
   }
