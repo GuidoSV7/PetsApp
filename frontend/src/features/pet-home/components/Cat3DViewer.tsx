@@ -74,6 +74,8 @@ export const ROOM_VIEW = {
   zoomRange: [0.8, 1.2] as readonly [number, number],
   zoomStep: 0.1,
   focusMs: 250,
+  /** How long the head close-up stays before returning to the room overview. */
+  focusHoldMs: 2500,
   /** Paws land on the lower third; the far wall top keeps a 10% sky margin. */
   lowerNdcY: -0.45,
   upperNdcY: 0.9,
@@ -353,6 +355,22 @@ function ClockGuard({ paused }: { paused: boolean }) {
   return null;
 }
 
+/** Fires once on the first R3F frame so the HTML poster can yield to the cat. */
+function FirstUsefulFrame({ onReady }: { onReady: () => void }) {
+  const sent = useRef(false);
+  useFrame(() => {
+    if (sent.current) return;
+    sent.current = true;
+    onReady();
+  });
+  return null;
+}
+
+/** Non-null Suspense fallback so the sage plane is never the only signal. */
+function CanvasSuspenseFallback() {
+  return <group />;
+}
+
 /** Mounts the merged room on layer 1 and scopes the layer masks to this view. */
 function RoomScene({ floorY }: { floorY: number }) {
   const scene = useThree((state) => state.scene) as Scene;
@@ -451,12 +469,14 @@ export function Cat3DViewer({
   const [zoom, setZoom] = useState<number>(1);
   const [focus, setFocus] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
   const hostRef = useRef<HTMLDivElement | null>(null);
   const reducedMotion = useReducedMotion();
   const modelScale = resolveModelScale(design ?? defaultCatDesign());
   const groundY = catGroundY(modelScale);
   const swallowTap = useRef(false);
   const pointers = useRef(new Set<number>());
+  const onSceneReady = useCallback(() => setSceneReady(true), []);
 
   // Pause the owned loop when the viewer leaves the screen or the tab hides.
   useEffect(() => {
@@ -483,6 +503,16 @@ export function Cat3DViewer({
       document.removeEventListener("visibilitychange", update);
     };
   }, [isHome]);
+
+  // Head focus auto-returns after the pet gesture window / hold timeout.
+  useEffect(() => {
+    if (!isHome || !focus) return;
+    const timer = window.setTimeout(() => {
+      setFocus(false);
+      setZoom(1);
+    }, ROOM_VIEW.focusHoldMs);
+    return () => window.clearTimeout(timer);
+  }, [focus, isHome]);
 
   const petOnce = useCallback(() => {
     if (swallowTap.current) {
@@ -533,7 +563,7 @@ export function Cat3DViewer({
   };
 
   return (
-    <div className={styles.viewerShell}>
+    <div className={styles.viewerShell} data-scene-ready={sceneReady ? "true" : "false"}>
       <div
         ref={hostRef}
         className={styles.canvasHost}
@@ -551,6 +581,12 @@ export function Cat3DViewer({
             }
           : {})}
       >
+        {!sceneReady ? (
+          <div className={styles.viewerPoster} role="status" aria-live="polite">
+            <span className={styles.viewerPosterSkel} aria-hidden="true" />
+            <span className={styles.viewerPosterCopy}>Preparando a {PET_NAME}…</span>
+          </div>
+        ) : null}
         {statsEnabled && <div ref={setStatsParent} aria-hidden="true" />}
         <Canvas
           camera={{ position: [0, 0.42, 3.05], fov: 28 }}
@@ -559,6 +595,7 @@ export function Cat3DViewer({
           flat
           gl={{ antialias: true, alpha: true }}
         >
+          <FirstUsefulFrame onReady={onSceneReady} />
           <PerformanceMonitor
             factor={1}
             step={0.15}
@@ -584,7 +621,7 @@ export function Cat3DViewer({
             intensity={CAT_VIEW_LIGHTS.rim.intensity}
             color={CAT_VIEW_LIGHTS.rim.color}
           />
-          <Suspense fallback={null}>
+          <Suspense fallback={<CanvasSuspenseFallback />}>
             <CatPoseMountContext.Provider value={poseMount}>
             <Cat3DModel
               colors={colors}

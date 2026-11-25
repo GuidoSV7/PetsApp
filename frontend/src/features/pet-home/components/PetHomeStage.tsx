@@ -10,6 +10,7 @@ import {
   type PetStateResponse,
 } from "@/features/pet-home/api/pet.service";
 import { CameraCoatCapture } from "@/features/pet-home/components/CameraCoatCapture";
+import { Cat3DViewerErrorBoundary } from "@/features/pet-home/components/Cat3DViewerErrorBoundary";
 import { PersonalizeStrip } from "@/features/pet-home/components/PersonalizeStrip";
 import { PetNameEditor } from "@/features/pet-home/components/PetNameEditor";
 import { DEFAULT_GREY_COAT } from "@/features/pet-home/extract-coat-colors";
@@ -32,6 +33,19 @@ import {
 } from "@/features/pet-home/pet-status";
 import styles from "./pet-home.module.css";
 
+function StageCanvasLoading({ name }: { name: string }) {
+  return (
+    <div
+      className={styles.stageLoading}
+      role="status"
+      aria-label={`Cargando a ${name}`}
+    >
+      <span className={styles.stageLoadingPoster} aria-hidden="true" />
+      <span className={styles.stageLoadingCopy}>Cargando a {name}…</span>
+    </div>
+  );
+}
+
 const Cat3DViewer = dynamic(
   () =>
     import("@/features/pet-home/components/Cat3DViewer").then(
@@ -39,11 +53,7 @@ const Cat3DViewer = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className={styles.canvasHost} role="status">
-        Cargando a {DEFAULT_PET_NAME}…
-      </div>
-    ),
+    loading: () => <StageCanvasLoading name={DEFAULT_PET_NAME} />,
   },
 );
 
@@ -87,7 +97,22 @@ export function PetHomeStage({ onCoinsChange }: Props) {
   const onCoinsChangeRef = useRef(onCoinsChange);
   onCoinsChangeRef.current = onCoinsChange;
   const locked = busy || !ready;
-  const needCues = needVisualCues(needs);
+  // Gate crisis cues until hydrate: EMPTY_PET_NEEDS zeros would look like crisis.
+  const needCues = ready
+    ? needVisualCues(needs)
+    : {
+        hungerLow: false,
+        funLow: false,
+        energyLow: false,
+        hygieneLow: false,
+        bodySlim: 1,
+        earDroop: 0,
+        headDroop: 0,
+        idleAmp: 1,
+        idleSpeed: 1,
+        pupilScale: 1,
+        dirtMix: 0,
+      };
 
   useEffect(() => {
     const player = purrRef.current;
@@ -257,17 +282,23 @@ export function PetHomeStage({ onCoinsChange }: Props) {
           </p>
 
           <div className={styles.petFrame}>
-            <Cat3DViewer
-              variant="home"
-              colors={coat}
-              design={catDesign}
-              reactPulse={reactPulse}
-              careEvent={careEvent}
-              needs={needs}
-              onPetInteract={() =>
-                void runAction("pet", { purr: true, bounce: true })
-              }
-            />
+            {!ready ? (
+              <StageCanvasLoading name={petName} />
+            ) : (
+              <Cat3DViewerErrorBoundary petName={petName}>
+                <Cat3DViewer
+                  variant="home"
+                  colors={coat}
+                  design={catDesign}
+                  reactPulse={reactPulse}
+                  careEvent={careEvent}
+                  needs={needs}
+                  onPetInteract={() =>
+                    void runAction("pet", { purr: true, bounce: true })
+                  }
+                />
+              </Cat3DViewerErrorBoundary>
+            )}
           </div>
         </div>
       </div>

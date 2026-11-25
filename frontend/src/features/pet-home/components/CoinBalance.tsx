@@ -7,8 +7,10 @@ type Props = {
   showAdd?: boolean;
 };
 
-/** Gold coin badge showing the balance from the pet API. */
-export function CoinBalance({ balance, showAdd = true }: Props) {
+/** Gold coin badge showing the balance from the pet API.
+ * `showAdd` stays off until a real top-up flow exists (no decorative +).
+ */
+export function CoinBalance({ balance, showAdd = false }: Props) {
   return (
     <div className={styles.coinBalance} aria-label={coinsLabel(balance)}>
       <GoldCoinIcon className={styles.coinIcon} />
