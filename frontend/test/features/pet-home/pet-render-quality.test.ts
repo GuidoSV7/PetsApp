@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { dprForFactor, maxDprForDevice } from "@/features/pet-home/pet-render-quality";
+import {
+  antialiasForDevice,
+  contactShadowFramesForDevice,
+  dprForFactor,
+  maxDprForDevice,
+} from "@/features/pet-home/pet-render-quality";
 
 describe("ceiling policy", () => {
   it.each([
@@ -11,6 +16,23 @@ describe("ceiling policy", () => {
     [2, 2, 1.25, 1.25], [4, 2, 1.5, 1.5], [8, 2, 1.75, 1.75],
   ])("maps memory=%s cores=%s dpr=%s to %s", (deviceMemory, hardwareConcurrency, devicePixelRatio, expected) => {
     expect(maxDprForDevice({ deviceMemory, hardwareConcurrency, devicePixelRatio: devicePixelRatio! })).toBe(expected);
+  });
+});
+
+describe("antialias and shadow frames (#55)", () => {
+  it.each([
+    [{ deviceMemory: 8, hardwareConcurrency: 8, devicePixelRatio: 2 }, true],
+    [{ deviceMemory: 4, hardwareConcurrency: 4, devicePixelRatio: 2 }, true],
+    [{ deviceMemory: 2, hardwareConcurrency: 8, devicePixelRatio: 2 }, false],
+    [{ deviceMemory: 8, hardwareConcurrency: 2, devicePixelRatio: 2 }, false],
+    [{ deviceMemory: undefined, hardwareConcurrency: 1, devicePixelRatio: 2 }, false],
+  ])("antialiasForDevice(%j) → %s", (hints, expected) => {
+    expect(antialiasForDevice(hints)).toBe(expected);
+  });
+
+  it("bakes contact shadows once for every tier", () => {
+    expect(contactShadowFramesForDevice({ devicePixelRatio: 2 })).toBe(1);
+    expect(contactShadowFramesForDevice({ deviceMemory: 2, devicePixelRatio: 3 })).toBe(1);
   });
 });
 

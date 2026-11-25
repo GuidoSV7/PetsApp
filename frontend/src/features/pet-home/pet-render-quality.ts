@@ -5,6 +5,15 @@ export type DeviceRenderHints = {
   devicePixelRatio: number;
 };
 
+function isLowPowerDevice({
+  deviceMemory,
+  hardwareConcurrency,
+}: Pick<DeviceRenderHints, "deviceMemory" | "hardwareConcurrency">): boolean {
+  const memoryAvailable = deviceMemory !== undefined && deviceMemory > 0 && Number.isFinite(deviceMemory);
+  if (memoryAvailable && deviceMemory! <= 2) return true;
+  return hardwareConcurrency !== undefined && hardwareConcurrency > 0 && hardwareConcurrency <= 2;
+}
+
 export function maxDprForDevice({
   deviceMemory,
   hardwareConcurrency,
@@ -17,6 +26,16 @@ export function maxDprForDevice({
     : lowCoreFallback ? 1.25 : 1.5;
   // Prompt2 explicitly prioritizes the floor when browser zoom reports DPR < 1.
   return Math.max(1, Math.floor(Math.min(tier, devicePixelRatio) * 20) / 20);
+}
+
+/** MSAA costs fill-rate; keep it off on low-memory / low-core devices. */
+export function antialiasForDevice(hints: DeviceRenderHints): boolean {
+  return !isLowPowerDevice(hints);
+}
+
+/** ContactShadows `frames={1}`: bake once for the stable pet diorama. */
+export function contactShadowFramesForDevice(_hints?: DeviceRenderHints): number {
+  return 1;
 }
 
 export function dprForFactor(factor: number, ceiling: number): number {

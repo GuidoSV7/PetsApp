@@ -98,6 +98,17 @@ beforeEach(() => {
   canvasProps.length = 0;
   modelProps.length = 0;
   vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
+  HTMLCanvasElement.prototype.getContext = vi.fn((type: string) => {
+    if (type === "webgl2" || type === "webgl" || type === "experimental-webgl") {
+      return {} as unknown as RenderingContext;
+    }
+    return null;
+  }) as typeof HTMLCanvasElement.prototype.getContext;
+  vi.stubGlobal("matchMedia", vi.fn(() => ({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  })));
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
 });
 afterEach(() => {
@@ -175,7 +186,7 @@ it("puts the soft contact shadow on the room floor, for the cat only", async () 
   expect(props.opacity).toBeCloseTo(0.45, 6);
   expect(props.blur).toBeCloseTo(2.0, 6);
   expect(props.resolution).toBe(256);
-  expect(props.frames).toBeUndefined();
+  expect(props.frames).toBe(1);
   expect(Number(props.scale)).toBeGreaterThan(ROOM_LENGTH);
   expect(Number(props.scale)).toBeLessThan(2 * ROOM_HALF);
 }, 60_000);
