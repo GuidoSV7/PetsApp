@@ -192,6 +192,12 @@ export function Cat3DModel({
     if (reactPulse > 0) bounce.current = 1;
   }, [reactPulse]);
 
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = "auto";
+    };
+  }, []);
+
   const poseInput = useMemo(() => ({ ...poseMount, cues, reducedMotion, reactPulse }), [poseMount, cues, reducedMotion, reactPulse]);
 
   useFrame((state, delta) => {

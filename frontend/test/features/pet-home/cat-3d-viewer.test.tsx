@@ -44,7 +44,12 @@ vi.mock("@react-three/fiber", async () => {
       return <div>{React.Children.toArray(children).filter((child) => React.isValidElement(child) && typeof child.type !== "string")}</div>;
     },
     useThree: (selector: (value: typeof state) => unknown) => selector(state),
-    useFrame: () => undefined,
+    // Drive one frame so FirstUsefulFrame can drop the HTML poster in jsdom.
+    useFrame: (cb: (value: typeof state, delta: number) => void) => {
+      React.useEffect(() => {
+        cb(state as never, 0.016);
+      }, [cb]);
+    },
   };
 });
 vi.mock("@react-three/drei", () => ({
@@ -290,6 +295,20 @@ describe("home diorama camera and accessible rotation (S1/S2)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ver la habitación completa" }));
     expect(host().getAttribute("data-camera-focus")).toBe("overview");
     expect(onPetInteract).toHaveBeenCalledTimes(1);
+  });
+
+  it("auto-returns the head focus after the hold timeout (#36)", () => {
+    vi.useFakeTimers();
+    const onPetInteract = vi.fn();
+    render(<Cat3DViewer variant="home" colors={DEFAULT_GREY_COAT} onPetInteract={onPetInteract} />);
+    const host = () => screen.getByRole("img");
+    fireEvent.click(screen.getByRole("button", { name: "Procedural cat" }));
+    expect(host().getAttribute("data-camera-focus")).toBe("head");
+    act(() => {
+      vi.advanceTimersByTime(ROOM_VIEW.focusHoldMs);
+    });
+    expect(host().getAttribute("data-camera-focus")).toBe("overview");
+    vi.useRealTimers();
   });
 
   it("rotates and zooms only through the labelled accessible controls, inside the bounds", () => {
