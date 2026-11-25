@@ -115,6 +115,14 @@
 .botonCuenta:hover {
   filter: brightness(1.06);
 }
+.botonCuenta:focus-visible,
+.botonSalir:focus-visible,
+.botonHeader:focus-visible,
+.gateEmail:focus-visible,
+.modonClose:focus-visible {
+  outline: 2px solid var(--anillo-foco, #2fbf6b);
+  outline-offset: 2px;
+}
 .botonSalir {
   display: grid;
   place-items: center;

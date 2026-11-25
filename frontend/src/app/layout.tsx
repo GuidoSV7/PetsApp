@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import NotificationsProvider from "./_components/NotificationsProvider";
 import AppProviders from "./providers";
@@ -32,6 +32,11 @@ export const metadata: Metadata = {
   },
 };
 
+/** Keep form controls / scrollbars on the light palette until AA dark tokens exist. */
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
+
 export default function LayoutRaiz({
   children: contenido,
 }: Readonly<{
@@ -40,6 +45,9 @@ export default function LayoutRaiz({
   return (
     <html lang="es" className={`${fuenteSans.variable} ${fuenteMono.variable}`}>
       <body suppressHydrationWarning>
+        <a className="skipLink" href="#inicio">
+          Ir al contenido
+        </a>
         <RouteThemeProvider>
           <AppProviders>
             <NotificationsProvider>{contenido}</NotificationsProvider>

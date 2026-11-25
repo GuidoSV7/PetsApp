@@ -110,6 +110,12 @@
   color: rgba(240, 242, 245, 0.92);
 }
 
+.enlace:focus-visible,
+.botonLogout:focus-visible {
+  outline: 2px solid var(--anillo-foco, #2fbf6b);
+  outline-offset: 2px;
+}
+
 .primaryLink {
   border-color: color-mix(
     in srgb,

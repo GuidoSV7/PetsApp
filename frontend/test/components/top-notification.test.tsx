@@ -126,4 +126,23 @@ describe("S12 reduced motion", () => {
     expect(reduced).toContain(".notificationBarFill");
     expect(reduced).toContain("animation");
   });
+
+  it("disables care button motion under prefers-reduced-motion", () => {
+    const css = readFileSync(
+      join(
+        __dirname,
+        "..",
+        "..",
+        "src",
+        "features",
+        "pet-home",
+        "components",
+        "pet-home.module.css",
+      ),
+      "utf8",
+    );
+    const reduced = css.slice(css.indexOf("prefers-reduced-motion"));
+    expect(reduced).toContain(".careButton");
+    expect(reduced).toMatch(/transition:\s*none/);
+  });
 });
