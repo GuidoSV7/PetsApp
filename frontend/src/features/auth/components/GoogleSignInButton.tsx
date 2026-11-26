@@ -9,6 +9,9 @@ import {
 
 const GIS_SRC = "https://accounts.google.com/gsi/client";
 
+/** How long to wait for an already-present GIS script `load` before rejecting. */
+export const GIS_SCRIPT_LOAD_TIMEOUT_MS = 10_000;
+
 type Props = {
   onCredential: (idToken: string) => void;
   disabled?: boolean;
@@ -50,10 +53,32 @@ function loadGisScript(): Promise<void> {
   );
   if (existing) {
     return new Promise((resolve, reject) => {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("GIS")), {
-        once: true,
-      });
+      if (window.google?.accounts?.id) {
+        resolve();
+        return;
+      }
+      let settled = false;
+      const finish = (fn: () => void) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        fn();
+      };
+      const timer = window.setTimeout(() => {
+        finish(() =>
+          reject(new Error("GIS script load timed out")),
+        );
+      }, GIS_SCRIPT_LOAD_TIMEOUT_MS);
+      existing.addEventListener(
+        "load",
+        () => finish(() => resolve()),
+        { once: true },
+      );
+      existing.addEventListener(
+        "error",
+        () => finish(() => reject(new Error("GIS"))),
+        { once: true },
+      );
     });
   }
   return new Promise((resolve, reject) => {
@@ -70,6 +95,7 @@ function loadGisScript(): Promise<void> {
 export function GoogleSignInButton({ onCredential, disabled }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const clientId = googleClientId();
 
   useEffect(() => {
@@ -110,7 +136,7 @@ export function GoogleSignInButton({ onCredential, disabled }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [clientId, disabled, onCredential]);
+  }, [clientId, disabled, onCredential, retryKey]);
 
   if (!isGoogleSignInConfigured()) {
     return (
@@ -137,9 +163,21 @@ export function GoogleSignInButton({ onCredential, disabled }: Props) {
         aria-label="Continuar con Google"
       />
       {error ? (
-        <p className={estilos.error} role="alert">
-          {error}
-        </p>
+        <div className={estilos.googleErrorRow}>
+          <p className={estilos.error} role="alert">
+            {error}
+          </p>
+          <button
+            type="button"
+            className={estilos.retryLink}
+            onClick={() => {
+              setError(null);
+              setRetryKey((key) => key + 1);
+            }}
+          >
+            Reintentar
+          </button>
+        </div>
       ) : null}
     </div>
   );

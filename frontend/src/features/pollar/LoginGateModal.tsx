@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import BrandMark from "@/components/ui/BrandMark";
+import { attachModalFocusTrap } from "@/features/auth/utils/modal-focus";
+import { cancelActivePollarLoginBusy } from "@/features/pollar/usePollarLoginBusy";
 import estilos from "./login-gate.module.css";
 
 type Props = {
@@ -9,6 +12,10 @@ type Props = {
   error?: string | null;
   onGoogle: () => void;
   onFreighter: () => void;
+  /** Escape when not busy (optional; blocking Pollar gate usually omits). */
+  onDismiss?: () => void;
+  /** Clears stuck busy; defaults to the active usePollarLoginBusy canceller. */
+  onCancel?: () => void;
 };
 
 /**
@@ -21,11 +28,34 @@ export function LoginGateModal({
   error,
   onGoogle,
   onFreighter,
+  onDismiss,
+  onCancel,
 }: Props) {
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const firstOptionRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    return attachModalFocusTrap({
+      getRoot: () => overlayRef.current,
+      initialFocus: firstOptionRef.current,
+      onEscape: () => {
+        if (busy) return;
+        onDismiss?.();
+      },
+    });
+  }, [open, busy, onDismiss]);
+
   if (!open) return null;
+
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    else cancelActivePollarLoginBusy();
+  };
 
   return (
     <div
+      ref={overlayRef}
       className={estilos.overlay}
       role="dialog"
       aria-modal="true"
@@ -44,6 +74,7 @@ export function LoginGateModal({
 
         <div className={estilos.actions}>
           <button
+            ref={firstOptionRef}
             type="button"
             className={`${estilos.option} ${estilos.google}`}
             disabled={busy}
@@ -80,9 +111,18 @@ export function LoginGateModal({
           </p>
         ) : null}
         {busy ? (
-          <p className={estilos.status} role="status">
-            Conectando…
-          </p>
+          <div className={estilos.busyRow}>
+            <p className={estilos.status} role="status">
+              Conectando…
+            </p>
+            <button
+              type="button"
+              className={estilos.cancelBusy}
+              onClick={handleCancel}
+            >
+              Cancelar
+            </button>
+          </div>
         ) : null}
       </div>
     </div>
