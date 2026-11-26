@@ -142,25 +142,27 @@ export function PetHomeStage({ onCoinsChange }: Props) {
     if (bounce) setReactPulse((n) => n + 1);
   }, []);
 
-  const cargarEstado = useCallback(async () => {
-    try {
-      const state = await fetchPetState();
-      applyState(state);
-      setLoadError(null);
-    } catch {
-      setReady(false);
-      setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
-    }
-  }, [applyState]);
+  const cargarEstado = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        const state = await fetchPetState();
+        if (signal?.aborted) return;
+        applyState(state);
+        setLoadError(null);
+      } catch {
+        if (signal?.aborted) return;
+        setReady(false);
+        setLoadError("No pudimos cargar a tu michi. Reintentá en un momento.");
+      }
+    },
+    [applyState],
+  );
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      if (cancelled) return;
-      await cargarEstado();
-    })();
+    const ac = new AbortController();
+    void cargarEstado(ac.signal);
     return () => {
-      cancelled = true;
+      ac.abort();
     };
   }, [cargarEstado]);
 
