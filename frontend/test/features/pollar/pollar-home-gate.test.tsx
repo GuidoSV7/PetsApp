@@ -159,7 +159,8 @@ describe("HomePage Pollar gate", () => {
       expect(screen.getByLabelText("Escenario de Michi")).toBeTruthy(),
     );
     expect(screen.queryByLabelText("Iniciar sesión")).toBeNull();
-    expect(screen.queryByLabelText(/Monedas:/)).toBeNull();
+    // #62: header mounts CoinBalance once pet stage reports coins (no decorative +).
+    expect(screen.getByLabelText(/Monedas:\s*37/)).toBeTruthy();
     expect(screen.queryByText("+")).toBeNull();
     expect(screen.getByText("PetsApp")).toBeTruthy();
     expect(
