@@ -32,13 +32,14 @@ async function ready() {
 }
 
 describe("free care frontend contract (S1/S4/S5/S7)", () => {
-  it.each([0, 37])("hides the entire coin widget at balance %s while preserving brand and logout", (coins) => {
+  it.each([0, 37])("shows CoinBalance at balance %s without a top-up control, preserving brand and logout", (coins) => {
     const logout = vi.fn();
     render(<HomeHeader coins={coins} userName="Ada" onLogout={logout} />);
     expect(screen.getByText("PetsApp")).toBeTruthy();
-    expect(screen.queryByLabelText(/monedas/i)).toBeNull();
+    expect(screen.getByLabelText(`Monedas: ${coins}`)).toBeTruthy();
+    expect(screen.getByText(String(coins))).toBeTruthy();
+    expect(screen.queryByText("+")).toBeNull();
     expect(screen.queryByRole("button", { name: /agregar|comprar/i })).toBeNull();
-    expect(screen.queryByText(String(coins))).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión de Ada" }));
     expect(logout).toHaveBeenCalledOnce();
   });
