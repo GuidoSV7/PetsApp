@@ -78,6 +78,7 @@ vi.mock("@/features/auth/api/auth.service", () => ({
 
 import HomePage from "@/app/_components/home/HomePage";
 import { clearSession, savePetsAppSession } from "@/stores/auth-session";
+import { LOGOUT_COOKIE_WARNING } from "@/features/auth/api/sign-out";
 
 describe("HomePage Pollar gate", () => {
   beforeEach(() => {
@@ -191,7 +192,7 @@ describe("HomePage Pollar gate", () => {
     fireEvent.click(
       screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
     );
-    expect(logout).toHaveBeenCalled();
+    await waitFor(() => expect(logout).toHaveBeenCalled());
   });
 
   it("#53 best-effort Nest logout alongside Pollar logout and clearSession", async () => {
@@ -230,8 +231,48 @@ describe("HomePage Pollar gate", () => {
     fireEvent.click(
       screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
     );
-    expect(signOutPetsAppUser).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(signOutPetsAppUser).toHaveBeenCalledTimes(1));
     expect(logout).toHaveBeenCalled();
     expect(localStorage.getItem("petsapp_session_v1")).toBeNull();
+  });
+
+  it("#82 warns when Nest logout fails but still clears local UI", async () => {
+    state.isAuthenticated = true;
+    state.wallet = { address: "GABC" };
+    getUserProfile.mockReturnValue({
+      mail: "a@test.app",
+      first_name: "Ada",
+      last_name: "",
+      avatar: "",
+      providers: {
+        email: null,
+        google: null,
+        github: null,
+        wallet: null,
+      },
+    });
+    signOutPetsAppUser.mockRejectedValue(new Error("down"));
+
+    render(<HomePage />);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
+      ).toBeTruthy(),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /Cerrar sesión de Ada/i }),
+    );
+    await waitFor(() => expect(logout).toHaveBeenCalled());
+    // After Pollar logout, gate remounts; pending flag surfaces the retry CTA.
+    state.isAuthenticated = false;
+    cleanup();
+    sessionStorage.setItem("petsapp_logout_cookie_pending", "1");
+    render(<HomePage />);
+    await waitFor(() =>
+      expect(screen.getByText(LOGOUT_COOKIE_WARNING)).toBeTruthy(),
+    );
+    expect(
+      screen.getByRole("button", { name: /Reintentar cierre de sesión/i }),
+    ).toBeTruthy();
   });
 });

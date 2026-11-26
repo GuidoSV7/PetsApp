@@ -10,19 +10,27 @@ import AuthDemoModal from "@/features/auth/components/AuthDemoModal";
 import BrandMark from "@/components/ui/BrandMark";
 import estilosAuth from "@/features/auth/components/auth-modal.module.css";
 import {
+  fetchAuthProfile,
   signInWithGoogle,
-  signOutPetsAppUser,
 } from "@/features/auth/api/auth.service";
+import {
+  LOGOUT_COOKIE_WARNING,
+  consumeLogoutCookiePending,
+  retrySignOutPetsAppCookie,
+  signOutPetsAppAndClearLocal,
+} from "@/features/auth/api/sign-out";
 import {
   clearSession,
   getPetsAppSession,
   savePetsAppSession,
+  updateUserInSession,
   type PetsAppSessionData,
 } from "@/stores/auth-session";
 import { asPetsAppApiError } from "@/lib/errors";
 import type { AuthModalMode } from "@/features/auth/types/auth.types";
 import { isPollarConfigured } from "@/features/pollar/pollar-config";
 import { PollarHomePage } from "@/features/pollar/PollarHomePage";
+import { useOptionalNotification } from "@/app/_components/NotificationsProvider";
 
 /** Home: Pollar gate when configured; Nest Google/email fallback otherwise. */
 export default function HomePage() {
@@ -34,24 +42,72 @@ export default function HomePage() {
 
 /** Nest session gate: Google + Freighter (Freighter needs Pollar key to go live). */
 function NestHomePage() {
+  const notify = useOptionalNotification();
   const [session, setSession] = useState<PetsAppSessionData | null>(null);
   const [ready, setReady] = useState(false);
   const [coins, setCoins] = useState<number | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [emailModal, setEmailModal] = useState<AuthModalMode | null>(null);
+  const [logoutCookiePending, setLogoutCookiePending] = useState(false);
+  const [logoutRetryBusy, setLogoutRetryBusy] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    setSession(getPetsAppSession());
-    setReady(true);
+    if (consumeLogoutCookiePending()) {
+      setLogoutCookiePending(true);
+    }
+    let cancelled = false;
+
+    const boot = async () => {
+      const local = getPetsAppSession();
+      if (!local) {
+        if (!cancelled) {
+          setSession(null);
+          setReady(true);
+        }
+        return;
+      }
+
+      try {
+        const profile = await fetchAuthProfile();
+        if (cancelled) return;
+        updateUserInSession({
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: profile.role,
+          roles: profile.roles,
+          country: profile.country,
+        });
+        setSession(getPetsAppSession());
+      } catch (error) {
+        if (cancelled) return;
+        const status = asPetsAppApiError(error).codigoEstado;
+        // 401 interceptor may already clear; force gate either way (#64).
+        if (status === 401 || !getPetsAppSession()) {
+          clearSession();
+          setSession(null);
+        } else {
+          // Transient API failure: keep local cache so the user is not locked out.
+          setSession(local);
+        }
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    };
+
+    void boot();
 
     // Cross-tab: another tab's clearSession/save updates localStorage (#23).
     const onStorage = () => {
       setSession(getPetsAppSession());
     };
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const onGoogleCredential = useCallback(async (idToken: string) => {
@@ -61,6 +117,7 @@ function NestHomePage() {
       const data = await signInWithGoogle(idToken);
       savePetsAppSession(data);
       setSession(data);
+      setLogoutCookiePending(false);
     } catch (error) {
       setAuthError(asPetsAppApiError(error).message);
     } finally {
@@ -71,12 +128,31 @@ function NestHomePage() {
   const onLogout = async () => {
     setBusy(true);
     try {
-      await signOutPetsAppUser().catch(() => undefined);
-    } finally {
-      clearSession();
+      const { cookieCleared } = await signOutPetsAppAndClearLocal();
       setSession(null);
       setCoins(null);
+      if (!cookieCleared) {
+        setLogoutCookiePending(true);
+        notify?.showNotification(LOGOUT_COOKIE_WARNING);
+      } else {
+        setLogoutCookiePending(false);
+      }
+    } finally {
       setBusy(false);
+    }
+  };
+
+  const onRetryLogoutCookie = async () => {
+    setLogoutRetryBusy(true);
+    try {
+      const ok = await retrySignOutPetsAppCookie();
+      if (ok) {
+        setLogoutCookiePending(false);
+      } else {
+        notify?.showNotification(LOGOUT_COOKIE_WARNING);
+      }
+    } finally {
+      setLogoutRetryBusy(false);
     }
   };
 
@@ -117,6 +193,19 @@ function NestHomePage() {
               <p className={estilosHome.gateError} role="alert">
                 {authError}
               </p>
+            ) : null}
+            {logoutCookiePending ? (
+              <div className={estilosHome.gateError} role="alert">
+                <p>{LOGOUT_COOKIE_WARNING}</p>
+                <button
+                  type="button"
+                  className={estilosHome.gateEmail}
+                  disabled={logoutRetryBusy}
+                  onClick={() => void onRetryLogoutCookie()}
+                >
+                  Reintentar cierre de sesión
+                </button>
+              </div>
             ) : null}
             <button
               type="button"

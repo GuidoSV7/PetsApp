@@ -10,29 +10,60 @@ import { PetHomeStage } from "@/features/pet-home/components/PetHomeStage";
 import { LoginGateModal } from "@/features/pollar/LoginGateModal";
 import { pollarDisplayName } from "@/features/pollar/pollar-display-name";
 import { usePollarLoginBusy } from "@/features/pollar/usePollarLoginBusy";
-import { signOutPetsAppUser } from "@/features/auth/api/auth.service";
-import { clearSession } from "@/stores/auth-session";
+import {
+  LOGOUT_COOKIE_WARNING,
+  consumeLogoutCookiePending,
+  retrySignOutPetsAppCookie,
+  signOutPetsAppAndClearLocal,
+} from "@/features/auth/api/sign-out";
+import { useOptionalNotification } from "@/app/_components/NotificationsProvider";
 
 /** Home when Pollar is configured: modal gate, then pet stage. */
 export function PollarHomePage() {
+  const notify = useOptionalNotification();
   const { isAuthenticated, login, logout, wallet, getClient } = usePollar();
   const { busy, error, clearError } = usePollarLoginBusy();
   const [coins, setCoins] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [logoutCookiePending, setLogoutCookiePending] = useState(false);
+  const [logoutRetryBusy, setLogoutRetryBusy] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    if (consumeLogoutCookiePending()) {
+      setLogoutCookiePending(true);
+    }
     setMounted(true);
   }, []);
 
   const userName = pollarDisplayName(getClient().getUserProfile(), wallet);
 
   const onLogout = () => {
-    // Best-effort Nest cookie clear alongside Pollar + local session (#53 / S4).
-    void signOutPetsAppUser().catch(() => undefined);
-    clearSession();
-    setCoins(null);
-    logout();
+    void (async () => {
+      const { cookieCleared } = await signOutPetsAppAndClearLocal();
+      setCoins(null);
+      logout();
+      if (!cookieCleared) {
+        setLogoutCookiePending(true);
+        notify?.showNotification(LOGOUT_COOKIE_WARNING);
+      } else {
+        setLogoutCookiePending(false);
+      }
+    })();
+  };
+
+  const onRetryLogoutCookie = async () => {
+    setLogoutRetryBusy(true);
+    try {
+      const ok = await retrySignOutPetsAppCookie();
+      if (ok) {
+        setLogoutCookiePending(false);
+      } else {
+        notify?.showNotification(LOGOUT_COOKIE_WARNING);
+      }
+    } finally {
+      setLogoutRetryBusy(false);
+    }
   };
 
   if (!mounted) {
@@ -63,6 +94,19 @@ export function PollarHomePage() {
               </p>
             </div>
           </section>
+          {logoutCookiePending ? (
+            <div className={estilosHome.gateError} role="alert">
+              <p>{LOGOUT_COOKIE_WARNING}</p>
+              <button
+                type="button"
+                className={estilosHome.gateEmail}
+                disabled={logoutRetryBusy}
+                onClick={() => void onRetryLogoutCookie()}
+              >
+                Reintentar cierre de sesión
+              </button>
+            </div>
+          ) : null}
         </main>
         <LoginGateModal
           open
@@ -92,6 +136,19 @@ export function PollarHomePage() {
         onLogout={onLogout}
       />
       <main id="inicio" className={estilosHome.main}>
+        {logoutCookiePending ? (
+          <div className={estilosHome.gateError} role="alert">
+            <p>{LOGOUT_COOKIE_WARNING}</p>
+            <button
+              type="button"
+              className={estilosHome.gateEmail}
+              disabled={logoutRetryBusy}
+              onClick={() => void onRetryLogoutCookie()}
+            >
+              Reintentar cierre de sesión
+            </button>
+          </div>
+        ) : null}
         <PetHomeStage onCoinsChange={setCoins} />
       </main>
     </div>
