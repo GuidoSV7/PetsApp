@@ -38,10 +38,15 @@ const adminNavItems: AdminNavItem[] = [
 
 const MOBILE_NAV_MQ = "(max-width: 720px)";
 
+const PROFILE_GATE_ERROR =
+  "No pudimos confirmar tu sesión de administración. Probá de nuevo.";
+
 export default function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
   const currentPath = usePathname();
   const router = useRouter();
   const [sessionReady, setSesionLista] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
   const [navAbierta, setNavAbierta] = useState(false);
   /** Bumps when another tab clears/changes the session so the gate remounts (#23). */
   const [gateEpoch, setGateEpoch] = useState(0);
@@ -53,6 +58,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
       void signOutPetsAppUser().catch(() => undefined);
       clearSession();
       setSesionLista(false);
+      setProfileError(null);
       router.replace("/account");
     };
 
@@ -60,15 +66,18 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
       const datos = getPetsAppSession();
       if (!datos) {
         setSesionLista(false);
+        setProfileError(null);
         router.replace("/");
         return;
       }
       if (!isAdminRole(datos.user.role)) {
         setSesionLista(false);
+        setProfileError(null);
         router.replace("/account");
         return;
       }
-      setSesionLista(true);
+      // Do not paint admin chrome until the server confirms the role (#70).
+      setProfileError(null);
       try {
         const profile = await fetchAuthProfile();
         if (cancelled) return;
@@ -84,13 +93,19 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
           roles: profile.roles,
           country: profile.country,
         });
+        setSesionLista(true);
+        setProfileError(null);
       } catch {
         if (cancelled) return;
         // 401 interceptor may already clear; re-check local gate.
         if (!getPetsAppSession()) {
           setSesionLista(false);
+          setProfileError(null);
           router.replace("/");
+          return;
         }
+        setSesionLista(false);
+        setProfileError(PROFILE_GATE_ERROR);
       }
     };
 
@@ -112,7 +127,7 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("focus", onFocus);
     };
-  }, [router]);
+  }, [router, retryNonce]);
 
   useLayoutEffect(() => {
     if (!sessionReady) return;
@@ -163,8 +178,25 @@ export default function AdminLayout({ children }: Readonly<{ children: ReactNode
   }, [currentPath]);
 
   if (!sessionReady) {
+    if (profileError) {
+      return (
+        <div className={estilos.gateEstado} data-purpose="admin-profile-gate-error">
+          <p className={estilos.gateError} role="alert">
+            {profileError}
+          </p>
+          <button
+            type="button"
+            className={estilos.botonReintentarGate}
+            data-purpose="admin-profile-gate-retry"
+            onClick={() => setRetryNonce((n) => n + 1)}
+          >
+            Reintentar
+          </button>
+        </div>
+      );
+    }
     return (
-      <div className={estilos.contenedor} style={{ padding: 28, fontWeight: 700 }}>
+      <div className={estilos.gateEstado} data-purpose="admin-profile-gate-loading">
         Comprobando sesión…
       </div>
     );

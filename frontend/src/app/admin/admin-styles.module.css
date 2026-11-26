@@ -6,6 +6,46 @@
   overflow: hidden;
 }
 
+.gateEstado {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px;
+  font-weight: 700;
+  background: var(--superficie, #f0f2f5);
+  color: var(--texto-primario, #171717);
+}
+
+.gateError {
+  margin: 0;
+  max-width: 28rem;
+  text-align: center;
+  color: var(--estado-error, #b3261e);
+}
+
+.botonReintentarGate {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--texto-primario, #1a1a2e);
+  cursor: pointer;
+}
+
+.botonReintentarGate:hover {
+  background: #f9fafb;
+}
+
+.botonReintentarGate:focus-visible {
+  outline: 2px solid var(--anillo-foco, #2fbf6b);
+  outline-offset: 2px;
+}
+
 .barra {
   width: 260px;
   padding: 18px 14px;
