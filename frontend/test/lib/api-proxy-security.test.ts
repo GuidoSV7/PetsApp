@@ -32,7 +32,9 @@ describe("proxy path validation (S6)", () => {
       params: Promise.resolve({ path: segmentos }),
     });
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ message: "Invalid path" });
+    const body = await res.json();
+    expect(body).toEqual({ message: "Ruta no válida." });
+    expect(JSON.stringify(body)).not.toMatch(/Invalid path/);
     expect(upstream).not.toHaveBeenCalled();
   });
 
@@ -88,7 +90,11 @@ describe("proxy upstream failure (S7)", () => {
       params: Promise.resolve({ path: ["auth", "profile"] }),
     });
     expect(res.status).toBe(502);
-    expect(await res.json()).toEqual({ message: "Upstream unavailable" });
+    const body = await res.json();
+    expect(body).toEqual({
+      message: "El servicio no está disponible. Probá de nuevo en un rato.",
+    });
+    expect(JSON.stringify(body)).not.toMatch(/Upstream unavailable/);
     expect(error).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({

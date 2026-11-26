@@ -114,7 +114,7 @@ function forwardSetCookies(from: HeadersWithSetCookie, to: Headers) {
 
 async function forwardRequest(req: NextRequest, segments: string[]) {
   if (!segmentosSeguros(segments)) {
-    return NextResponse.json({ message: "Invalid path" }, { status: 400 });
+    return NextResponse.json({ message: "Ruta no válida." }, { status: 400 });
   }
 
   const destination = buildApiProxyDestination(
@@ -159,7 +159,13 @@ async function forwardRequest(req: NextRequest, segments: string[]) {
       "[proxy] No se pudo alcanzar el API upstream:",
       error instanceof Error ? error : String(error),
     );
-    return NextResponse.json({ message: "Upstream unavailable" }, { status: 502 });
+    return NextResponse.json(
+      {
+        message:
+          "El servicio no está disponible. Probá de nuevo en un rato.",
+      },
+      { status: 502 },
+    );
   }
 }
 

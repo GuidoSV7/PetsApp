@@ -1,6 +1,18 @@
 import type { InternalAxiosRequestConfig } from "axios";
 import { getSessionToken } from "@/stores/auth-session";
 
+/** English bodies the `/petsapp-api` proxy used to emit; map for Spanish UI (#79). */
+const PROXY_ERROR_ES: Record<string, string> = {
+  "Invalid path": "Ruta no válida.",
+  "Upstream unavailable":
+    "El servicio no está disponible. Probá de nuevo en un rato.",
+};
+
+/** Maps known proxy English codes to Rioplatense Spanish; other strings pass through. */
+export function mapProxyErrorMessage(message: string): string {
+  return PROXY_ERROR_ES[message] ?? message;
+}
+
 export function applyRequestAuthPolicy(config: InternalAxiosRequestConfig) {
   const token = getSessionToken();
   if (token) {
@@ -19,10 +31,11 @@ export function mapApiResponseError(error: unknown): Error {
     const res = (
       error as { response: { data?: { message?: string }; status: number } }
     ).response;
-    const mensaje =
+    const raw =
       res.data?.message ??
       (error as { message?: string }).message ??
       "Error de API";
+    const mensaje = mapProxyErrorMessage(raw);
     const err = new Error(mensaje) as Error & {
       codigoEstado?: number;
       cuerpo?: unknown;

@@ -2,6 +2,7 @@
 // Centralizes the public base URL and Bearer header for UI callers.
 
 import { PetsAppApiError } from "@/lib/errors";
+import { mapProxyErrorMessage } from "@/lib/api-auth-policy";
 import { handleSessionExpired } from "@/lib/session-expiry";
 import { petsappPublicClientUrl } from "@/lib/petsapp-api-origin";
 import {
@@ -48,14 +49,18 @@ async function parseError(response: Response): Promise<never> {
   } catch {
     body = null;
   }
-  const message =
+  const raw =
     typeof body === "object" &&
     body !== null &&
     "message" in body &&
     typeof (body as ApiErrorBody).message === "string"
       ? (body as ApiErrorBody).message!
       : response.statusText || "Error de red";
-  throw new PetsAppApiError(message, response.status, body);
+  throw new PetsAppApiError(
+    mapProxyErrorMessage(raw),
+    response.status,
+    body,
+  );
 }
 
 /** Spanish copy for fetch failures shown in the admin UI. */
